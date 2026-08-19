@@ -53,11 +53,13 @@ Rules:
 
 ### Typography
 
-- Primary family: **Inter**.
-- Optional display family: **Space Grotesk**, used sparingly for distinctive hero moments.
-- H1: 48-64px desktop, bold, tight tracking, approximately 1.1 line height.
-- H2: 32-40px desktop, bold, approximately 1.2 line height.
-- H3: 24-28px, semibold.
+- Primary family: **Plus Jakarta Sans**, matching the current OCSCO.io public site.
+- Weight range: 400, 500, 600, 700, and 800.
+- Body: 400, approximately 1.6 line height.
+- Navigation: 500.
+- Strong labels: 600.
+- H3: 700, 24-28px.
+- H1 and H2: 800, with tight tracking and approximately 1.0-1.1 line height.
 - Body: 16-18px, regular, approximately 1.6 line height.
 - Caption: 13-14px, regular.
 

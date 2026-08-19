@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="OCSCO visual design system and implementation reference.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <title>OCSCO — Design System</title>
     <style>
       :root {
@@ -27,7 +30,7 @@
         margin: 0;
         background: var(--snow);
         color: var(--ink);
-        font-family: Inter, Arial, Helvetica, sans-serif;
+        font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
         -webkit-font-smoothing: antialiased;
       }
       a { color: inherit; }
@@ -122,7 +125,8 @@
       }
       .hero-inner { max-width: 850px; position: relative; z-index: 1; }
       .hero h1 {
-        font-family: "Space Grotesk", Inter, Arial, sans-serif;
+        font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 800;
         font-size: clamp(3.5rem, 8vw, 7.4rem);
         letter-spacing: -.07em;
         line-height: .94;
@@ -156,7 +160,8 @@
       .section-white { background: var(--white); }
       .section-heading { max-width: 780px; }
       .section h2 {
-        font-family: "Space Grotesk", Inter, Arial, sans-serif;
+        font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 800;
         font-size: clamp(2.4rem, 5vw, 5rem);
         letter-spacing: -.06em;
         line-height: .98;
@@ -203,9 +208,9 @@
       .type-stack { margin-top: 64px; }
       .type-row { border-top: 1px solid var(--border); display: grid; gap: 32px; grid-template-columns: 150px minmax(0, 1fr); padding: 28px 0; }
       .type-label { color: var(--muted); font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-      .type-h1 { font-family: "Space Grotesk", Inter, Arial, sans-serif; font-size: clamp(2.6rem, 5vw, 5.2rem); letter-spacing: -.07em; line-height: .96; margin: 0; }
-      .type-h2 { font-family: "Space Grotesk", Inter, Arial, sans-serif; font-size: clamp(2rem, 3.5vw, 3.5rem); letter-spacing: -.06em; line-height: 1; margin: 0; }
-      .type-h3 { font-size: 1.5rem; letter-spacing: -.04em; line-height: 1.1; margin: 0; }
+      .type-h1 { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif; font-size: clamp(2.6rem, 5vw, 5.2rem); font-weight: 800; letter-spacing: -.07em; line-height: .96; margin: 0; }
+      .type-h2 { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif; font-size: clamp(2rem, 3.5vw, 3.5rem); font-weight: 800; letter-spacing: -.06em; line-height: 1; margin: 0; }
+      .type-h3 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.04em; line-height: 1.1; margin: 0; }
       .type-body { color: var(--copy); font-size: 1.05rem; line-height: 1.65; margin: 0; max-width: 620px; }
       .type-caption { color: var(--copy); font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; }
 
@@ -359,7 +364,7 @@
           <div class="section-heading">
             <p class="eyebrow">03 / Typography</p>
             <h2 id="type-title">A confident voice with a readable measure.</h2>
-            <p class="section-intro">Use Inter for clarity and Space Grotesk sparingly for display moments. Keep hierarchy strong, line lengths controlled, and body copy comfortable to read.</p>
+            <p class="section-intro">Use Plus Jakarta Sans across the system with a deliberate weight hierarchy: 400 for body, 500 for navigation, 600 for strong labels, 700 for subheadings, and 800 for hero and major headings.</p>
           </div>
           <div class="type-stack">
             <div class="type-row"><div class="type-label">Display / H1</div><p class="type-h1">Systems that move the work forward.</p></div>

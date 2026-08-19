@@ -99,3 +99,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** A browsable, implementation-oriented reference gives the owner and development work a shared source of truth for color, typography, spacing, layout, logo usage, components, content voice, and accessibility. It reduces visual drift while the public website is redesigned and later extended into CMS-driven surfaces.
 - **Status:** Accepted for the current redesign preparation step; owner review pending
 - **Date:** 2026-08-19
+
+## ADR-015 — Align typography with the live OCSCO.io site
+
+- **Decision:** Use Plus Jakarta Sans across the OCSCO application and standalone style guide with weights 400, 500, 600, 700, and 800.
+- **Rationale:** The owner identified OCSCO.io as the preferred reference for typography and overall visual language. Matching its observed font family and weight hierarchy creates continuity between the existing brand presence and Project Crimson.
+- **Status:** Accepted for the redesign preparation step; owner review pending
+- **Date:** 2026-08-19
