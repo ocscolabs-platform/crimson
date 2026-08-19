@@ -14,7 +14,6 @@ export function RouteShell({ eyebrow, title, intro, children }: RouteShellProps)
       <section className="route-hero">
         <header className="site-header shell">
           <Link className="brand" href="/" aria-label="OCSCO home">
-            <span className="brand-mark" aria-hidden="true">O</span>
             <span>OCSCO</span>
           </Link>
           <nav className="primary-nav" aria-label="Primary navigation">
@@ -37,7 +36,6 @@ export function RouteShell({ eyebrow, title, intro, children }: RouteShellProps)
       <footer className="site-footer section-dark">
         <div className="shell footer-layout">
           <Link className="brand brand-footer" href="/" aria-label="OCSCO home">
-            <span className="brand-mark" aria-hidden="true">O</span>
             <span>OCSCO</span>
           </Link>
           <p>Strategy, design, and technology for brands ready to move with precision.</p>

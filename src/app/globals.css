@@ -28,7 +28,6 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .hero { position: relative; min-height: 760px; overflow: hidden; background: var(--ink); color: var(--white); }
 .site-header { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; min-height: 92px; border-bottom: 1px solid rgb(255 255 255 / 18%); }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--white); font-size: 1rem; font-weight: 700; letter-spacing: .16em; }
-.brand-mark { display: grid; width: 28px; height: 28px; place-items: center; border: 2px solid currentColor; border-radius: 50%; font-size: .8rem; letter-spacing: 0; line-height: 1; }
 .primary-nav { display: flex; gap: clamp(18px, 3vw, 42px); margin-left: auto; margin-right: clamp(20px, 4vw, 60px); color: var(--muted); font-size: .86rem; }
 .primary-nav a, .text-link, .card-link { transition: color 200ms ease-out; }
 .primary-nav a:hover, .text-link:hover, .card-link:hover { color: var(--green); }
@@ -88,6 +87,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .brand-footer { align-self: start; margin-top: 10px; }
 .footer-layout p { max-width: 340px; margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.6; }
 .footer-meta { align-self: end; color: var(--muted); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
+.route-hero { overflow: hidden; background: var(--ink); color: var(--white); }
 .route-hero-content { padding: 100px 0 116px; }
 .route-hero-content h1 { max-width: 930px; margin: 0; color: var(--white); font-size: clamp(3rem, 7vw, 6.4rem); letter-spacing: -.06em; line-height: .98; }
 .route-hero-intro { max-width: 600px; margin: 34px 0 0; color: var(--muted); font-size: clamp(1.05rem, 1.8vw, 1.3rem); line-height: 1.65; }
@@ -127,6 +127,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 
 @media (max-width: 560px) {
   .shell { width: min(calc(100% - 32px), var(--max-width)); }
+  .primary-nav { display: flex; gap: 14px; margin-right: 0; font-size: .72rem; }
   .header-cta { display: none; }
   .hero h1 { font-size: clamp(2.9rem, 15vw, 4.5rem); }
   .hero-copy { font-size: 1rem; }

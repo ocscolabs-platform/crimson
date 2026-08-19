@@ -6,7 +6,6 @@ export default function Home() {
       <section className="hero" aria-labelledby="hero-title">
         <header className="site-header shell">
           <a className="brand" href="#top" aria-label="OCSCO home">
-            <span className="brand-mark" aria-hidden="true">O</span>
             <span>OCSCO</span>
           </a>
           <nav className="primary-nav" aria-label="Primary navigation">
