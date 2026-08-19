@@ -31,7 +31,7 @@ Phase 0, Phase 1, and Phase 2 are complete. The public route structure is implem
 
 - Locked the standalone OCSCO HTML design style guide as the official v1.0 visual source of truth for typography, native hero atmosphere, iconography, media placeholders, and component states.
 - Refining the remaining public route experiences in staging, including shared route atmosphere, Services capability cards, Work placeholder state, sticky navigation, responsive shell behavior, and sitewide spacing rhythm.
-- Added staging task STG-001 for the contact-form workflow that follows capability exploration; the discovery CTA remains linked to `/services` until the form workflow is approved.
+- Implemented the STG-001 contact-form UI in staging with an email-preparation fallback; the discovery CTA remains linked to `/services` and production delivery remains pending workflow approval.
 
 ## Blocked / Requires Owner Action
 
