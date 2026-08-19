@@ -8,6 +8,7 @@ type FormStatus = "idle" | "submitting" | "success" | "error";
 
 export function ContactForm() {
   const [status, setStatus] = useState<FormStatus>("idle");
+  const [statusMessage, setStatusMessage] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -16,6 +17,7 @@ export function ContactForm() {
     if (!form.reportValidity()) return;
 
     setStatus("submitting");
+    setStatusMessage("");
     try {
       const response = await fetch("/api/inquiries", {
         method: "POST",
@@ -23,11 +25,13 @@ export function ContactForm() {
         body: JSON.stringify(Object.fromEntries(new FormData(form).entries())),
       });
 
-      if (!response.ok) throw new Error("Inquiry submission failed");
+      const result = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(result?.error || "We could not receive your inquiry. Please try again.");
       form.reset();
       setStatus("success");
-    } catch {
+    } catch (error) {
       setStatus("error");
+      setStatusMessage(error instanceof Error ? error.message : "Something went wrong. Please try again.");
     }
   }
 
@@ -63,7 +67,8 @@ export function ContactForm() {
       </div>
       <div className="form-field">
         <label htmlFor="contact-message">Project details <span aria-hidden="true">*</span></label>
-        <textarea className="form-input form-textarea" id="contact-message" name="message" placeholder="What are you trying to make clearer, stronger, or more effective?" required />
+        <textarea className="form-input form-textarea" id="contact-message" name="message" placeholder="What are you trying to make clearer, stronger, or more effective?" minLength={20} aria-describedby="contact-message-hint" required />
+        <p className="form-note" id="contact-message-hint">Please include at least 20 characters.</p>
       </div>
       <div className="form-actions">
         <button className="button button-dark" type="submit" disabled={status === "submitting"}>
@@ -72,7 +77,7 @@ export function ContactForm() {
         <p className="form-note">Your inquiry is sent securely to the OCSCO staging database. No email app is required.</p>
         <p className="form-status" role="status" aria-live="polite">
           {status === "success" ? "Thanks — your inquiry has been received. We will be in touch." : ""}
-          {status === "error" ? "Something went wrong. Please try again or email ocscolabs@gmail.com." : ""}
+          {status === "error" ? statusMessage : ""}
         </p>
       </div>
     </form>
