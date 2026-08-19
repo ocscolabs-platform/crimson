@@ -29,7 +29,8 @@ Phase 0, Phase 1, and Phase 2 are complete. The first public route structure is 
 
 ## In Progress
 
-- Owner review of the public route structure and draft-safe messaging; visual refinement is deferred by owner direction.
+- Establishing the standalone OCSCO HTML design style guide as the visual source of truth before the public website redesign.
+- Owner review of the current public route structure and draft-safe messaging.
 
 ## Blocked / Requires Owner Action
 
@@ -42,4 +43,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Review and approve the route structure before refining the visual system or connecting content to a CMS.
+Review the standalone style guide at `/style-guide`, then implement the approved visual redesign on a new `feature/design-reset` branch. Do not connect a CMS or backend until the public visual system is approved.

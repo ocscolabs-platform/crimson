@@ -92,3 +92,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** The route and content structure are the next product risk to resolve. Establishing them first allows navigation, metadata, page responsibilities, and future CMS boundaries to be reviewed independently from the visual treatment.
 - **Status:** Accepted for current Phase 3 slice; owner review pending
 - **Date:** 2026-08-19
+
+## ADR-014 — Use a standalone HTML style guide as the visual source of truth
+
+- **Decision:** Maintain the OCSCO visual system in `public/style-guide/index.html` before applying the redesign across the public application routes.
+- **Rationale:** A browsable, implementation-oriented reference gives the owner and development work a shared source of truth for color, typography, spacing, layout, logo usage, components, content voice, and accessibility. It reduces visual drift while the public website is redesigned and later extended into CMS-driven surfaces.
+- **Status:** Accepted for the current redesign preparation step; owner review pending
+- **Date:** 2026-08-19

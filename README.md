@@ -37,8 +37,10 @@ Copy `.env.example` to `.env.local` only when local configuration is needed. Kee
 
 ```text
 src/app/       App Router application shell and global styles
-docs/           Project, architecture, deployment, decisions, and status docs
-public/         Public static assets for the application
+docs/          Project, architecture, deployment, decisions, and status docs
+public/        Public static assets and the browsable HTML design style guide
 ```
+
+The current visual source of truth is [`public/style-guide/index.html`](./public/style-guide/index.html), available locally at `/style-guide` while the development server is running. It documents the OCSCO visual principles, tokens, components, content voice, and implementation rules used for the redesign.
 
 Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the information architecture, content model, visual direction, content briefs, and [`PHASE-3-IMPLEMENTATION.md`](./docs/PHASE-3-IMPLEMENTATION.md).
