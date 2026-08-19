@@ -107,6 +107,13 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Status:** Accepted for the redesign preparation step; owner review pending
 - **Date:** 2026-08-19
 
+## ADR-021 — Use a server-side Supabase staging inquiry slice
+
+- **Decision:** Connect the staging contact form to the dedicated `crimson-staging` Supabase project through a server-side Next.js route. Keep the Supabase secret key server-only, enable RLS on `public.inquiries`, and grant the minimum insert access required for the route.
+- **Rationale:** A database-backed staging submission gives the team a testable workflow without opening a native email application or placing privileged credentials in the browser. Owner notification, anti-abuse hardening beyond the honeypot, and production delivery remain separate approvals.
+- **Status:** Accepted for staging; production promotion pending workflow approval
+- **Date:** 2026-08-19
+
 ## ADR-019 - Extend the v1.0 atmosphere across public route shells
 
 - **Decision:** Apply the CSS-native glass/noise treatment to shared route heroes, use the approved Lucide mapping for Services capability cards, and use an atmospheric labeled placeholder for Work until approved media is available.

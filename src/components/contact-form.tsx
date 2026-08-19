@@ -4,36 +4,39 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { services } from "@/lib/site-content";
 
-const recipient = "ocscolabs@gmail.com";
+type FormStatus = "idle" | "submitting" | "success" | "error";
 
 export function ContactForm() {
-  const [status, setStatus] = useState<"idle" | "ready">("idle");
+  const [status, setStatus] = useState<FormStatus>("idle");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
 
     if (!form.reportValidity()) return;
 
-    const data = new FormData(form);
-    const service = data.get("service")?.toString() || "General conversation";
-    const subject = `OCSCO inquiry / ${service}`;
-    const body = [
-      `Name: ${data.get("name")}`,
-      `Email: ${data.get("email")}`,
-      `Company: ${data.get("company") || "Not provided"}`,
-      `Capability: ${service}`,
-      "",
-      "Project details:",
-      data.get("message"),
-    ].join("\\n");
+    setStatus("submitting");
+    try {
+      const response = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(new FormData(form).entries())),
+      });
 
-    setStatus("ready");
-    window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      if (!response.ok) throw new Error("Inquiry submission failed");
+      form.reset();
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
   }
 
   return (
-    <form className="contact-form" onSubmit={handleSubmit}>
+    <form className="contact-form" onSubmit={handleSubmit} aria-busy={status === "submitting"}>
+      <div className="contact-honeypot" aria-hidden="true">
+        <label htmlFor="contact-website">Website</label>
+        <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
       <div className="form-field-grid">
         <div className="form-field">
           <label htmlFor="contact-name">Your name <span aria-hidden="true">*</span></label>
@@ -63,9 +66,14 @@ export function ContactForm() {
         <textarea className="form-input form-textarea" id="contact-message" name="message" placeholder="What are you trying to make clearer, stronger, or more effective?" required />
       </div>
       <div className="form-actions">
-        <button className="button button-dark" type="submit">Start a conversation <span aria-hidden="true">↗</span></button>
-        <p className="form-note">This staged form prepares an email to {recipient}. No information is stored by the site yet.</p>
-        <p className="form-status" role="status" aria-live="polite">{status === "ready" ? "Your email app should open with the inquiry prepared. If it does not, email us directly." : ""}</p>
+        <button className="button button-dark" type="submit" disabled={status === "submitting"}>
+          {status === "submitting" ? "Sending..." : "Start a conversation"} <span aria-hidden="true">↗</span>
+        </button>
+        <p className="form-note">Your inquiry is sent securely to the OCSCO staging database. No email app is required.</p>
+        <p className="form-status" role="status" aria-live="polite">
+          {status === "success" ? "Thanks — your inquiry has been received. We will be in touch." : ""}
+          {status === "error" ? "Something went wrong. Please try again or email ocscolabs@gmail.com." : ""}
+        </p>
       </div>
     </form>
   );
