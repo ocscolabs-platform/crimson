@@ -32,7 +32,7 @@ export default function ServicesPage() {
             <article className="capability-card" key={service.slug}>
               <span className="card-number">{String(index + 1).padStart(2, "0")}</span>
               <ServiceIcon className="route-capability-icon" aria-hidden="true" size={26} strokeWidth={1.6} />
-              <h2>{service.name}</h2>
+              <h2>{service.cardName}</h2>
               <p>{service.summary}</p>
               <Link className="card-link" href={`/services/${service.slug}`}>
                 Explore the capability <span aria-hidden="true">↗</span>
