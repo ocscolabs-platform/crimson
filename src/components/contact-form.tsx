@@ -74,7 +74,7 @@ export function ContactForm() {
         <button className="button button-dark" type="submit" disabled={status === "submitting"}>
           {status === "submitting" ? "Sending..." : "Start a conversation"} <span aria-hidden="true">↗</span>
         </button>
-        <p className="form-note">Your inquiry is sent securely to the OCSCO staging database. No email app is required.</p>
+        <p className="form-note">Your inquiry is sent securely to the OCSCO inquiry database. No email app is required.</p>
         <p className="form-status" role="status" aria-live="polite">
           {status === "success" ? "Thanks — your inquiry has been received. We will be in touch." : ""}
           {status === "error" ? statusMessage : ""}
