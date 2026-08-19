@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ContactForm } from "@/components/contact-form";
 import { RouteShell } from "@/components/route-shell";
 
 export const metadata: Metadata = {
@@ -28,11 +28,14 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-      <section className="section-light route-section">
-        <div className="shell route-placeholder">
-          <p className="overline">Form workflow</p>
-          <h2>A form will be added after the response owner and inquiry workflow are confirmed.</h2>
-          <Link className="text-link" href="/">Return home <span aria-hidden="true">↗</span></Link>
+      <section className="section-light route-section contact-form-section">
+        <div className="shell contact-form-layout">
+          <div className="contact-form-intro">
+            <p className="overline">Start the conversation</p>
+            <h2>Tell us what needs to work better.</h2>
+            <p className="route-copy">Share the context, the friction, and the opportunity. We will take it from there.</p>
+          </div>
+          <ContactForm />
         </div>
       </section>
     </RouteShell>
