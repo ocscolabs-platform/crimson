@@ -49,4 +49,6 @@ The Production `/contact` form uses the selected clean Production Supabase proje
 
 The staging branch includes a protected, read-only CMS dashboard at `/admin`. It uses the existing Preview Supabase URL and publishable key through cookie-based Supabase SSR sessions. No new secret variable is required and `SUPABASE_SECRET_KEY` is not used by the dashboard.
 
+The first staging write slice is the service editor. Apply `supabase/migrations/20260820050000_add_staging_service_editor_policies.sql` only after the CMS membership migration is active in `crimson-staging`. It grants authenticated database insert/update privileges only where RLS permits them: owners can manage service status, editors can work with draft/review records, and reviewers remain read-only. Do not run this migration in Production.
+
 Before testing the route, the owner must create the intended staff user in the `crimson-staging` Supabase project under **Authentication → Users** and add the staging deployment URL to **Authentication → URL Configuration**. Do not add the production domain to the staging auth configuration. Editing, publishing, draft access, and production admin access are not enabled.

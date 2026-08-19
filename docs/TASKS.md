@@ -52,3 +52,19 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Public roles cannot insert, update, or delete CMS records.
 - The owner approved the Services slice; the five approved staging records are seeded only through the explicit staging seed script.
 - A server-side Next.js read boundary is implemented and validated for one public route before broader migration.
+
+## PH4-002 — Add the controlled staging Services editor
+
+- **Status:** Implementation complete locally; staging migration and live QA pending
+- **Goal:** Validate the first role-aware CMS write workflow without enabling broad CMS mutations or production administration.
+- **Reference:** `docs/PHASE-4-CMS-EDITOR.md`
+
+### Acceptance criteria
+
+- The editor is available only behind the protected `/admin` boundary.
+- Owners can update service content and manage `draft`, `review`, `published`, and `archived` status values.
+- Editors can update service content only while keeping records in `draft` or `review`.
+- Reviewers can inspect the dashboard but cannot save service changes.
+- No delete action or service-editor public link is exposed.
+- The staging policy migration applies cleanly and one non-sensitive owner update is verified on the staging public service route.
+- Production receives no staging migration, credentials, content, or editor deployment until a separate promotion decision.

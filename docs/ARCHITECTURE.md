@@ -40,4 +40,4 @@ These are plans, not claims that the systems already exist. Future architecture 
 
 ## Current protected boundary
 
-The staging `/admin` route uses Supabase Auth cookies through `@supabase/ssr` and verifies the current user server-side. It reads only records allowed by the existing public published-only RLS policies. The route is a review dashboard, not a CMS editor; mutation policies and role-aware access are intentionally deferred.
+The staging `/admin` route uses Supabase Auth cookies through `@supabase/ssr` and verifies the current user server-side. It reads records through the published-only RLS boundary, with the first controlled write slice limited to service records for assigned owner/editor roles. Pages, navigation, site settings, case studies, media, and CRM remain outside the editor.

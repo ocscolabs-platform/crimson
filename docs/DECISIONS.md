@@ -183,3 +183,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** Identity and authorization need to be testable before an editor can change public content. Separating the role map from content policies avoids granting broad write access while the team is still deciding draft visibility, review gates, publishing authority, and audit requirements.
 - **Status:** Accepted for staging review; mutation policy and editor workflow pending separate approval
 - **Date:** 2026-08-20
+
+## ADR-027 — Start CMS editing with a controlled Services slice
+
+- **Decision:** Enable a protected staging editor for service records only. Owners may create, update, publish, and archive services; editors may create and update draft or review records; reviewers remain read-only. No CMS delete action is exposed in this slice.
+- **Rationale:** Services are the smallest useful editorial surface because they already power the public capability pages. A narrow first write boundary lets the team validate role checks, draft/review safeguards, and the editor experience before adding broader page, navigation, case-study, media, or publishing workflows.
+- **Status:** Accepted for staging review; broader CMS editing remains pending workflow and audit review
+- **Date:** 2026-08-20

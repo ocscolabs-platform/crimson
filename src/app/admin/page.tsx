@@ -99,11 +99,16 @@ export default async function AdminDashboardPage() {
                     <p className="admin-kicker">Services</p>
                     <h2>Capabilities</h2>
                   </div>
-                  <span>{content.services.length} published</span>
+                  <div className="admin-panel-heading-actions">
+                    <span>{content.services.length} published</span>
+                    <Link className="admin-panel-link" href={`/admin/services/${content.services[0]?.slug ?? "branding"}`}>
+                      {membership.role === "owner" || membership.role === "editor" ? "Open editor" : "Review"} ↗
+                    </Link>
+                  </div>
                 </div>
                 <ul className="admin-record-list">
                   {content.services.map((service) => (
-                    <li key={service.slug}><span>{service.name}</span><small>{service.slug}</small></li>
+                    <li key={service.slug}><Link href={`/admin/services/${service.slug}`}>{service.name}</Link><small>{service.slug}</small></li>
                   ))}
                 </ul>
               </div>

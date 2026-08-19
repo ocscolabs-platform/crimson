@@ -16,7 +16,7 @@ Included:
 
 Not included:
 
-- Content creation, editing, deletion, or publishing.
+- Content creation, editing, deletion, or publishing across the CMS.
 - Admin roles, invitations, teams, or permission management.
 - Draft/review access.
 - Media uploads, previews, version history, audit logs, or CRM records.
@@ -26,7 +26,7 @@ Not included:
 
 The dashboard uses the existing publishable Supabase key and the authenticated browser session. It does not use `SUPABASE_SECRET_KEY`, and no secret is exposed to client code. Existing CMS RLS policies remain published-only for both anonymous and authenticated readers; no mutation policies are added by this slice.
 
-The dashboard is therefore a review surface, not an editor. A future editor requires a separate decision covering staff identity, roles, authorization, mutation policies, auditability, and content review workflow before it is implemented.
+The dashboard remains a review surface for all content except the controlled service editor documented in [`PHASE-4-CMS-EDITOR.md`](./PHASE-4-CMS-EDITOR.md). A broader editor requires a separate decision covering staff identity, roles, authorization, mutation policies, auditability, and content review workflow.
 
 The proposed role model is documented in [`PHASE-4-CMS-ROLES.md`](./PHASE-4-CMS-ROLES.md). Role assignment does not grant content editing in this slice.
 

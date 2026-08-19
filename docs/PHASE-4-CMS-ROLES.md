@@ -6,11 +6,11 @@
 
 | Role | Intended responsibility | Current access |
 | --- | --- | --- |
-| `owner` | Manage CMS membership and approve access policy | Read-only dashboard; membership management policy is prepared but not exposed in the UI |
-| `editor` | Prepare structured content and maintain drafts | No additional access yet |
-| `reviewer` | Review content for accuracy and publication readiness | No additional access yet |
+| `owner` | Manage CMS membership and approve access policy | Read-only dashboard plus the first service editor; publication remains owner-only |
+| `editor` | Prepare structured content and maintain drafts | Draft/review service editing only |
+| `reviewer` | Review content for accuracy and publication readiness | Read-only review of service content |
 
-The first implementation deliberately separates role identity from content mutation. All three roles continue to see only the published content permitted by the current RLS policies until editing and publishing rules are approved.
+The first implementation deliberately limits content mutation to the services table. Pages, navigation, site settings, case studies, media, and CRM remain read-only or unavailable in the CMS until their workflows are separately approved.
 
 ## Staging migration
 
