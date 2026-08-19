@@ -57,35 +57,35 @@ export default function Home() {
             <article className="capability-card">
               <span className="card-number">01</span>
               <PenTool className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>Branding</h3>
+              <h3>Brand strategy</h3>
               <p>Positioning and identity systems that give the quality of your business a clear, credible expression.</p>
               <a className="card-link" href="#contact">Discuss branding <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card">
               <span className="card-number">02</span>
               <PanelsTopLeft className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>Website design &amp; development</h3>
+              <h3>Digital experiences</h3>
               <p>High-performing digital experiences that turn clarity into trust and trust into momentum.</p>
               <a className="card-link" href="#contact">Discuss a website <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card">
               <span className="card-number">03</span>
               <Layers3 className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>Custom CMS</h3>
+              <h3>Content systems</h3>
               <p>Content systems shaped around how your team actually works, publishes, and grows.</p>
               <a className="card-link" href="#contact">Discuss a content system <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card">
               <span className="card-number">04</span>
               <Workflow className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>CRM &amp; business tools</h3>
+              <h3>Business workflows</h3>
               <p>Purpose-built workflows that reduce friction and help your team operate with more signal.</p>
               <a className="card-link" href="#contact">Discuss a business tool <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card capability-card-wide">
               <span className="card-number">05</span>
               <Blocks className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>Custom web applications</h3>
+              <h3>Web applications</h3>
               <p>When an off-the-shelf answer is not enough, we architect the application your process needs.</p>
               <a className="card-link" href="#contact">Discuss an application <span aria-hidden="true">↗</span></a>
             </article>
