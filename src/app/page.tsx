@@ -1,26 +1,13 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export default function Home() {
   return (
     <main>
+      <SiteHeader logoHref="#top" ctaHref="#contact" />
       <section className="hero" aria-labelledby="hero-title">
-        <header className="site-header shell">
-          <a className="brand" href="#top" aria-label="OCSCO home">
-            <Image src="/brand/ocsco-logo-white.svg" alt="OCSCO" width={118} height={24} priority />
-          </a>
-          <nav className="primary-nav" aria-label="Primary navigation">
-            <Link href="/services">Services</Link>
-            <Link href="/work">Work</Link>
-            <Link href="/about">About</Link>
-            <Link href="/contact">Contact</Link>
-          </nav>
-          <a className="button button-small button-outline-light header-cta" href="#contact">
-            Start a conversation
-          </a>
-        </header>
-
         <div className="hero-content shell" id="top">
           <p className="overline overline-green">Strategy / Design / Technology</p>
           <h1 id="hero-title">Digital infrastructure for brands ready to move with precision.</h1>
@@ -70,35 +57,35 @@ export default function Home() {
             <article className="capability-card">
               <span className="card-number">01</span>
               <PenTool className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>Branding</h3>
+              <h3>Brand strategy</h3>
               <p>Positioning and identity systems that give the quality of your business a clear, credible expression.</p>
               <a className="card-link" href="#contact">Discuss branding <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card">
               <span className="card-number">02</span>
               <PanelsTopLeft className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>Website design &amp; development</h3>
+              <h3>Digital experiences</h3>
               <p>High-performing digital experiences that turn clarity into trust and trust into momentum.</p>
               <a className="card-link" href="#contact">Discuss a website <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card">
               <span className="card-number">03</span>
               <Layers3 className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>Custom CMS</h3>
+              <h3>Content systems</h3>
               <p>Content systems shaped around how your team actually works, publishes, and grows.</p>
               <a className="card-link" href="#contact">Discuss a content system <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card">
               <span className="card-number">04</span>
               <Workflow className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>CRM &amp; business tools</h3>
+              <h3>Business workflows</h3>
               <p>Purpose-built workflows that reduce friction and help your team operate with more signal.</p>
               <a className="card-link" href="#contact">Discuss a business tool <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card capability-card-wide">
               <span className="card-number">05</span>
               <Blocks className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-              <h3>Custom web applications</h3>
+              <h3>Web applications</h3>
               <p>When an off-the-shelf answer is not enough, we architect the application your process needs.</p>
               <a className="card-link" href="#contact">Discuss an application <span aria-hidden="true">↗</span></a>
             </article>
@@ -150,13 +137,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="site-footer section-dark">
-        <div className="shell footer-layout">
-          <a className="brand brand-footer" href="#top" aria-label="Back to top"><Image src="/brand/ocsco-logo-white.svg" alt="OCSCO" width={118} height={24} /></a>
-          <p>Strategy, design, and technology for brands ready to move with precision.</p>
-          <span className="footer-meta">Project Crimson / 2026</span>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
