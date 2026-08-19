@@ -49,6 +49,12 @@ All tables enable Row Level Security. No anonymous or authenticated role receive
 5. Add a server-side read boundary in Next.js and replace one local content slice in staging.
 6. Review the result before adding admin authentication or applying the migrations to Production.
 
+## Public Work library slice
+
+The next staging slice extends `case_studies` with presentation fields for project type, category, external prototype URL, featured ordering, and sort order. The public Work library reads only published staging records and falls back to the local preview content if the CMS schema or records are unavailable. A generic `/work/[slug]` preview route is included, while approved imagery and full evidence remain deferred.
+
+Apply `supabase/migrations/20260820020000_add_work_presentation_fields.sql` and then run `supabase/seeds/20260820020000_seed_staging_case_studies.sql` in `crimson-staging` only. Do not run the staging seed in Production.
+
 ## Acceptance criteria
 
 - The migration applies cleanly to staging and can be applied independently to Production later.
