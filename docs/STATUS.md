@@ -15,15 +15,15 @@ The repository has been initialized as a minimal Next.js application foundation.
 - Added a minimal Next.js App Router, TypeScript, Tailwind CSS, and ESLint application shell.
 - Added `.env.example` with variable names and comments only.
 - Added Git ignore rules for dependencies, build output, local environment files, and secrets.
+- Created the initial local commit: `0579087 chore: establish platform foundation`.
 
 ## In Progress
 
-- Initial foundation commit and push to GitHub.
 - Owner review of the foundation and branch workflow.
 
 ## Blocked / Requires Owner Action
 
-- Push the initial commit to GitHub from the local workspace.
+- Push the initial local commit to GitHub from the local workspace or an authorized integration.
 - Configure GitHub branch protection for `feature/*`, `staging`, and `main`.
 - Connect the repository to Vercel when deployment is approved.
 - Create or select separate Supabase environments when backend work is approved.
