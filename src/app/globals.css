@@ -193,7 +193,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .footer-layout { gap: 44px; padding-top: 64px; }
   .footer-top { grid-template-columns: 1fr; gap: 32px; }
   .footer-top-cta { justify-self: start; }
-  .footer-bottom { align-items: start; flex-direction: column; gap: 14px; line-height: 1.5; }
+  .footer-bottom { grid-template-columns: 1fr; align-items: start; gap: 14px; line-height: 1.5; }
   .footer-rights { text-align: left; white-space: normal; }
 }
 
