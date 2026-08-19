@@ -107,6 +107,13 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Status:** Accepted for the redesign preparation step; owner review pending
 - **Date:** 2026-08-19
 
+## ADR-019 - Extend the v1.0 atmosphere across public route shells
+
+- **Decision:** Apply the CSS-native glass/noise treatment to shared route heroes, use the approved Lucide mapping for Services capability cards, and use an atmospheric labeled placeholder for Work until approved media is available.
+- **Rationale:** The public routes should feel like one OCSCO system rather than a styled homepage followed by generic templates. Extending the treatment through the shared shell creates continuity without introducing unapproved imagery or fabricated proof.
+- **Status:** Accepted for Phase 3 staging review
+- **Date:** 2026-08-19
+
 ## ADR-018 - Lock the official OCSCO design system v1.0
 
 - **Decision:** Declare the current OCSCO HTML design style guide the official v1.0 baseline for Project Crimson and publish it through the Vercel application at `/design-style-guide`. Keep `/style-guide` as a compatibility route. Future non-breaking refinements become v1.1; structural or system-level changes become v2.0 and require explicit owner approval.

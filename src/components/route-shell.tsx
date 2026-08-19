@@ -27,6 +27,10 @@ export function RouteShell({ eyebrow, title, intro, children }: RouteShellProps)
             Start a conversation
           </Link>
         </header>
+        <div className="route-hero-visual" aria-hidden="true">
+          <span className="route-hero-glass route-hero-glass-one" />
+          <span className="route-hero-glass route-hero-glass-two" />
+        </div>
         <div className="shell route-hero-content">
           <p className="overline overline-green">{eyebrow}</p>
           <h1>{title}</h1>

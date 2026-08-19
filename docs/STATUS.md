@@ -30,7 +30,7 @@ Phase 0, Phase 1, and Phase 2 are complete. The public route structure is implem
 ## In Progress
 
 - Locked the standalone OCSCO HTML design style guide as the official v1.0 visual source of truth for typography, native hero atmosphere, iconography, media placeholders, and component states.
-- Preparing the official guide for staging review at `/design-style-guide` before production promotion.
+- Refining the remaining public route experiences in staging, beginning with shared route atmosphere, Services capability cards, and the Work placeholder state.
 
 ## Blocked / Requires Owner Action
 
@@ -43,4 +43,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Review the official v1.0 guide at `/design-style-guide` in staging. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion. Do not connect a CMS or backend until the public visual system is approved.
+Review the Phase 3 route-refinement slice in staging, then continue through About and Contact before any further production promotion. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion. Do not connect a CMS or backend until the public visual system is approved.
