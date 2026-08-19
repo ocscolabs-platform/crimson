@@ -15,7 +15,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
   const { slug } = await params;
   const service = getService(slug);
-  return { title: service ? `${service.name} | OCSCO Project Crimson` : "Service | OCSCO Project Crimson" };
+  return { title: service ? service.name : "Service" };
 }
 
 export default async function ServicePage({ params }: ServicePageProps) {

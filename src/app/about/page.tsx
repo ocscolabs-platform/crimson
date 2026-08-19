@@ -3,8 +3,8 @@ import Link from "next/link";
 import { RouteShell } from "@/components/route-shell";
 
 export const metadata: Metadata = {
-  title: "About | OCSCO Project Crimson",
-  description: "The thinking and working principles behind OCSCO Project Crimson.",
+  title: "About",
+  description: "The thinking and working principles behind OCSCO.",
 };
 
 export default function AboutPage() {

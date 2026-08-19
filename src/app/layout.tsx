@@ -1,9 +1,46 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "OCSCO Project Crimson",
-  description: "OCSCO integrates strategy, design, and technology to build digital infrastructure for ambitious brands.",
+  title: {
+    default: "OCSCO — Strategy, design, and technology",
+    template: "%s — OCSCO",
+  },
+  description: "Strategy, design, and technology for brands ready to move with precision.",
+  applicationName: "OCSCO",
+  icons: {
+    icon: [
+      { url: "/favicon/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: "/favicon/favicon.ico",
+    apple: "/favicon/apple-touch-icon.png",
+  },
+  manifest: "/favicon/site.webmanifest",
+  openGraph: {
+    title: "OCSCO — Strategy, design, and technology",
+    description: "Strategy, design, and technology for brands ready to move with precision.",
+    type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "OCSCO — Strategy, design, and technology",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OCSCO — Strategy, design, and technology",
+    description: "Strategy, design, and technology for brands ready to move with precision.",
+    images: ["/opengraph-image"],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({

@@ -4,7 +4,7 @@ import { ImageOff } from "lucide-react";
 import { RouteShell } from "@/components/route-shell";
 
 export const metadata: Metadata = {
-  title: "Work | OCSCO Project Crimson",
+  title: "Work",
   description: "Selected OCSCO work and case studies will be published here as they are approved.",
 };
 

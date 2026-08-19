@@ -13,7 +13,7 @@ const serviceIcons = {
 };
 
 export const metadata: Metadata = {
-  title: "Services | OCSCO Project Crimson",
+  title: "Services",
   description: "Explore OCSCO's proposed capabilities across strategy, design, and technology.",
 };
 

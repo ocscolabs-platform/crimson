@@ -3,7 +3,7 @@ import { ContactForm } from "@/components/contact-form";
 import { RouteShell } from "@/components/route-shell";
 
 export const metadata: Metadata = {
-  title: "Contact | OCSCO Project Crimson",
+  title: "Contact",
   description: "Start a conversation with OCSCO.",
 };
 

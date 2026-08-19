@@ -26,6 +26,7 @@ The homepage currently includes:
 - Header and footer are shared components so shell improvements remain consistent across every route.
 - Sitewide spacing has been audited and relaxed across sections, grids, route lists, media placeholders, and CTA stacks, including the About page owner-review CTA.
 - Contact form submissions are validated and stored through the environment-specific Supabase project, with owner notification sent through the environment-specific Resend configuration.
+- Public metadata now uses the OCSCO brand name, explicit favicon paths, a branded Open Graph/Twitter image, and the approved professional positioning tagline.
 
 The route tree now includes:
 
@@ -51,7 +52,7 @@ The route tree now includes:
 - Replace the proof-of-work note with approved case-study content.
 - Confirm and replace the draft homepage headline and supporting copy.
 - Complete owner content, accessibility, and privacy/consent review as a follow-up to the technical release.
-- Add approved brand assets, team information, case-study media, and metadata.
+- Add approved brand assets, team information, and case-study media.
 - Add full responsive and accessibility review across all implemented routes.
 - Complete owner review of the refined About and Contact spacing, then review all public routes together in staging.
 - Close the launch-readiness checklist in `docs/LAUNCH-READINESS.md`.
