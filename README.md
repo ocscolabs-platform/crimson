@@ -1,6 +1,6 @@
-# OCSCO Project Crimson — Phase 1 Information Architecture
+# OCSCO Project Crimson — Phase 2 Design Direction
 
-Project Crimson is OCSCO's new platform repository. It will eventually support a public website, a custom CMS, and a custom CRM as one integrated platform. The Phase 0 foundation is complete; the current phase defines the product and information architecture before visual or feature implementation begins.
+Project Crimson is OCSCO's new platform repository. It will eventually support a public website, a custom CMS, and a custom CRM as one integrated platform. The Phase 0 foundation and Phase 1 information architecture are complete; the current phase defines content and visual direction before implementation begins.
 
 ## Stack
 
@@ -41,4 +41,4 @@ docs/           Project, architecture, deployment, decisions, and status docs
 public/         Public static assets for the application
 ```
 
-Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the current [`INFORMATION-ARCHITECTURE.md`](./docs/INFORMATION-ARCHITECTURE.md), [`CONTENT-MODEL.md`](./docs/CONTENT-MODEL.md), and [`PHASE-1-ACCEPTANCE.md`](./docs/PHASE-1-ACCEPTANCE.md).
+Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the current information architecture, content model, visual direction, content briefs, and phase acceptance documents.

@@ -71,3 +71,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** Clear information architecture reduces rework and gives future design, CMS, and CRM work an agreed product boundary.
 - **Status:** Accepted
 - **Date:** 2026-08-19
+
+## ADR-011 — Use the OCSCO Brand Style Guide as the visual reference
+
+- **Decision:** Use the existing OCSCO Brand Style Guide, Version 2.0, as the reference for Phase 2 visual direction. The guide remains an external reference and is not copied into the application repository.
+- **Rationale:** It provides an existing, owner-created foundation for positioning, tone, color, typography, spacing, interaction, and image direction. Reusing it reduces visual drift and prevents speculative branding decisions.
+- **Status:** Proposed for owner confirmation
+- **Date:** 2026-08-19

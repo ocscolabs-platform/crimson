@@ -14,7 +14,7 @@
 
 ## Project guardrails
 
-- Phase 0 foundation work is complete. The current phase is Phase 1: product and information architecture.
-- Phase 1 is documentation and definition work. Do not build the public website, CMS, CRM, or production integrations until the relevant phase is explicitly approved.
+- Phase 0 foundation work and Phase 1 information architecture are complete. The current phase is Phase 2: content and visual design direction.
+- Phase 2 is content planning and design definition work. Do not build public website routes, CMS, CRM, or production integrations until the relevant implementation phase is explicitly approved.
 - Do not add production Supabase credentials, Vercel configuration values, domains, or account-specific identifiers to the repository.
 - Update the README and applicable documentation when the architecture or developer workflow changes.
