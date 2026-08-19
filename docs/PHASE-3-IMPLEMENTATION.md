@@ -18,6 +18,9 @@ The homepage currently includes:
 - CSS-native hero atmosphere using animated grain and translucent glass planes, with reduced-motion support.
 - Lucide React line icons for capability cards, with visible text labels preserved.
 - Explicit portfolio media placeholder state until approved case-study assets are available.
+- Shared route heroes now carry the same restrained glass/noise atmosphere as the homepage.
+- Services capability cards now use the approved Lucide icon mapping from the v1.0 guide.
+- Work uses a native atmospheric placeholder instead of fabricated project media.
 
 The route tree now includes:
 
@@ -44,7 +47,7 @@ The route tree now includes:
 - Confirm the public contact workflow before replacing the email CTA with a form.
 - Add approved brand assets, team information, case-study media, and metadata.
 - Add full responsive and accessibility review across all implemented routes.
-- Refine the visual system after the route responsibilities and content structure are approved.
+- Apply the route refinement slice to About and Contact, then review all public routes together in staging.
 
 ## Review gate
 
