@@ -24,11 +24,11 @@ export default function ContactPage() {
             <p><strong>01 / Share the context.</strong> Tell us what is changing, where the friction is, and what better looks like.</p>
             <p><strong>02 / Find the shape.</strong> We clarify the opportunity, scope, and right next step.</p>
             <p><strong>03 / Build the plan.</strong> If there is a fit, we define the work and how it should move forward.</p>
-            <a className="button button-dark" href="mailto:ocscolabs@gmail.com">Email OCSCO <span aria-hidden="true">↗</span></a>
+            <a className="button button-dark" href="#contact-form">Start the conversation <span aria-hidden="true">↗</span></a>
           </div>
         </div>
       </section>
-      <section className="section-light route-section contact-form-section">
+        <section className="section-light route-section contact-form-section" id="contact-form">
         <div className="shell contact-form-layout">
           <div className="contact-form-intro">
             <p className="overline">Start the conversation</p>
