@@ -23,3 +23,17 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Confirm whether submissions should use an approved email workflow first or a future Supabase-backed inquiry record.
 - Confirm the response time expectation and who owns follow-up.
 - Approve the contact form content and privacy/consent requirements.
+
+## STG-002 — Close Phase 3 launch readiness
+
+- **Status:** In progress — engineering QA complete; owner content, accessibility, and Production configuration review pending
+- **Goal:** Establish a repeatable release gate for promoting the reviewed public website and contact workflow to Production.
+- **Reference:** `docs/LAUNCH-READINESS.md`
+
+### Acceptance criteria
+
+- All public routes, style-guide paths, supplied brand assets, and favicon paths pass smoke checks.
+- Lint and production build pass from the staging branch.
+- Owner approves final copy, proof placeholders, portfolio/team assets, form language, privacy/consent copy, and response ownership.
+- Production Supabase and Resend resources are separate from staging and configured only after owner approval.
+- A controlled Production smoke test verifies route navigation, inquiry storage, and owner notification.
