@@ -292,6 +292,28 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-audit-restore { border: 1px solid rgb(255 255 255 / 18%); border-radius: 999px; background: transparent; color: #d2d2d2; cursor: pointer; font: inherit; font-size: .72rem; padding: 7px 11px; }
 .admin-audit-restore:hover { border-color: var(--green); color: var(--green); }
 .admin-footer { border-top: 1px solid rgb(255 255 255 / 16%); color: #777; font-size: .72rem; letter-spacing: .08em; padding-top: 20px; text-transform: uppercase; }
+.admin-review-section { padding-bottom: 48px; }
+.admin-review-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.admin-review-check { display: grid; gap: 12px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 10px; background: #141414; padding: 18px; }
+.admin-review-check > span, .admin-review-dl dt, .admin-review-copy-block > span { color: #858585; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.admin-review-state { font-size: .9rem; }
+.admin-review-state-ready { color: var(--green); }
+.admin-review-state-pending { color: #e0bd8a; }
+.admin-review-content-grid { margin-top: 16px; }
+.admin-review-card { border: 1px solid rgb(255 255 255 / 14%); border-radius: 12px; background: #141414; padding: 28px; }
+.admin-review-dl { display: grid; gap: 0; margin: 22px 0 26px; }
+.admin-review-dl div { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid rgb(255 255 255 / 10%); padding: 13px 0; }
+.admin-review-dl dd { margin: 0; color: #ddd; font-size: .84rem; text-align: right; }
+.admin-review-list { display: grid; gap: 0; margin: 22px 0 0; padding: 0; list-style: none; }
+.admin-review-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; border-top: 1px solid rgb(255 255 255 / 10%); padding: 14px 0; }
+.admin-review-list li strong { color: #eee; font-size: .86rem; }
+.admin-review-list li span { color: #999; font-size: .78rem; line-height: 1.5; }
+.admin-review-copy-block { display: grid; gap: 10px; margin-top: 24px; }
+.admin-review-copy-block p { margin: 0; color: #c5c5c5; font-size: .88rem; line-height: 1.7; }
+.admin-review-copy-block .admin-review-list { margin-top: 0; }
+.admin-review-muted { margin: 20px 0 0; color: #858585; font-size: .82rem; line-height: 1.6; }
+.admin-review-narrative-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.admin-review-card .admin-kicker { margin: 0; }
 .admin-login-page { display: grid; min-height: 100vh; place-items: center; padding: 32px; background: radial-gradient(circle at 76% 18%, rgb(0 200 83 / 10%), transparent 34%), var(--ink); }
 .admin-login-card { width: min(100%, 520px); border: 1px solid rgb(255 255 255 / 16%); border-radius: 16px; background: #111; padding: clamp(28px, 6vw, 56px); box-shadow: 0 24px 80px rgb(0 0 0 / 26%); }
 .admin-login-card h1 { max-width: 420px; margin: 18px 0 16px; font-size: clamp(2.2rem, 6vw, 4rem); letter-spacing: -.06em; line-height: 1; }
@@ -365,6 +387,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-header { align-items: start; flex-direction: column; }
   .admin-header-actions { width: 100%; justify-content: space-between; }
   .admin-stat-grid, .admin-record-grid { grid-template-columns: 1fr; }
+  .admin-review-grid, .admin-review-narrative-grid { grid-template-columns: 1fr; }
   .admin-stat-card { min-height: 0; }
   .admin-record-panel { padding: 22px; }
   .admin-record-list li { align-items: start; flex-direction: column; gap: 6px; }
@@ -375,6 +398,9 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-audit-list li { align-items: start; flex-direction: column; gap: 8px; }
   .admin-audit-meta { justify-items: start; }
   .admin-audit-list small { white-space: normal; }
+  .admin-review-card { padding: 22px; }
+  .admin-review-dl div { align-items: start; flex-direction: column; gap: 5px; }
+  .admin-review-dl dd { text-align: left; }
 }
 
 @media (prefers-reduced-motion: reduce) {

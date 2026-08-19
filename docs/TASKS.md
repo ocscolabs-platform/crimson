@@ -129,3 +129,17 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Audit history remains readable only to authenticated CMS members under the existing audit policy.
 - Source-record deletion does not cascade-delete audit history.
 - No case-study or relationship insert/update/delete policy, editor, upload, or Production migration is introduced.
+
+## PH4-007 — Build protected read-only case-study review panel
+
+- **Status:** Implementation complete locally; staging deployment and QA pending
+- **Goal:** Give authenticated staging members a structured case-study readiness and audit review surface without enabling mutations.
+- **Reference:** `docs/PHASE-4-CMS-CASE-STUDIES.md`
+
+### Acceptance criteria
+
+- Anonymous visitors remain redirected from the review route.
+- Authenticated staging members can review identity, privacy, publication, media, narrative, evidence, relationships, and audit state.
+- The review panel contains no edit, publish, archive, upload, delete, or relationship mutation controls.
+- Case-study and relationship audit history remains read-only.
+- The panel is responsive and does not alter the public website or Production routes.

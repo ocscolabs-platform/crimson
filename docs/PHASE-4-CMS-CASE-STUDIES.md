@@ -57,7 +57,7 @@ Before an owner publishes a case study, staging must confirm:
 
 1. QA the privacy-safe Work rendering without adding editor access.
 2. Apply and verify case-study and relationship audit coverage in staging.
-3. Add a protected read-only case-study review panel.
+3. Add a protected read-only case-study review panel. **Implemented locally; staging QA pending.**
 4. Add the smallest owner/editor write slice only after the checklist and media contract are approved.
 5. Keep case-study changes in staging until a real approved project record is reviewed; do not seed private facts or unapproved media.
 

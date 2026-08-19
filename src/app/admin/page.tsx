@@ -79,7 +79,7 @@ export default async function AdminDashboardPage() {
                   <p className="admin-kicker">Published boundary</p>
                   <h2>What this role can read</h2>
                 </div>
-                <p className="admin-section-note">Authorized members can review non-archived service records here. The public website remains governed by the published-only RLS boundary.</p>
+                <p className="admin-section-note">Authorized members can review records available through the staging read boundary. The public website remains governed by the published-only RLS boundary.</p>
               </div>
               <div className="admin-stat-grid">
                 {content.collections.map((collection) => (
@@ -118,11 +118,16 @@ export default async function AdminDashboardPage() {
                     <p className="admin-kicker">Work library</p>
                     <h2>Case studies</h2>
                   </div>
-                  <span>{content.caseStudies.length} published</span>
+                  <div className="admin-panel-heading-actions">
+                    <span>{content.caseStudies.length} published</span>
+                    {content.caseStudies[0] ? (
+                      <Link className="admin-panel-link" href={`/admin/case-studies/${content.caseStudies[0].slug}`}>Open review panel ↗</Link>
+                    ) : null}
+                  </div>
                 </div>
                 <ul className="admin-record-list">
                   {content.caseStudies.map((caseStudy) => (
-                    <li key={caseStudy.slug}><span>{caseStudy.project_name}</span><small>{caseStudy.slug}</small></li>
+                    <li key={caseStudy.slug}><Link href={`/admin/case-studies/${caseStudy.slug}`}>{caseStudy.project_name}</Link><small>{caseStudy.status} · {caseStudy.slug}</small></li>
                   ))}
                 </ul>
               </div>
