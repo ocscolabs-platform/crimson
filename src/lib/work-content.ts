@@ -1,7 +1,7 @@
 export type WorkProject = {
   slug: string;
   name: string;
-  status: "Featured" | "Prototype" | "Upcoming";
+  status: "Featured" | "Case study" | "Prototype" | "Upcoming";
   category: string;
   description: string;
   href?: string;

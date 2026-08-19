@@ -2,14 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ImageOff } from "lucide-react";
 import { RouteShell } from "@/components/route-shell";
-import { workProjects } from "@/lib/work-content";
+import { getPublishedWorkProjects } from "@/lib/cms-content";
 
 export const metadata: Metadata = {
   title: "Work",
   description: "A preview of OCSCO prototypes and selected projects in preparation.",
 };
 
-export default function WorkPage() {
+export const dynamic = "force-dynamic";
+
+export default async function WorkPage() {
+  const workProjects = await getPublishedWorkProjects();
   const featuredProject = workProjects.find((project) => project.featured) ?? workProjects[0];
   const supportingProjects = workProjects.filter((project) => project.slug !== featuredProject.slug);
 
@@ -40,7 +43,7 @@ export default function WorkPage() {
                   <span>Project story</span>
                   <strong>In preparation</strong>
                 </div>
-                <span className="work-card-link work-card-link-muted">Case study coming after owner review <span aria-hidden="true">↗</span></span>
+                <Link className="work-card-link" href={`/work/${featuredProject.slug}`}>View project preview <span aria-hidden="true">↗</span></Link>
               </div>
             </div>
           </article>
@@ -67,13 +70,14 @@ export default function WorkPage() {
                   </div>
                   <h3>{project.name}</h3>
                   <p>{project.description}</p>
-                  {project.href ? (
-                    <a className="work-card-link" href={project.href} target="_blank" rel="noreferrer">
-                      View prototype <span aria-hidden="true">↗</span>
-                    </a>
-                  ) : (
-                    <span className="work-card-link work-card-link-muted">Project preview in preparation <span aria-hidden="true">↗</span></span>
-                  )}
+                  <div className="work-card-actions">
+                    <Link className="work-card-link" href={`/work/${project.slug}`}>View project <span aria-hidden="true">↗</span></Link>
+                    {project.href ? (
+                      <a className="work-card-link work-card-link-secondary" href={project.href} target="_blank" rel="noreferrer">
+                        Open prototype <span aria-hidden="true">↗</span>
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               </article>
             ))}

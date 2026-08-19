@@ -63,6 +63,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .button-primary:active { background: #00b84d; }
 .button-dark { background: var(--ink); color: var(--white); }
 .button-dark:hover { background: var(--graphite); }
+.button-light { border-color: var(--border); background: var(--white); color: var(--ink); }
+.button-light:hover { border-color: var(--ink); background: var(--snow); }
 .button-small { min-height: 42px; padding: 10px 16px; font-size: .75rem; }
 .button-outline-light { border-color: rgb(255 255 255 / 45%); color: var(--white); }
 .button-outline-light:hover { background: var(--white); border-color: var(--white); color: var(--ink); }
@@ -181,6 +183,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .work-meta strong { color: var(--ink); font-weight: 700; }
 .work-card-link { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-size: .84rem; font-weight: 700; text-decoration: none; }
 .work-card-link:hover { color: var(--green); }
+.work-card-actions { display: flex; flex-wrap: wrap; gap: 20px; }
+.work-card-link-secondary { color: var(--muted); font-weight: 600; }
 .work-card-link-muted { color: var(--muted); }
 .work-card-link-muted:hover { color: var(--muted); }
 .work-library-heading { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr); gap: clamp(32px, 8vw, 128px); align-items: end; }
@@ -194,6 +198,12 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .work-card-content > p { max-width: 480px; margin: 0; color: var(--copy); font-size: 1rem; line-height: 1.65; }
 .work-library-cta { display: flex; align-items: center; justify-content: space-between; gap: 32px; border-top: 1px solid var(--border); padding-top: 32px; }
 .work-library-cta .route-copy { margin: 0; }
+.work-detail-layout { display: grid; gap: clamp(64px, 9vw, 128px); }
+.work-detail-media { min-height: clamp(320px, 42vw, 600px); margin: 0; }
+.work-detail-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(48px, 8vw, 128px); align-items: start; }
+.work-detail-grid h2 { max-width: 640px; margin: 18px 0 0; font-size: clamp(2.2rem, 4.5vw, 4.5rem); letter-spacing: -.055em; line-height: 1.02; }
+.work-detail-copy { padding-top: 2px; }
+.work-detail-actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 36px; }
 .contact-form-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(48px, 8vw, 128px); align-items: start; }
 .contact-form-intro h2 { max-width: 620px; margin: 0; font-size: clamp(2.2rem, 4.5vw, 4.5rem); letter-spacing: -.055em; line-height: 1.02; }
 .contact-form-intro .route-copy { margin: 28px 0 0; }
@@ -237,6 +247,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .work-library-heading { grid-template-columns: 1fr; gap: 32px; }
   .work-grid { grid-template-columns: 1fr; }
   .work-library-cta { align-items: start; flex-direction: column; }
+  .work-detail-grid { grid-template-columns: 1fr; gap: 48px; }
+  .work-detail-copy { padding-top: 0; }
   .route-detail-grid { grid-template-columns: 1fr; gap: 52px; }
   .service-detail-layout { gap: 56px; }
   .service-detail-grid { gap: 48px; }
@@ -255,6 +267,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .capability-card { min-height: 330px; }
   .route-grid { grid-template-columns: 1fr; }
   .work-featured-media { min-height: 280px; }
+  .work-detail-media { min-height: 280px; }
   .work-card-content { padding: 24px; }
   .form-field-grid { grid-template-columns: 1fr; gap: 20px; }
   .footer-layout { gap: 44px; padding-top: 64px; }
