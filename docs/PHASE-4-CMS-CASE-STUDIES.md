@@ -1,6 +1,6 @@
 # Phase 4 — Case Study CMS Workflow
 
-**Status:** Privacy-safe renderer, audit coverage, and read-only review panel implemented; media contract pending staging verification; no case-study write surface enabled
+**Status:** Privacy-safe renderer, audit coverage, media contract, and controlled editor implemented locally; case-study editor migration and workflow QA pending in staging
 
 ## Recommendation
 
@@ -51,7 +51,7 @@ Before an owner publishes a case study, staging must confirm:
 2. **Case-study audit coverage:** implemented locally in `PHASE-4-CMS-CASE-STUDY-AUDIT.md`; apply and verify the staging migration before allowing mutations.
 3. **Media contract:** implemented locally in [`PHASE-4-CMS-MEDIA-CONTRACT.md`](./PHASE-4-CMS-MEDIA-CONTRACT.md); apply and verify the staging migration before enabling uploads. Do not add arbitrary uploads to the first editor.
 4. **Featured rule:** implemented with a partial unique index and deterministic public ordering; featured placement remains owner-controlled.
-5. **Approval metadata:** decide whether `client_visibility` plus `last_reviewed_at` is enough or whether a separate permission reference/date is required.
+5. **Approval metadata:** `client_visibility`, `last_reviewed_at`, and media review metadata are in place for this slice; a separate permission reference remains deferred.
 
 ## Staging sequence
 
@@ -59,9 +59,9 @@ Before an owner publishes a case study, staging must confirm:
 2. Apply and verify case-study and relationship audit coverage in staging.
 3. Add a protected read-only case-study review panel. **Implemented and authenticated QA completed in staging preview.**
 4. Apply and verify the media contract and featured-project migration in `crimson-staging`.
-5. Add the smallest owner/editor write slice only after the checklist and media contract are approved.
+5. Apply and verify the update-only case-study editor migration in `crimson-staging`.
 6. Keep case-study changes in staging until a real approved project record is reviewed; do not seed private facts or unapproved media.
 
 ## Out of scope for this gate
 
-Media uploads, testimonials, client logos, CRM relationships, scheduled publishing, bulk edits, and Production case-study editing remain disabled.
+Media uploads, testimonials, client logos, CRM relationships, scheduled publishing, bulk edits, case-study creation/deletion, and Production case-study editing remain disabled.

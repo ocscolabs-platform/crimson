@@ -218,3 +218,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** A predictable media boundary prevents arbitrary remote assets, inaccessible imagery, and ambiguous featured placement from entering the future editor. Database validation creates a durable safety net while the review panel remains read-only.
 - **Status:** Accepted for staging design gate; migration application pending
 - **Date:** 2026-08-20
+
+## ADR-032 - Start case-study editing with an update-only owner/editor slice
+
+- **Decision:** Enable a protected staging editor for existing case-study records only. Owners may update, approve client visibility, publish, and archive; editors may update draft/review records; reviewers remain read-only. Keep inserts, deletes, relationships, media uploads, and Production access disabled.
+- **Rationale:** The team needs a real review and publication workflow, but case-study creation and media handling carry higher risk than text preparation. An update-only slice exercises RLS, review-before-publish, and audit history without opening the full portfolio surface.
+- **Status:** Accepted for staging review; migration application pending
+- **Date:** 2026-08-20

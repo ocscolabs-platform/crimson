@@ -275,6 +275,9 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-editor-warning { max-width: 900px; border: 1px solid rgb(255 190 92 / 32%); border-radius: 10px; background: rgb(255 190 92 / 8%); color: #e0bd8a; font-size: .82rem; line-height: 1.55; margin: 0 0 28px; padding: 14px 16px; }
 .admin-editor-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 900px; }
 .admin-editor-form label { display: grid; gap: 9px; color: #c7c7c7; font-size: .78rem; font-weight: 700; }
+.admin-editor-form .admin-field-wide { grid-column: 1 / -1; }
+.admin-readonly-field { min-height: 50px; display: flex; align-items: center; border: 1px solid rgb(255 255 255 / 10%); border-radius: 8px; background: #131313; color: #9b9b9b; font-size: .84rem; font-weight: 500; padding: 13px 14px; }
+.admin-editor-note { border: 1px solid rgb(255 255 255 / 12%); border-radius: 8px; color: #8d8d8d; font-size: .78rem; line-height: 1.6; padding: 13px 14px; }
 .admin-editor-form label:nth-child(3), .admin-editor-form label:nth-child(4), .admin-editor-form label:nth-child(5), .admin-editor-form label:nth-child(6), .admin-editor-form button { grid-column: 1 / -1; }
 .admin-textarea { min-height: 130px; resize: vertical; }
 .admin-select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--white) 50%), linear-gradient(135deg, var(--white) 50%, transparent 50%); background-position: calc(100% - 20px) 23px, calc(100% - 15px) 23px; background-repeat: no-repeat; background-size: 5px 5px, 5px 5px; }

@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, and a privacy-safe Work renderer. Broader CMS editing, case-study mutations, general version management, media storage, and production admin access remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, a privacy-safe Work renderer, the case-study media contract, and an update-only case-study editor. Case-study creation/deletion, general version management, media storage, relationships, and production admin access remain unimplemented.
 
 ## Completed
 
@@ -36,10 +36,11 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Added the staging-only case-study and relationship audit migration locally; Supabase application and verification remain pending.
 - Added a protected read-only case-study review panel; authenticated staging preview QA completed.
 - Added the staging-only case-study media contract and single published featured-project migration locally; staging application and verification remain pending.
+- Added the update-only staging case-study editor and role-aware publication safeguards locally; staging migration and workflow QA remain pending.
 
 ## In Progress
 
-- Apply and verify the case-study media contract and featured-project rule in `crimson-staging` before enabling case-study mutations.
+- Apply and verify the controlled case-study editor migration in `crimson-staging`, then run the non-featured review/publish workflow.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
@@ -55,4 +56,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Apply and verify `20260820080000_add_staging_case_study_media_contract.sql` in `crimson-staging`, then review the protected case-study checklist against the contract. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Apply and verify `20260820090000_add_staging_case_study_editor_policies.sql` in `crimson-staging`, then run the non-featured review/publish workflow described in PHASE-4-CMS-CASE-STUDY-EDITOR.md. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.

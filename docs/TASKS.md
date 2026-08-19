@@ -158,3 +158,18 @@ This queue records approved next-step work before implementation. Tasks in this 
 - At most one published case study can be featured at a time.
 - Public Work ordering is deterministic when records share a featured or sort state.
 - No storage bucket, upload control, case-study mutation policy, or Production migration is introduced.
+
+## PH4-009 - Add the controlled case-study editor
+
+- **Status:** Implementation complete locally; staging migration and workflow QA pending
+- **Goal:** Let approved staging owners and editors prepare existing case-study records without opening media, relationship, deletion, or Production controls.
+- **Reference:** docs/PHASE-4-CMS-CASE-STUDY-EDITOR.md
+
+### Acceptance criteria
+
+- Owner updates can move a record through Review and Published with database safeguards.
+- Editors can update only draft/review records and cannot publish or archive.
+- Only owners can approve client visibility.
+- Successful updates appear in immutable case-study audit history.
+- The form does not mutate media, featured placement, supporting relationships, or delete records.
+- The first workflow test uses a non-featured staging record and no private client facts.

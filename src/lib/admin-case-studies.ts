@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { CmsRole } from "@/lib/cms-auth";
 
 export type AdminCaseStudyAuditEntry = {
   id: string;
@@ -31,13 +32,21 @@ export type AdminCaseStudyReview = {
   supporting_media: unknown;
   media_status: "pending" | "approved" | "rejected";
   media_reviewed_at: string | null;
-  status: string;
+  status: "draft" | "review" | "published" | "archived";
   published_at: string | null;
   last_reviewed_at: string | null;
   updated_at: string;
   services: Array<{ name: string; slug: string; status: string }>;
   audit: AdminCaseStudyAuditEntry[];
 };
+
+export function canEditCaseStudies(role: CmsRole | null) {
+  return role === "owner" || role === "editor";
+}
+
+export function canApproveCaseStudyVisibility(role: CmsRole | null) {
+  return role === "owner";
+}
 
 export async function getAdminCaseStudyReview(slug: string): Promise<AdminCaseStudyReview | null> {
   const supabase = await createClient();
