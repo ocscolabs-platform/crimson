@@ -29,8 +29,8 @@ Phase 0, Phase 1, and Phase 2 are complete. The public route structure is implem
 
 ## In Progress
 
-- Establishing the standalone OCSCO HTML design style guide as the visual source of truth for typography, native hero atmosphere, iconography, media placeholders, and component states.
-- Owner review of the CSS-native hero treatment before extending the redesign across all public routes.
+- Locked the standalone OCSCO HTML design style guide as the official v1.0 visual source of truth for typography, native hero atmosphere, iconography, media placeholders, and component states.
+- Preparing the official guide for staging review at `/design-style-guide` before production promotion.
 
 ## Blocked / Requires Owner Action
 
@@ -43,4 +43,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Review the standalone style guide at `/style-guide`, especially Art direction and Iconography, then approve the CSS-native hero treatment before continuing the visual redesign across the public routes. Do not connect a CMS or backend until the public visual system is approved.
+Review the official v1.0 guide at `/design-style-guide` in staging. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion. Do not connect a CMS or backend until the public visual system is approved.

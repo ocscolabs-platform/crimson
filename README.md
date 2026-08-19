@@ -41,6 +41,6 @@ docs/          Project, architecture, deployment, decisions, and status docs
 public/        Public static assets and the browsable HTML design style guide
 ```
 
-The current visual source of truth is [`public/style-guide/index.html`](./public/style-guide/index.html), available locally at `/style-guide` while the development server is running. It documents the OCSCO visual principles, tokens, components, content voice, and implementation rules used for the redesign.
+The official v1.0 visual source of truth is [`public/style-guide/index.html`](./public/style-guide/index.html), available at `/design-style-guide` in the deployed application and locally while the development server is running. `/style-guide` remains as a compatibility route. It documents the OCSCO visual principles, tokens, components, content voice, and implementation rules used for the redesign.
 
 Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the information architecture, content model, visual direction, content briefs, and [`PHASE-3-IMPLEMENTATION.md`](./docs/PHASE-3-IMPLEMENTATION.md).

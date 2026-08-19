@@ -107,6 +107,13 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Status:** Accepted for the redesign preparation step; owner review pending
 - **Date:** 2026-08-19
 
+## ADR-018 - Lock the official OCSCO design system v1.0
+
+- **Decision:** Declare the current OCSCO HTML design style guide the official v1.0 baseline for Project Crimson and publish it through the Vercel application at `/design-style-guide`. Keep `/style-guide` as a compatibility route. Future non-breaking refinements become v1.1; structural or system-level changes become v2.0 and require explicit owner approval.
+- **Rationale:** A stable public URL gives the team one accessible source of truth while Git and Vercel preserve review history, previews, and production promotion. Versioning prevents silent drift in typography, art direction, iconography, spacing, and interaction states.
+- **Status:** Accepted; official v1.0 baseline
+- **Date:** 2026-08-19
+
 ## ADR-017 - Use a CSS-native editorial hero and Lucide iconography
 
 - **Decision:** Build the OCSCO hero atmosphere with CSS-native animated grain, blurred translucent planes, and a restrained contrast overlay. Use Lucide React as the application icon family, with icons paired to visible labels. Use clearly labeled placeholders for portfolio media until approved project assets are supplied.
