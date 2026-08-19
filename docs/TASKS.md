@@ -99,3 +99,19 @@ This queue records approved next-step work before implementation. Tasks in this 
 - The restore action creates a new audit entry.
 - Editors and reviewers remain read-only for restoration.
 - Production receives no restore route or CMS migration until the staging workflow and future versioning requirements are approved.
+
+## PH4-005 — Design the case-study CMS workflow
+
+- **Status:** Design gate; case-study mutations intentionally disabled
+- **Goal:** Prepare a safe portfolio editorial workflow for approved project proof without exposing private client details, unsupported claims, or unapproved media.
+- **Reference:** `docs/PHASE-4-CMS-CASE-STUDIES.md`
+
+### Acceptance criteria
+
+- The initial layout is defined as one featured project plus a supporting grid; the current five-record staging set remains supported.
+- `client_visibility` is honored by public rendering and cannot silently expose hidden project identity.
+- Case-study and relationship changes have audit coverage before any write policy is introduced.
+- Media storage, permission, file-type, and alternative-text rules are documented before uploads are enabled.
+- Featured placement is deterministic and owner-controlled.
+- The review checklist covers identity, claims, outcomes, testimonials, links, imagery, related services, and publication status.
+- No case-study editor, upload action, or Production mutation is introduced during this design gate.

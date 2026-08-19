@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, and owner-only restore-as-review. Broader CMS editing, general version management, media storage, and production admin access remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, and a case-study workflow design gate. Broader CMS editing, case-study mutations, general version management, media storage, and production admin access remain unimplemented.
 
 ## Completed
 
@@ -35,8 +35,8 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 ## In Progress
 
-- Push the restore-as-review workflow and validate owner confirmation, recovery, and new audit entries in staging.
-- Review whether field-level diffs, release notes, or a dedicated version table are required before expanding the CMS.
+- Resolve the case-study privacy renderer, audit coverage, media contract, and featured-project rule before enabling case-study mutations.
+- Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
@@ -51,4 +51,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Open `/admin/services/branding` in staging as the owner, restore one prior audit snapshot as Review, and confirm the new audit entry. Do not promote the restore action or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Review [`docs/PHASE-4-CMS-CASE-STUDIES.md`](./PHASE-4-CMS-CASE-STUDIES.md), then implement and QA privacy-safe Work rendering before adding a case-study editor. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.

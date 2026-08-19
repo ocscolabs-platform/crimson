@@ -51,7 +51,7 @@ All tables enable Row Level Security. No anonymous or authenticated role receive
 
 ## Public Work library slice
 
-The next staging slice extends `case_studies` with presentation fields for project type, category, external prototype URL, featured ordering, and sort order. The public Work library reads only published staging records and falls back to the local preview content if the CMS schema or records are unavailable. A generic `/work/[slug]` preview route is included, while approved imagery and full evidence remain deferred.
+The next staging slice extends `case_studies` with presentation fields for project type, category, external prototype URL, featured ordering, and sort order. The public Work library reads only published staging records and falls back to the local preview content if the CMS schema or records are unavailable. A generic `/work/[slug]` preview route is included, while approved imagery and full evidence remain deferred. Case-study editing is intentionally gated by the privacy and media workflow in [`PHASE-4-CMS-CASE-STUDIES.md`](./PHASE-4-CMS-CASE-STUDIES.md).
 
 Apply `supabase/migrations/20260820020000_add_work_presentation_fields.sql` and then run `supabase/seeds/20260820020000_seed_staging_case_studies.sql` in `crimson-staging` only. Do not run the staging seed in Production.
 

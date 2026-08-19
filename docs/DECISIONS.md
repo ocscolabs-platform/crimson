@@ -204,3 +204,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** Audit snapshots are useful for recovery, but automatic rollback to live content would create an unsafe publishing shortcut. A review-only restore preserves control while the team evaluates whether a dedicated version table, diffs, release notes, and bulk rollback are needed.
 - **Status:** Accepted for staging review; broader version management and Production use remain out of scope
 - **Date:** 2026-08-20
+
+## ADR-030 — Gate case-study editing behind privacy and media approval
+
+- **Decision:** Keep case studies read-only in the CMS until public identity redaction, case-study audit coverage, media/alt-text rules, and featured-project behavior are explicitly implemented and reviewed. Plan for one featured project plus a supporting grid, with the initial five-record staging set preserved.
+- **Rationale:** Case studies publish proof about real projects and carry higher privacy, legal, and credibility risk than service descriptions. The existing `client_visibility` field is not yet honored by the public mapper, and media permissions are not represented strongly enough for a safe write surface.
+- **Status:** Accepted as the next Phase 4 design gate; no case-study mutations enabled
+- **Date:** 2026-08-20
