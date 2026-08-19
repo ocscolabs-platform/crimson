@@ -2,7 +2,7 @@
 
 ## Current state
 
-The repository currently contains a minimal Next.js App Router application shell using TypeScript, Tailwind CSS, and ESLint. The shell identifies the repository as OCSCO Project Crimson and communicates that it is a foundation, not a finished website. The foundation is deployed through Vercel at [ocsco-project-crimson.vercel.app](https://ocsco-project-crimson.vercel.app/).
+The repository currently contains a Next.js App Router application using TypeScript, Tailwind CSS, and ESLint. The first public homepage slice is implemented with the approved visual direction and is deployed through Vercel at [ocsco-project-crimson.vercel.app](https://ocsco-project-crimson.vercel.app/). Services, Work, About, and Contact remain planned route slices; homepage links currently use in-page anchors where appropriate.
 
 No Supabase project is connected. No authentication, storage, CMS, CRM, protected admin routes, or production service credentials exist in this phase.
 

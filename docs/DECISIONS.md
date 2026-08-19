@@ -78,3 +78,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** It provides an existing, owner-created foundation for positioning, tone, color, typography, spacing, interaction, and image direction. Reusing it reduces visual drift and prevents speculative branding decisions.
 - **Status:** Proposed for owner confirmation
 - **Date:** 2026-08-19
+
+## ADR-012 — Implement the public website homepage first
+
+- **Decision:** Use the homepage as the first Phase 3 implementation slice, with shared visual tokens and in-page sections for capabilities, approach, proof placeholder, and contact direction.
+- **Rationale:** A homepage slice provides a reviewable expression of the visual system and messaging hierarchy without prematurely committing to the full route set, CMS, CRM, or unapproved proof content.
+- **Status:** Accepted for Phase 3; owner review pending
+- **Date:** 2026-08-19

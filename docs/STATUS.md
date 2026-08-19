@@ -2,9 +2,9 @@
 
 ## Current Phase
 
-**Phase 2 — Content and Visual Design Direction**
+**Phase 3 — Public Website Implementation**
 
-Phase 0 and Phase 1 are complete. The repository and minimal Next.js foundation are deployed to Vercel. Phase 2 defines content briefs, visual principles, and implementation boundaries; it does not implement the public website, CMS, or CRM.
+Phase 0, Phase 1, and Phase 2 are complete. The first public homepage slice is implemented locally and is ready for review. CMS, CRM, authentication, Supabase, and the remaining public routes are not implemented.
 
 ## Completed
 
@@ -21,15 +21,16 @@ Phase 0 and Phase 1 are complete. The repository and minimal Next.js foundation 
 - Added the Phase 1 information architecture, content model, and acceptance criteria documents.
 - Reviewed the existing OCSCO Brand Style Guide as the reference for Phase 2 direction.
 - Added Phase 2 content briefs, visual design direction, and acceptance criteria.
+- Implemented the first public homepage slice with responsive layout, shared visual tokens, capability sections, approach, contact CTA, and honest proof-state copy.
+- Inspected the homepage at desktop and mobile viewport sizes with no browser console errors.
 
 ## In Progress
 
-- Owner review of the Phase 2 content briefs, visual direction, and implementation boundary.
+- Owner review of the Phase 3 homepage slice and draft-safe messaging.
 
 ## Blocked / Requires Owner Action
 
 - Configure GitHub branch protection for `feature/*`, `staging`, and `main`.
-- Confirm the Phase 2 visual direction and working copy principles.
 - Provide approved case-study facts, outcomes, testimonials, team details, and contact destination before implementation.
 - Confirm which visual assets from the existing brand materials may be copied into Crimson.
 - Create or select separate Supabase environments only when backend work is approved.
@@ -38,4 +39,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Approve **Phase 3 — Public website implementation** after the Phase 2 documents and launch content inputs are reviewed.
+Review and approve the homepage slice before extending the implementation to the remaining public routes.
