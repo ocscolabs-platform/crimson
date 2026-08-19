@@ -1,4 +1,4 @@
-# OCSCO Project Crimson — Phase 3 Public Website Implementation
+# OCSCO Project Crimson — Public Platform and Staging CMS Foundation
 
 Project Crimson is OCSCO's new platform repository. It will eventually support a public website, a custom CMS, and a custom CRM as one integrated platform. The Phase 0 foundation, Phase 1 information architecture, and Phase 2 design direction are complete; the current phase is implementing the public website in reviewed slices.
 
@@ -42,5 +42,7 @@ public/        Public static assets and the browsable HTML design style guide
 ```
 
 The official v1.0 visual source of truth is [`public/style-guide/index.html`](./public/style-guide/index.html), available at `/style-guide` in the deployed application and locally while the development server is running. It documents the OCSCO visual principles, tokens, components, content voice, and implementation rules used for the redesign.
+
+The staging branch also contains a protected, read-only CMS review dashboard at `/admin`. It uses Supabase Auth sessions and the existing published-only RLS boundary; create the staging Auth user and configure the staging redirect URL as described in [`docs/PHASE-4-CMS-AUTH.md`](./docs/PHASE-4-CMS-AUTH.md). CMS editing and publishing are intentionally not enabled.
 
 Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the information architecture, content model, visual direction, content briefs, and [`PHASE-3-IMPLEMENTATION.md`](./docs/PHASE-3-IMPLEMENTATION.md).

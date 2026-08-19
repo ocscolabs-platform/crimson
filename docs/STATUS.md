@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema and published-only read boundary. Services, Work, and shared global content are being reviewed in staging. CRM, CMS admin UI, media storage, and authentication remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only read boundary, and a staging-only read-only admin auth slice. CRM, CMS editing, media storage, role management, and production admin access remain unimplemented.
 
 ## Completed
 
@@ -35,8 +35,8 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 ## In Progress
 
-- Review the Phase 4 CMS foundation and global content seed in staging.
-- Complete live QA of CMS-backed Services, Work, navigation, footer settings, and page metadata before broader CMS work.
+- Review the Phase 4 CMS foundation, global content seed, and read-only `/admin` dashboard in staging.
+- Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
 ## Blocked / Requires Owner Action
@@ -50,4 +50,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Apply the global content seed to the dedicated staging Supabase project, verify published-only reads across the shared shell and top-level pages, then review the result before planning the protected CMS editor. Do not apply the staging seed to Production or build admin authentication until the read boundary is accepted. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Create the intended staff user in `crimson-staging`, test `/admin/login` and the read-only dashboard on the staging deployment, then review the proposed role and permission model before any editor or mutation policy is built. Do not apply the staging auth setup to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.

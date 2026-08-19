@@ -2,9 +2,9 @@
 
 ## Current state
 
-The repository currently contains a Next.js App Router application using TypeScript, Tailwind CSS, and ESLint. The first public route structure is implemented for the homepage, Services, service detail pages, Work, About, and Contact. The public website is deployed through Vercel and the contact workflow uses environment-specific Supabase and Resend server integrations. Public page and service content still uses a structured local boundary; the CMS foundation is now being introduced through a reviewed Supabase migration.
+The repository currently contains a Next.js App Router application using TypeScript, Tailwind CSS, and ESLint. The first public route structure is implemented for the homepage, Services, service detail pages, Work, About, and Contact. The public website is deployed through Vercel and the contact workflow uses environment-specific Supabase and Resend server integrations. Public page, service, work, and shared chrome content now use a reviewed published-only Supabase read boundary with local fallbacks. A staging-only Supabase Auth boundary and read-only `/admin` dashboard are being introduced; no CMS mutations exist yet.
 
-No CMS admin UI, authentication boundary, storage/media library, CRM, or protected admin routes exist yet. Production credentials remain outside the repository.
+No CMS editor, role/permission model, storage/media library, CRM, or production admin access exists yet. Production credentials remain outside the repository.
 
 ## Planned high-level architecture
 
@@ -37,3 +37,7 @@ Vercel → deployment infrastructure
 - **GitHub:** source control and the canonical repository workflow.
 
 These are plans, not claims that the systems already exist. Future architecture changes must be documented in [`DECISIONS.md`](./DECISIONS.md).
+
+## Current protected boundary
+
+The staging `/admin` route uses Supabase Auth cookies through `@supabase/ssr` and verifies the current user server-side. It reads only records allowed by the existing public published-only RLS policies. The route is a review dashboard, not a CMS editor; mutation policies and role-aware access are intentionally deferred.

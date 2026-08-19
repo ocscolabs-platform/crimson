@@ -169,3 +169,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** The approved content model needs to remain independent from page components and must not leak draft or review content. A small relational foundation creates a stable backend boundary while deferring admin authentication, media, scheduling, version history, and CRM scope until they receive separate review.
 - **Status:** Accepted for the Phase 4 staging foundation; migration application pending review
 - **Date:** 2026-08-20
+
+## ADR-025 — Introduce a staging-only read-only CMS auth boundary
+
+- **Decision:** Add Supabase Auth with cookie-based SSR sessions and protect a read-only `/admin` dashboard on staging. Use the existing publishable key and published-only RLS policies; do not add CMS mutation policies yet.
+- **Rationale:** The team needs a safe way to inspect the content boundary before building an editor. Separating authentication from editing allows session handling, route protection, and environment setup to be tested without prematurely deciding staff roles, draft visibility, publishing permissions, audit history, or mutation safeguards.
+- **Status:** Accepted for staging review; editor and production access pending separate approval
+- **Date:** 2026-08-20

@@ -59,7 +59,7 @@ Apply `supabase/migrations/20260820020000_add_work_presentation_fields.sql` and 
 
 The next staging slice connects the shared header navigation, footer positioning statement, page hero copy, and page-level SEO fields to the existing CMS tables. The public application keeps a local fallback until matching published records exist. Run `supabase/seeds/20260820030000_seed_staging_global_content.sql` in `crimson-staging` only; it is intentionally not a Production seed.
 
-The page body sections remain in reviewed application components for now. A protected CMS editor and media library are separate future slices and are not introduced by this read boundary.
+The page body sections remain in reviewed application components for now. The staging-only CMS authentication boundary and read-only dashboard are documented separately in [`PHASE-4-CMS-AUTH.md`](./PHASE-4-CMS-AUTH.md). A protected CMS editor and media library remain future slices and are not introduced by this read boundary.
 
 ## Acceptance criteria
 

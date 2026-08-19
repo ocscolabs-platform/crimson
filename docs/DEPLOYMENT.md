@@ -44,3 +44,9 @@ Do not add these values to the repository. Production uses separate values from 
 ## Production contact-form configuration
 
 The Production `/contact` form uses the selected clean Production Supabase project and the verified `send.ocsco.io` Resend sending domain. The six required variables are configured in Vercel under Production only, and the owner has confirmed database storage and email delivery.
+
+## Staging CMS authentication
+
+The staging branch includes a protected, read-only CMS dashboard at `/admin`. It uses the existing Preview Supabase URL and publishable key through cookie-based Supabase SSR sessions. No new secret variable is required and `SUPABASE_SECRET_KEY` is not used by the dashboard.
+
+Before testing the route, the owner must create the intended staff user in the `crimson-staging` Supabase project under **Authentication → Users** and add the staging deployment URL to **Authentication → URL Configuration**. Do not add the production domain to the staging auth configuration. Editing, publishing, draft access, and production admin access are not enabled.
