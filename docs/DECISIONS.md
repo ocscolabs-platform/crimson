@@ -27,7 +27,7 @@ Dates use the repository work date where a decision was made during Phase 0.
 
 - **Decision:** Vercel is the planned deployment platform.
 - **Rationale:** It aligns with the Next.js application model and supports preview, staging, and production deployment workflows.
-- **Status:** Accepted; account configuration pending
+- **Status:** Accepted; foundation deployment connected
 - **Date:** 2026-08-19
 
 ## ADR-005 — Use Supabase as the planned backend platform
@@ -62,5 +62,12 @@ Dates use the repository work date where a decision was made during Phase 0.
 
 - **Decision:** Development, staging, and production must remain separate environments with separately managed configuration and secrets.
 - **Rationale:** Separation reduces the risk of accidental production changes and protects production data and credentials during development and review.
+- **Status:** Accepted
+- **Date:** 2026-08-19
+
+## ADR-010 — Use a documentation-first Phase 1
+
+- **Decision:** Define the public sitemap, content model, audiences, and acceptance criteria before implementing visual design or application features.
+- **Rationale:** Clear information architecture reduces rework and gives future design, CMS, and CRM work an agreed product boundary.
 - **Status:** Accepted
 - **Date:** 2026-08-19

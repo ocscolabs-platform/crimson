@@ -1,6 +1,6 @@
-# OCSCO Project Crimson — Phase 0 Foundation
+# OCSCO Project Crimson — Phase 1 Information Architecture
 
-Project Crimson is OCSCO's new platform repository. It will eventually support a public website, a custom CMS, and a custom CRM as one integrated platform. Phase 0 intentionally provides only a minimal, deployment-ready application foundation.
+Project Crimson is OCSCO's new platform repository. It will eventually support a public website, a custom CMS, and a custom CRM as one integrated platform. The Phase 0 foundation is complete; the current phase defines the product and information architecture before visual or feature implementation begins.
 
 ## Stack
 
@@ -10,7 +10,7 @@ Project Crimson is OCSCO's new platform repository. It will eventually support a
 - ESLint
 - npm
 
-Supabase, Vercel, and GitHub are planned platform services. No production credentials or external integrations are configured in Phase 0.
+Supabase is a planned backend service. GitHub is the source repository and Vercel hosts the current foundation deployment. No production credentials or Supabase integrations are configured.
 
 ## Local development
 
@@ -41,4 +41,4 @@ docs/           Project, architecture, deployment, decisions, and status docs
 public/         Public static assets for the application
 ```
 
-Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/).
+Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the current [`INFORMATION-ARCHITECTURE.md`](./docs/INFORMATION-ARCHITECTURE.md), [`CONTENT-MODEL.md`](./docs/CONTENT-MODEL.md), and [`PHASE-1-ACCEPTANCE.md`](./docs/PHASE-1-ACCEPTANCE.md).

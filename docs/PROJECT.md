@@ -11,4 +11,4 @@ The future CMS will give OCSCO control over structured website content and publi
 
 OCSCO wants the platform to demonstrate its ability to deliver branding, website design and development, custom CMS systems, CRM and business tools, and custom web applications. Project 0 is intended to become OCSCO's first flagship case study.
 
-The current focus is infrastructure and engineering foundation. Visual design, public marketing content, CMS functionality, CRM functionality, and production integrations are outside Phase 0.
+Phase 0 established the repository and deployment foundation. The current focus is Phase 1 product and information architecture: agreeing on the public sitemap, content model, audiences, and acceptance criteria before visual design or feature implementation begins.
