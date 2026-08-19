@@ -21,6 +21,7 @@
         --border: #e8e8e8;
         --max-width: 1440px;
         --radius: 12px;
+        --pill: 999px;
         --shadow: 0 22px 60px rgb(10 10 10 / 8%);
       }
 
@@ -234,10 +235,27 @@
       .component h3 { font-size: 1.1rem; margin: 0 0 28px; }
       .component-dark { background: var(--graphite); color: var(--white); }
       .button-row { align-items: center; display: flex; flex-wrap: wrap; gap: 16px; }
-      .button { border: 1px solid transparent; border-radius: var(--radius); display: inline-flex; font-size: .84rem; font-weight: 800; justify-content: center; min-height: 50px; padding: 14px 22px; text-decoration: none; }
+      .button { border: 1px solid transparent; border-radius: var(--pill); cursor: pointer; display: inline-flex; font-size: .84rem; font-weight: 800; justify-content: center; min-height: 50px; padding: 14px 22px; text-decoration: none; transition: background 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out, transform 180ms ease-out; }
+      .button:hover { transform: translateY(-1px); }
+      .button:active { transform: translateY(0); }
       .button-primary { background: var(--green); color: var(--ink); }
+      .button-primary:hover, .button-primary.is-hover { background: #24d667; }
+      .button-primary:active, .button-primary.is-active { background: #00b84d; }
       .button-secondary { background: transparent; border-color: var(--ink); color: var(--ink); }
+      .button-secondary:hover, .button-secondary.is-hover { background: var(--ink); color: var(--white); }
+      .button-secondary:active, .button-secondary.is-active { background: #333; border-color: #333; color: var(--white); }
       .button-light { background: transparent; border-color: rgb(255 255 255 / 42%); color: var(--white); }
+      .button-light:hover, .button-light.is-hover { background: var(--white); color: var(--ink); }
+      .button-light:active, .button-light.is-active { background: #dedede; border-color: #dedede; color: var(--ink); }
+      .state-row { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
+      .state { display: grid; gap: 12px; }
+      .state .button { width: 100%; }
+      .state-label { color: var(--muted); font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+      .nav-demo { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
+      .nav-demo a { border-radius: 8px; color: var(--white); font-size: .84rem; font-weight: 500; padding: 10px 15px; text-decoration: none; transition: background 180ms ease-out, color 180ms ease-out; }
+      .nav-demo a:hover, .nav-demo a.is-hover, .nav-demo a[aria-current="page"] { background: var(--graphite); color: var(--white); }
+      .nav-demo a:active, .nav-demo a.is-active { background: #333; }
+      .component-dark .small { color: var(--muted); }
       .text-link { color: var(--ink); font-size: .84rem; font-weight: 800; text-decoration: none; }
       .text-link::after { color: var(--green); content: "  ↗"; }
       .card-demo { border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; min-height: 170px; padding: 24px; }
@@ -286,6 +304,7 @@
         .toc a { font-size: .76rem; }
         .principles, .swatches, .logo-grid, .component-grid, .voice-grid { grid-template-columns: 1fr; }
         .type-row { grid-template-columns: 1fr; gap: 14px; }
+        .state-row { grid-template-columns: 1fr; }
         .spacing-grid { gap: 8px; grid-template-columns: repeat(4, 1fr); }
         .spacing-item:nth-child(n + 5) { display: none; }
         .footer { padding: 36px 24px; }
@@ -411,11 +430,12 @@
           <div class="section-heading">
             <p class="eyebrow">06 / Components</p>
             <h2 id="components-title">Simple parts, consistently composed.</h2>
-            <p class="section-intro">Components should feel precise and useful. Use a 12px radius, quiet borders, restrained states, and one clear action hierarchy.</p>
+            <p class="section-intro">Components should feel precise and useful. Use pill-shaped action controls, 8px active navigation surfaces, 12px structural surfaces, quiet borders, and one clear action hierarchy.</p>
           </div>
           <div class="component-grid">
-            <article class="component"><h3>Actions</h3><div class="button-row"><a class="button button-primary" href="#components">Start a conversation ↗</a><a class="button button-secondary" href="#components">See the work</a><a class="text-link" href="#components">Explore services</a></div></article>
-            <article class="component component-dark"><h3>Dark-surface actions</h3><div class="button-row"><a class="button button-primary" href="#components">Primary action ↗</a><a class="button button-light" href="#components">Secondary action</a></div></article>
+            <article class="component"><h3>Primary action states</h3><div class="state-row"><div class="state"><span class="state-label">Default</span><a class="button button-primary" href="#components">Start a conversation ↗</a></div><div class="state"><span class="state-label">Hover</span><a class="button button-primary is-hover" href="#components">Start a conversation ↗</a></div><div class="state"><span class="state-label">Active</span><a class="button button-primary is-active" href="#components">Start a conversation ↗</a></div></div></article>
+            <article class="component"><h3>Secondary action states</h3><div class="state-row"><div class="state"><span class="state-label">Default</span><a class="button button-secondary" href="#components">See our services</a></div><div class="state"><span class="state-label">Hover</span><a class="button button-secondary is-hover" href="#components">See our services</a></div><div class="state"><span class="state-label">Active</span><a class="button button-secondary is-active" href="#components">See our services</a></div></div></article>
+            <article class="component component-dark"><h3>Top navigation states</h3><nav class="nav-demo" aria-label="Top navigation state examples"><a href="#components">About</a><a class="is-hover" href="#components">Services</a><a class="is-active" href="#components" aria-current="page">Contact</a></nav><p class="small muted">Default links stay quiet. Hover and active links use a compact graphite surface with an 8px radius.</p></article>
             <article class="component"><h3>Capability card</h3><div class="card-demo"><span class="eyebrow">01 / Capability</span><strong>Website design &amp; development</strong><p>Digital experiences that turn clarity into trust and trust into momentum.</p></div></article>
             <article class="component"><h3>Form field</h3><div class="field"><label for="example-field">Your email address</label><input id="example-field" type="email" placeholder="you@company.com"></div></article>
           </div>

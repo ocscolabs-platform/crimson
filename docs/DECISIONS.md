@@ -106,3 +106,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** The owner identified OCSCO.io as the preferred reference for typography and overall visual language. Matching its observed font family and weight hierarchy creates continuity between the existing brand presence and Project Crimson.
 - **Status:** Accepted for the redesign preparation step; owner review pending
 - **Date:** 2026-08-19
+
+## ADR-016 — Use pill-shaped actions and stateful top navigation
+
+- **Decision:** Use fully rounded pill buttons for primary and secondary actions, with documented default, hover, and active states. Use quiet top navigation links with a compact graphite surface for hover and active states.
+- **Rationale:** The owner identified the rounded action treatment and compact active navigation surface as key characteristics of the preferred OCSCO.io visual language. Defining these states in the source-of-truth guide prevents inconsistent interaction styling across the public site and future platform surfaces.
+- **Status:** Accepted for the redesign preparation step; owner review pending
+- **Date:** 2026-08-19

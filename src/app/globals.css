@@ -32,9 +32,12 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .hero { position: relative; min-height: 760px; overflow: hidden; background: var(--ink); color: var(--white); }
 .site-header { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; min-height: 92px; border-bottom: 1px solid rgb(255 255 255 / 18%); }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--white); font-size: 1rem; font-weight: 800; letter-spacing: .16em; }
-.primary-nav { display: flex; gap: clamp(18px, 3vw, 42px); margin-left: auto; margin-right: clamp(20px, 4vw, 60px); color: var(--muted); font-size: .86rem; font-weight: 500; }
-.primary-nav a, .text-link, .card-link { transition: color 200ms ease-out; }
-.primary-nav a:hover, .text-link:hover, .card-link:hover { color: var(--green); }
+.primary-nav { display: flex; gap: clamp(6px, 1vw, 14px); margin-left: auto; margin-right: clamp(20px, 4vw, 60px); color: var(--muted); font-size: .86rem; font-weight: 500; }
+.primary-nav a { border-radius: 8px; padding: 10px 14px; transition: background 180ms ease-out, color 180ms ease-out; }
+.primary-nav a:hover, .primary-nav a[aria-current="page"] { background: var(--graphite); color: var(--white); }
+.primary-nav a:active { background: #333; }
+.text-link, .card-link { transition: color 200ms ease-out; }
+.text-link:hover, .card-link:hover { color: var(--green); }
 .hero-content { position: relative; z-index: 1; display: flex; min-height: 668px; flex-direction: column; justify-content: center; padding: 96px 0 116px; }
 .overline { margin: 0 0 24px; color: var(--copy); font-size: .72rem; font-weight: 800; letter-spacing: .16em; line-height: 1.4; text-transform: uppercase; }
 .overline-green { color: var(--green); }
@@ -43,15 +46,18 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .hero-bottom { display: flex; align-items: end; justify-content: space-between; gap: 48px; margin-top: 72px; }
 .hero-copy { max-width: 420px; margin: 0; color: var(--muted); font-size: 1.05rem; line-height: 1.65; }
 .hero-actions { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-.button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; border: 1px solid transparent; border-radius: 12px; padding: 14px 24px; font-size: .86rem; font-weight: 800; transition: background 200ms ease-out, border-color 200ms ease-out, color 200ms ease-out, transform 200ms ease-out; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; border: 1px solid transparent; border-radius: 999px; padding: 14px 24px; font-size: .86rem; font-weight: 800; transition: background 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out, transform 180ms ease-out; }
 .button:hover { transform: translateY(-2px); }
+.button:active { transform: translateY(0); }
 .button-primary { background: var(--green); color: var(--ink); }
-.button-primary:hover { background: #00b84d; }
+.button-primary:hover { background: #24d667; }
+.button-primary:active { background: #00b84d; }
 .button-dark { background: var(--ink); color: var(--white); }
 .button-dark:hover { background: var(--graphite); }
 .button-small { min-height: 42px; padding: 10px 16px; font-size: .75rem; }
 .button-outline-light { border-color: rgb(255 255 255 / 45%); color: var(--white); }
-.button-outline-light:hover { border-color: var(--green); color: var(--green); }
+.button-outline-light:hover { background: var(--white); border-color: var(--white); color: var(--ink); }
+.button-outline-light:active { background: #dedede; border-color: #dedede; color: var(--ink); }
 .text-link { display: inline-flex; gap: 10px; color: var(--white); font-size: .86rem; font-weight: 800; }
 .hero-grid { position: absolute; inset: 0; opacity: .17; background-image: linear-gradient(rgb(255 255 255 / 9%) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 9%) 1px, transparent 1px); background-position: center; background-size: 120px 120px; mask-image: linear-gradient(to bottom, transparent 12%, black 70%, transparent); }
 
@@ -131,7 +137,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 
 @media (max-width: 560px) {
   .shell { width: min(calc(100% - 32px), var(--max-width)); }
-  .primary-nav { display: flex; gap: 14px; margin-right: 0; font-size: .72rem; }
+  .primary-nav { display: flex; gap: 4px; margin-right: 0; font-size: .72rem; }
+  .primary-nav a { padding: 8px 7px; }
   .header-cta { display: none; }
   .hero h1 { font-size: clamp(2.9rem, 15vw, 4.5rem); }
   .hero-copy { font-size: 1rem; }

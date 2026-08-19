@@ -71,13 +71,16 @@ Mobile sizes should scale down proportionally without sacrificing readable line 
 - Target 120px vertical spacing between major desktop sections and 64px on mobile.
 - Use generous page margins and a readable content measure.
 - Limit content grids to a maximum of three columns.
-- Use a 12px radius consistently for cards, buttons, images, inputs, and modals.
+- Use a pill radius for action buttons and compact active navigation surfaces.
+- Use a 12px radius consistently for cards, images, inputs, and modals.
 - Use at least 24px internal component padding; use 32px where the content needs emphasis.
 
 ### Components and interaction
 
-- Primary button: green fill, white text, 12px radius, generous horizontal padding.
-- Secondary button: transparent or light surface with a one-pixel border.
+- Primary button: green fill, ink text, pill radius, generous horizontal padding.
+- Secondary button: transparent or light surface with a one-pixel border and pill radius.
+- Button states: default, a brighter green or inverted hover state, and a slightly darker pressed state must be defined.
+- Top navigation: quiet default links, compact graphite hover/active surface, 8px radius, and 500 font weight.
 - Avoid pill buttons, all-caps button labels, hard shadows, and 3D effects.
 - Use one consistent geometric icon family, such as Lucide or Phosphor, at a consistent stroke weight.
 - Motion should be subtle: 200-300ms ease-out transitions and restrained fade-up reveals where they improve orientation.
