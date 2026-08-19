@@ -21,6 +21,8 @@ The homepage currently includes:
 - Shared route heroes now carry the same restrained glass/noise atmosphere as the homepage.
 - Services capability cards now use the approved Lucide icon mapping from the v1.0 guide.
 - Work uses a native atmospheric placeholder instead of fabricated project media.
+- Shared navigation is sticky with a glass treatment on long pages and collapses into an accessible burger menu on mobile.
+- Header and footer are shared components so shell improvements remain consistent across every route.
 
 The route tree now includes:
 

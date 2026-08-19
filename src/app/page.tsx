@@ -1,26 +1,13 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export default function Home() {
   return (
     <main>
+      <SiteHeader logoHref="#top" ctaHref="#contact" />
       <section className="hero" aria-labelledby="hero-title">
-        <header className="site-header shell">
-          <a className="brand" href="#top" aria-label="OCSCO home">
-            <Image src="/brand/ocsco-logo-white.svg" alt="OCSCO" width={118} height={24} priority />
-          </a>
-          <nav className="primary-nav" aria-label="Primary navigation">
-            <Link href="/services">Services</Link>
-            <Link href="/work">Work</Link>
-            <Link href="/about">About</Link>
-            <Link href="/contact">Contact</Link>
-          </nav>
-          <a className="button button-small button-outline-light header-cta" href="#contact">
-            Start a conversation
-          </a>
-        </header>
-
         <div className="hero-content shell" id="top">
           <p className="overline overline-green">Strategy / Design / Technology</p>
           <h1 id="hero-title">Digital infrastructure for brands ready to move with precision.</h1>
@@ -150,13 +137,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="site-footer section-dark">
-        <div className="shell footer-layout">
-          <a className="brand brand-footer" href="#top" aria-label="Back to top"><Image src="/brand/ocsco-logo-white.svg" alt="OCSCO" width={118} height={24} /></a>
-          <p>Strategy, design, and technology for brands ready to move with precision.</p>
-          <span className="footer-meta">Project Crimson / 2026</span>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
