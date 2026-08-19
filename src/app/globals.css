@@ -13,6 +13,8 @@
   --max-width: 1280px;
   --section-space: 120px;
   --grid-gap: 20px;
+  --card-title-copy-gap: 12px;
+  --card-copy-action-gap: 24px;
 }
 
 * { box-sizing: border-box; }
@@ -97,10 +99,10 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .card-number { display: block; margin-bottom: 48px; color: var(--muted); font-size: .75rem; font-weight: 800; letter-spacing: .12em; }
 .card-number-green { color: var(--green); }
 .capability-icon, .route-capability-icon { width: 32px; height: 32px; margin: 0 0 40px; color: var(--green); }
-.capability-card h3, .route-grid h2 { max-width: 310px; min-height: 2.2em; margin: 0 0 14px; font-size: 1.55rem; letter-spacing: -.035em; line-height: 1.1; }
+.capability-card h3, .route-grid h2 { max-width: 310px; margin: 0 0 var(--card-title-copy-gap); font-size: 1.55rem; letter-spacing: -.035em; line-height: 1.1; }
 .capability-card p { max-width: 300px; min-height: 4.8em; margin: 0; color: var(--copy); font-size: .95rem; line-height: 1.6; }
 .capability-card-wide p { color: var(--muted); }
-.card-link { display: inline-flex; gap: 8px; margin-top: auto; color: var(--ink); font-size: .78rem; font-weight: 700; }
+.card-link { display: inline-flex; gap: 8px; margin-top: auto; padding-top: var(--card-copy-action-gap); color: var(--ink); font-size: .78rem; font-weight: 700; }
 .capability-card-wide .card-link { color: var(--green); }
 .approach-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 10%; }
 .approach-list { border-top: 1px solid rgb(255 255 255 / 22%); }
