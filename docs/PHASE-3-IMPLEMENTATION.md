@@ -15,6 +15,9 @@ The homepage currently includes:
 - Honest proof-of-work state that does not invent case studies, metrics, testimonials, or client names.
 - Contact CTA linking to the approved project email address currently available in the project context.
 - Footer and responsive navigation treatment.
+- CSS-native hero atmosphere using animated grain and translucent glass planes, with reduced-motion support.
+- Lucide React line icons for capability cards, with visible text labels preserved.
+- Explicit portfolio media placeholder state until approved case-study assets are available.
 
 The route tree now includes:
 
@@ -28,7 +31,7 @@ The route tree now includes:
 
 - The first slice uses in-page anchors for sections that do not yet have implemented routes.
 - The visual token layer is expressed in `src/app/globals.css` and follows the Phase 2 direction.
-- The page uses no external images, logos, icon packages, CMS data, or backend connections.
+- The page uses the supplied OCSCO wordmark assets, Lucide React icons, and CSS-native visual treatment; it uses no project photography, CMS data, or backend connections.
 - The page uses CSS and semantic HTML for the first visual pass; future component extraction should happen when repeated patterns appear across multiple routes.
 - The homepage copy is a working draft. It must be reviewed before it is treated as final marketing copy.
 - Service detail pages use structured local content from `src/lib/site-content.ts`; this is an interim boundary until a CMS exists.

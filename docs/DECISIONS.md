@@ -92,3 +92,38 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** The route and content structure are the next product risk to resolve. Establishing them first allows navigation, metadata, page responsibilities, and future CMS boundaries to be reviewed independently from the visual treatment.
 - **Status:** Accepted for current Phase 3 slice; owner review pending
 - **Date:** 2026-08-19
+
+## ADR-014 — Use a standalone HTML style guide as the visual source of truth
+
+- **Decision:** Maintain the OCSCO visual system in `public/style-guide/index.html` before applying the redesign across the public application routes.
+- **Rationale:** A browsable, implementation-oriented reference gives the owner and development work a shared source of truth for color, typography, spacing, layout, logo usage, components, content voice, and accessibility. It reduces visual drift while the public website is redesigned and later extended into CMS-driven surfaces.
+- **Status:** Accepted for the current redesign preparation step; owner review pending
+- **Date:** 2026-08-19
+
+## ADR-015 — Align typography with the live OCSCO.io site
+
+- **Decision:** Use Plus Jakarta Sans across the OCSCO application and standalone style guide with weights 400, 500, 600, 700, and 800.
+- **Rationale:** The owner identified OCSCO.io as the preferred reference for typography and overall visual language. Matching its observed font family and weight hierarchy creates continuity between the existing brand presence and Project Crimson.
+- **Status:** Accepted for the redesign preparation step; owner review pending
+- **Date:** 2026-08-19
+
+## ADR-018 - Lock the official OCSCO design system v1.0
+
+- **Decision:** Declare the current OCSCO HTML design style guide the official v1.0 baseline for Project Crimson and publish it through the Vercel application at `/design-style-guide`. Keep `/style-guide` as a compatibility route. Future non-breaking refinements become v1.1; structural or system-level changes become v2.0 and require explicit owner approval.
+- **Rationale:** A stable public URL gives the team one accessible source of truth while Git and Vercel preserve review history, previews, and production promotion. Versioning prevents silent drift in typography, art direction, iconography, spacing, and interaction states.
+- **Status:** Accepted; official v1.0 baseline
+- **Date:** 2026-08-19
+
+## ADR-017 - Use a CSS-native editorial hero and Lucide iconography
+
+- **Decision:** Build the OCSCO hero atmosphere with CSS-native animated grain, blurred translucent planes, and a restrained contrast overlay. Use Lucide React as the application icon family, with icons paired to visible labels. Use clearly labeled placeholders for portfolio media until approved project assets are supplied.
+- **Rationale:** The owner prefers the dark, editorial, grain-and-glass mood of walaszczyk.studio but wants a distinct OCSCO composition. A native treatment avoids copying third-party artwork, keeps the hero lightweight, and allows reduced-motion support. Lucide provides a coherent line system for capability and platform concepts without introducing decorative icon noise. Honest placeholders protect the project from fabricated proof while portfolio assets are pending.
+- **Status:** Accepted for the current redesign slice; owner review pending
+- **Date:** 2026-08-19
+
+## ADR-016 — Use pill-shaped actions and stateful top navigation
+
+- **Decision:** Use fully rounded pill buttons for primary and secondary actions, with documented default, hover, and active states. Use quiet top navigation links with a compact graphite surface for hover and active states.
+- **Rationale:** The owner identified the rounded action treatment and compact active navigation surface as key characteristics of the preferred OCSCO.io visual language. Defining these states in the source-of-truth guide prevents inconsistent interaction styling across the public site and future platform surfaces.
+- **Status:** Accepted for the redesign preparation step; owner review pending
+- **Date:** 2026-08-19

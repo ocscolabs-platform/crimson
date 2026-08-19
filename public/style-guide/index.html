@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Official OCSCO design system v1.0 for Project Crimson.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>OCSCO — Design System</title>
+    <style>
+      :root {
+        --ink: #0a0a0a;
+        --graphite: #1a1a1a;
+        --green: #00c853;
+        --green-soft: #dcffe9;
+        --white: #ffffff;
+        --snow: #f7f7f7;
+        --muted: #9e9e9e;
+        --copy: #505050;
+        --border: #e8e8e8;
+        --max-width: 1440px;
+        --radius: 12px;
+        --pill: 999px;
+        --shadow: 0 22px 60px rgb(10 10 10 / 8%);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--snow);
+        color: var(--ink);
+        font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: inherit; }
+      a:focus-visible, button:focus-visible, input:focus-visible {
+        outline: 2px solid var(--green);
+        outline-offset: 4px;
+      }
+      img { display: block; max-width: 100%; }
+      .shell { width: min(calc(100% - 48px), var(--max-width)); margin: 0 auto; }
+      .eyebrow {
+        margin: 0 0 24px;
+        color: var(--green);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .16em;
+        line-height: 1.4;
+        text-transform: uppercase;
+      }
+      .muted { color: var(--muted); }
+      .small { color: var(--copy); font-size: .82rem; line-height: 1.55; }
+
+      .site-header {
+        align-items: center;
+        background: var(--ink);
+        color: var(--white);
+        display: flex;
+        justify-content: space-between;
+        min-height: 88px;
+        padding: 0 32px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .brand { width: 118px; }
+      .brand img { height: auto; width: 118px; }
+      .header-meta {
+        color: var(--muted);
+        font-size: .72rem;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        margin: 0 auto;
+        max-width: var(--max-width);
+        min-height: calc(100vh - 88px);
+      }
+      .toc {
+        align-self: start;
+        padding: 48px 28px 64px 0;
+        position: sticky;
+        top: 88px;
+      }
+      .toc p {
+        color: var(--muted);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .14em;
+        margin: 0 0 16px;
+        text-transform: uppercase;
+      }
+      .toc a {
+        border-left: 1px solid var(--border);
+        color: var(--copy);
+        display: block;
+        font-size: .84rem;
+        padding: 9px 0 9px 16px;
+        text-decoration: none;
+        transition: border-color 180ms ease-out, color 180ms ease-out;
+      }
+      .toc a:hover { border-color: var(--green); color: var(--ink); }
+      .content { min-width: 0; }
+
+      .hero {
+        background: var(--ink);
+        color: var(--white);
+        min-height: 600px;
+        overflow: hidden;
+        padding: 100px 8vw 112px;
+        position: relative;
+      }
+      .hero::after {
+        background: linear-gradient(90deg, var(--ink) 0%, rgb(10 10 10 / 94%) 30%, rgb(10 10 10 / 52%) 58%, rgb(10 10 10 / 18%) 100%);
+        content: "";
+        inset: 0;
+        pointer-events: none;
+        position: absolute;
+        z-index: 1;
+      }
+      .hero::before { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.72'/%3E%3C/svg%3E"); background-size: 180px 180px; content: ""; inset: -35%; mix-blend-mode: screen; opacity: .14; pointer-events: none; position: absolute; z-index: 0; animation: guide-noise .9s steps(6) infinite; }
+      .hero-visual { inset: 0; overflow: hidden; pointer-events: none; position: absolute; z-index: 0; }
+      .hero-visual::after { background: radial-gradient(circle at 73% 52%, transparent 0%, rgb(10 10 10 / 12%) 48%, rgb(10 10 10 / 66%) 100%); content: ""; inset: 0; position: absolute; }
+      .hero-glass { background: rgb(255 255 255 / 5%); backdrop-filter: blur(26px) saturate(120%); border: 1px solid rgb(255 255 255 / 18%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), 0 32px 80px rgb(0 0 0 / 22%); display: block; position: absolute; }
+      .hero-glass-one { height: 130%; right: 18%; top: -14%; transform: rotate(-13deg); width: 40%; animation: guide-drift-one 18s ease-in-out infinite alternate; }
+      .hero-glass-two { height: 72%; right: -8%; top: 14%; transform: rotate(21deg); width: 42%; animation: guide-drift-two 15s ease-in-out infinite alternate; }
+      .hero-glass-three { bottom: -18%; height: 56%; right: 31%; transform: rotate(7deg); width: 25%; animation: guide-drift-three 20s ease-in-out infinite alternate; }
+      @keyframes guide-noise { 0% { background-position: 0 0; } 20% { background-position: 23px -17px; } 40% { background-position: -18px 29px; } 60% { background-position: 31px 11px; } 80% { background-position: -12px -24px; } 100% { background-position: 9px 18px; } }
+      @keyframes guide-drift-one { from { margin-top: -1.5%; } to { margin-top: 2.5%; } }
+      @keyframes guide-drift-two { from { margin-right: -1.5%; } to { margin-right: 2%; } }
+      @keyframes guide-drift-three { from { margin-bottom: -2%; } to { margin-bottom: 2%; } }
+      .hero-inner { max-width: 850px; position: relative; z-index: 3; }
+      .hero h1 {
+        font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 800;
+        font-size: clamp(3.5rem, 8vw, 7.4rem);
+        letter-spacing: -.07em;
+        line-height: .94;
+        margin: 0;
+        max-width: 900px;
+      }
+      .hero h1 span { color: var(--green); }
+      .hero-copy {
+        color: #b9b9b9;
+        font-size: clamp(1.05rem, 1.7vw, 1.24rem);
+        line-height: 1.65;
+        margin: 48px 0 0;
+        max-width: 520px;
+      }
+      .hero-foot {
+        border-top: 1px solid rgb(255 255 255 / 20%);
+        color: var(--muted);
+        display: flex;
+        font-size: .75rem;
+        justify-content: space-between;
+        letter-spacing: .1em;
+        margin-top: 100px;
+        padding-top: 18px;
+        text-transform: uppercase;
+      }
+
+      .section { padding: 104px 8vw; }
+      .section + .section { border-top: 1px solid var(--border); }
+      .section-dark { background: var(--ink); color: var(--white); }
+      .section-snow { background: var(--snow); }
+      .section-white { background: var(--white); }
+      .section-heading { max-width: 780px; }
+      .section h2 {
+        font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 800;
+        font-size: clamp(2.4rem, 5vw, 5rem);
+        letter-spacing: -.06em;
+        line-height: .98;
+        margin: 0;
+      }
+      .section-intro {
+        color: var(--copy);
+        font-size: 1.08rem;
+        line-height: 1.65;
+        margin: 28px 0 0;
+        max-width: 650px;
+      }
+      .section-dark .section-intro { color: var(--muted); }
+
+      .principles {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(4, 1fr);
+        margin-top: 64px;
+      }
+      .principle {
+        border-top: 1px solid var(--border);
+        padding-top: 18px;
+      }
+      .principle-number { color: var(--green); font-size: .75rem; font-weight: 800; letter-spacing: .12em; }
+      .principle h3 { font-size: 1.15rem; letter-spacing: -.03em; margin: 46px 0 12px; }
+      .principle p { color: var(--copy); font-size: .92rem; line-height: 1.6; margin: 0; }
+
+      .swatches { display: grid; gap: 16px; grid-template-columns: repeat(4, 1fr); margin-top: 64px; }
+      .swatch { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+      .swatch-color { height: 120px; }
+      .swatch-info { padding: 18px; }
+      .swatch-name { font-weight: 800; }
+      .swatch-value { color: var(--muted); font-size: .78rem; margin-top: 6px; }
+      .swatch-ink .swatch-color { background: var(--ink); }
+      .swatch-green .swatch-color { background: var(--green); }
+      .swatch-white .swatch-color { background: var(--white); }
+      .swatch-snow .swatch-color { background: var(--snow); }
+      .swatch-graphite .swatch-color { background: var(--graphite); }
+      .swatch-muted .swatch-color { background: var(--muted); }
+      .swatch-copy .swatch-color { background: var(--copy); }
+      .swatch-border .swatch-color { background: var(--border); }
+
+      .type-stack { margin-top: 64px; }
+      .type-row { border-top: 1px solid var(--border); display: grid; gap: 32px; grid-template-columns: 150px minmax(0, 1fr); padding: 28px 0; }
+      .type-label { color: var(--muted); font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+      .type-h1 { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif; font-size: clamp(2.6rem, 5vw, 5.2rem); font-weight: 800; letter-spacing: -.07em; line-height: .96; margin: 0; }
+      .type-h2 { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif; font-size: clamp(2rem, 3.5vw, 3.5rem); font-weight: 800; letter-spacing: -.06em; line-height: 1; margin: 0; }
+      .type-h3 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.04em; line-height: 1.1; margin: 0; }
+      .type-body { color: var(--copy); font-size: 1.05rem; line-height: 1.65; margin: 0; max-width: 620px; }
+      .type-caption { color: var(--copy); font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; }
+
+      .logo-grid { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); margin-top: 64px; }
+      .logo-sample { align-items: center; border-radius: var(--radius); display: flex; justify-content: center; min-height: 190px; padding: 32px; }
+      .logo-sample img { width: min(210px, 100%); }
+      .logo-dark { background: var(--ink); }
+      .logo-light { background: var(--white); border: 1px solid var(--border); }
+      .logo-green { background: var(--green); }
+      .logo-note { color: var(--muted); font-size: .78rem; margin-top: 12px; }
+
+      .art-direction-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr); margin-top: 64px; }
+      .art-preview { background: var(--ink); border-radius: var(--radius); min-height: 420px; overflow: hidden; position: relative; }
+      .art-preview::before { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.72'/%3E%3C/svg%3E"); background-size: 180px 180px; content: ""; inset: -30%; mix-blend-mode: screen; opacity: .14; position: absolute; animation: guide-noise .9s steps(6) infinite; }
+      .art-preview::after { background: linear-gradient(90deg, var(--ink) 0%, rgb(10 10 10 / 52%) 58%, rgb(10 10 10 / 8%) 100%); content: ""; inset: 0; position: absolute; }
+      .art-preview-plane { background: rgb(255 255 255 / 5%); backdrop-filter: blur(24px); border: 1px solid rgb(255 255 255 / 18%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), 0 24px 60px rgb(0 0 0 / 26%); display: block; position: absolute; }
+      .art-preview-plane-one { height: 130%; right: 18%; top: -16%; transform: rotate(-14deg); width: 42%; }
+      .art-preview-plane-two { height: 75%; right: -10%; top: 15%; transform: rotate(20deg); width: 44%; }
+      .art-preview-copy { bottom: 32px; color: var(--white); left: 32px; max-width: 270px; position: absolute; z-index: 2; }
+      .art-preview-copy strong { display: block; font-size: 1.35rem; letter-spacing: -.04em; line-height: 1.1; }
+      .art-preview-label { color: var(--green); display: block; font-size: .68rem; font-weight: 800; letter-spacing: .14em; margin-bottom: 14px; text-transform: uppercase; }
+      .art-rule-list { border-top: 1px solid var(--border); margin: 0; padding: 0; }
+      .art-rule-list li { border-bottom: 1px solid var(--border); color: var(--copy); font-size: .92rem; line-height: 1.6; list-style: none; padding: 18px 0; }
+      .art-rule-list strong { color: var(--ink); display: block; font-size: .8rem; margin-bottom: 4px; }
+
+      .icon-grid { display: grid; gap: 16px; grid-template-columns: repeat(5, 1fr); margin-top: 64px; }
+      .icon-sample { border: 1px solid var(--border); border-radius: var(--radius); min-height: 168px; padding: 24px; }
+      .icon-sample svg { color: var(--green); height: 28px; margin-bottom: 44px; stroke-width: 1.6; width: 28px; }
+      .icon-name { font-size: .84rem; font-weight: 800; }
+      .icon-use { color: var(--muted); font-size: .76rem; line-height: 1.45; margin: 8px 0 0; }
+      .icon-rules { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); margin-top: 28px; }
+      .icon-rule { background: var(--green-soft); border-radius: var(--radius); padding: 24px; }
+      .icon-rule strong { display: block; margin-bottom: 8px; }
+      .icon-rule p { color: var(--copy); font-size: .86rem; line-height: 1.55; margin: 0; }
+
+      .spacing-grid { align-items: end; display: grid; gap: 20px; grid-template-columns: repeat(8, 1fr); margin-top: 64px; }
+      .spacing-item { min-width: 0; }
+      .spacing-bar { background: var(--green); height: var(--size); max-width: 100%; }
+      .spacing-label { color: var(--copy); font-size: .78rem; margin-top: 10px; }
+      .grid-demo { background-image: linear-gradient(90deg, rgb(0 200 83 / 20%) 1px, transparent 1px); background-size: calc(100% / 12) 100%; border: 1px solid var(--border); height: 170px; margin-top: 64px; position: relative; }
+      .grid-demo::after { color: var(--green); content: "12-column editorial grid / 8px baseline rhythm"; font-size: .72rem; left: 18px; letter-spacing: .1em; position: absolute; text-transform: uppercase; top: 18px; }
+
+      .component-grid { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); margin-top: 64px; }
+      .component { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); min-height: 260px; padding: 32px; }
+      .component h3 { font-size: 1.1rem; margin: 0 0 28px; }
+      .component-dark { background: var(--graphite); color: var(--white); }
+      .button-row { align-items: center; display: flex; flex-wrap: wrap; gap: 16px; }
+      .button { border: 1px solid transparent; border-radius: var(--pill); cursor: pointer; display: inline-flex; font-size: .84rem; font-weight: 800; justify-content: center; min-height: 50px; padding: 14px 22px; text-decoration: none; transition: background 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out, transform 180ms ease-out; }
+      .button:hover { transform: translateY(-1px); }
+      .button:active { transform: translateY(0); }
+      .button-primary { background: var(--green); color: var(--ink); }
+      .button-primary:hover, .button-primary.is-hover { background: #24d667; }
+      .button-primary:active, .button-primary.is-active { background: #00b84d; }
+      .button-secondary { background: transparent; border-color: var(--ink); color: var(--ink); }
+      .button-secondary:hover, .button-secondary.is-hover { background: var(--ink); color: var(--white); }
+      .button-secondary:active, .button-secondary.is-active { background: #333; border-color: #333; color: var(--white); }
+      .button-light { background: transparent; border-color: rgb(255 255 255 / 42%); color: var(--white); }
+      .button-light:hover, .button-light.is-hover { background: var(--white); color: var(--ink); }
+      .button-light:active, .button-light.is-active { background: #dedede; border-color: #dedede; color: var(--ink); }
+      .state-row { display: grid; gap: 16px; grid-template-columns: 1fr; }
+      .state { display: grid; gap: 12px; }
+      .state .button { min-width: 224px; white-space: nowrap; width: fit-content; }
+      .state-label { color: var(--muted); font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+      .nav-demo { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
+      .nav-demo a { border-radius: 8px; color: var(--white); font-size: .84rem; font-weight: 500; padding: 10px 15px; text-decoration: none; transition: background 180ms ease-out, color 180ms ease-out; }
+      .nav-demo a:hover, .nav-demo a.is-hover, .nav-demo a[aria-current="page"] { background: var(--graphite); color: var(--white); }
+      .nav-demo a:active, .nav-demo a.is-active { background: #333; }
+      .component-dark .small { color: var(--muted); }
+      .text-link { color: var(--ink); font-size: .84rem; font-weight: 800; text-decoration: none; }
+      .text-link::after { color: var(--green); content: "  ↗"; }
+      .card-demo { border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; min-height: 170px; padding: 24px; }
+      .card-demo strong { font-size: 1.25rem; letter-spacing: -.04em; margin-top: auto; }
+      .card-demo p { color: var(--copy); font-size: .9rem; line-height: 1.5; margin: 10px 0 0; }
+      .field { display: grid; gap: 9px; }
+      .field label { font-size: .8rem; font-weight: 800; }
+      .field input { border: 1px solid #bdbdbd; border-radius: var(--radius); font: inherit; min-height: 50px; padding: 12px 14px; }
+      .field input:focus { border-color: var(--green); outline: 2px solid var(--green-soft); }
+
+      .voice-grid { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); margin-top: 64px; }
+      .voice-card { border-radius: var(--radius); padding: 32px; }
+      .voice-card h3 { margin: 0 0 20px; }
+      .voice-card ul { line-height: 1.8; margin: 0; padding-left: 20px; }
+      .voice-do { background: var(--green-soft); }
+      .voice-dont { background: var(--ink); color: var(--white); }
+      .voice-dont li { color: #c7c7c7; }
+
+      .implementation { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); margin-top: 64px; }
+      .implementation-card { border-top: 1px solid var(--border); padding-top: 18px; }
+      .implementation-card h3 { font-size: 1rem; margin: 0 0 14px; }
+      .implementation-card p { color: var(--copy); font-size: .9rem; line-height: 1.6; margin: 0; }
+      code { background: var(--snow); border-radius: 4px; color: var(--ink); font-size: .84em; padding: 2px 5px; }
+
+      .footer { background: var(--ink); color: var(--white); padding: 44px 8vw; }
+      .footer-inner { align-items: end; display: flex; justify-content: space-between; }
+      .footer img { width: 118px; }
+      .footer p { color: var(--muted); font-size: .8rem; line-height: 1.5; margin: 0; max-width: 280px; }
+
+      @media (max-width: 980px) {
+        .layout { display: block; }
+        .toc { background: var(--white); border-bottom: 1px solid var(--border); padding: 18px 24px; position: static; }
+        .toc p { display: inline-block; margin: 0 18px 0 0; }
+        .toc a { border-left: 0; display: inline-block; padding: 0 12px; }
+        .principles, .swatches { grid-template-columns: repeat(2, 1fr); }
+        .art-direction-grid { grid-template-columns: 1fr; }
+        .icon-grid { grid-template-columns: repeat(3, 1fr); }
+        .icon-rules { grid-template-columns: 1fr; }
+        .implementation { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 620px) {
+        .shell { width: min(calc(100% - 32px), var(--max-width)); }
+        .site-header { min-height: 72px; padding: 0 16px; }
+        .header-meta { display: none; }
+        .hero { min-height: 580px; padding: 76px 24px 64px; }
+        .hero-foot { margin-top: 72px; }
+        .section { padding: 72px 24px; }
+        .toc { overflow-x: auto; white-space: nowrap; }
+        .toc a { font-size: .76rem; }
+        .principles, .swatches, .logo-grid, .component-grid, .voice-grid, .icon-grid { grid-template-columns: 1fr; }
+        .type-row { grid-template-columns: 1fr; gap: 14px; }
+        .spacing-grid { gap: 8px; grid-template-columns: repeat(4, 1fr); }
+        .spacing-item:nth-child(n + 5) { display: none; }
+        .footer { padding: 36px 24px; }
+        .footer-inner { align-items: start; flex-direction: column; gap: 28px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="OCSCO design system home">
+        <img src="../brand/ocsco-logo-white.svg" alt="OCSCO">
+      </a>
+      <div class="header-meta">Official design system / v1.0 / 2026</div>
+    </header>
+
+    <div class="layout" id="top">
+      <aside class="toc" aria-label="Style guide sections">
+        <p>Contents</p>
+        <a href="#principles">Principles</a>
+        <a href="#colors">Colors</a>
+        <a href="#type">Typography</a>
+        <a href="#layout">Layout</a>
+        <a href="#logos">Logos</a>
+        <a href="#art-direction">Art direction</a>
+        <a href="#iconography">Iconography</a>
+        <a href="#components">Components</a>
+        <a href="#voice">Voice</a>
+        <a href="#implementation">Rules</a>
+      </aside>
+
+      <main class="content">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-inner">
+            <p class="eyebrow">OCSCO / Official baseline / v1.0</p>
+            <h1 id="hero-title">Clear thinking.<br><span>Precise expression.</span></h1>
+            <p class="hero-copy">The visual system for OCSCO’s public website and future platform. Calm, architectural, and built to make strategy, design, and technology feel like one connected practice.</p>
+            <div class="hero-foot"><span>Source of truth</span><span>Review before implementation</span></div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <span class="hero-glass hero-glass-one"></span>
+            <span class="hero-glass hero-glass-two"></span>
+            <span class="hero-glass hero-glass-three"></span>
+          </div>
+          <div class="hero-noise" aria-hidden="true"></div>
+        </section>
+
+        <section class="section section-white" id="principles" aria-labelledby="principles-title">
+          <div class="section-heading">
+            <p class="eyebrow">01 / Foundation</p>
+            <h2 id="principles-title">Quiet authority, made visible.</h2>
+            <p class="section-intro">Every choice should make OCSCO feel capable, composed, and specific. The system creates confidence through hierarchy and substance rather than decoration.</p>
+          </div>
+          <div class="principles">
+            <article class="principle"><span class="principle-number">01</span><h3>Quiet authority</h3><p>Strong typography, generous space, and precise alignment. No noise for the sake of looking busy.</p></article>
+            <article class="principle"><span class="principle-number">02</span><h3>Clarity first</h3><p>One dominant message and one obvious next action in every important viewport.</p></article>
+            <article class="principle"><span class="principle-number">03</span><h3>Substance before style</h3><p>Visual polish must support explanation, proof, and conversion.</p></article>
+            <article class="principle"><span class="principle-number">04</span><h3>One connected system</h3><p>Brand, website, CMS, CRM, and applications should feel related and intentional.</p></article>
+          </div>
+        </section>
+
+        <section class="section section-snow" id="colors" aria-labelledby="colors-title">
+          <div class="section-heading">
+            <p class="eyebrow">02 / Color</p>
+            <h2 id="colors-title">Black, green, and room to breathe.</h2>
+            <p class="section-intro">Green is an action and emphasis color, not a decoration. Black creates rhythm and authority; light surfaces give the content enough room to speak.</p>
+          </div>
+          <div class="swatches">
+            <div class="swatch swatch-ink"><div class="swatch-color"></div><div class="swatch-info"><div class="swatch-name">Ink</div><div class="swatch-value">#0A0A0A / hero, header, footer</div></div></div>
+            <div class="swatch swatch-green"><div class="swatch-color"></div><div class="swatch-info"><div class="swatch-name">Green</div><div class="swatch-value">#00C853 / action, emphasis</div></div></div>
+            <div class="swatch swatch-white"><div class="swatch-color"></div><div class="swatch-info"><div class="swatch-name">White</div><div class="swatch-value">#FFFFFF / primary light surface</div></div></div>
+            <div class="swatch swatch-snow"><div class="swatch-color"></div><div class="swatch-info"><div class="swatch-name">Snow</div><div class="swatch-value">#F7F7F7 / alternate surface</div></div></div>
+            <div class="swatch swatch-graphite"><div class="swatch-color"></div><div class="swatch-info"><div class="swatch-name">Graphite</div><div class="swatch-value">#1A1A1A / dark surface</div></div></div>
+            <div class="swatch swatch-muted"><div class="swatch-color"></div><div class="swatch-info"><div class="swatch-name">Muted</div><div class="swatch-value">#9E9E9E / supporting text</div></div></div>
+            <div class="swatch swatch-copy"><div class="swatch-color"></div><div class="swatch-info"><div class="swatch-name">Copy</div><div class="swatch-value">#505050 / body text</div></div></div>
+            <div class="swatch swatch-border"><div class="swatch-color"></div><div class="swatch-info"><div class="swatch-name">Border</div><div class="swatch-value">#E8E8E8 / separators</div></div></div>
+          </div>
+        </section>
+
+        <section class="section section-white" id="type" aria-labelledby="type-title">
+          <div class="section-heading">
+            <p class="eyebrow">03 / Typography</p>
+            <h2 id="type-title">A confident voice with a readable measure.</h2>
+            <p class="section-intro">Use Plus Jakarta Sans across the system with a deliberate weight hierarchy: 400 for body, 500 for navigation, 600 for strong labels, 700 for subheadings, and 800 for hero and major headings.</p>
+          </div>
+          <div class="type-stack">
+            <div class="type-row"><div class="type-label">Display / H1</div><p class="type-h1">Systems that move the work forward.</p></div>
+            <div class="type-row"><div class="type-label">Heading / H2</div><p class="type-h2">Clarity is a competitive advantage.</p></div>
+            <div class="type-row"><div class="type-label">Heading / H3</div><p class="type-h3">Built for the way your team works.</p></div>
+            <div class="type-row"><div class="type-label">Body / 16–18px</div><p class="type-body">OCSCO integrates strategy, design, and technology to build digital systems that make ambitious businesses clearer, stronger, and ready for what comes next.</p></div>
+            <div class="type-row"><div class="type-label">Caption / 13–14px</div><p class="type-caption">Strategy / Design / Technology</p></div>
+          </div>
+        </section>
+
+        <section class="section section-snow" id="layout" aria-labelledby="layout-title">
+          <div class="section-heading">
+            <p class="eyebrow">04 / Layout</p>
+            <h2 id="layout-title">Space is part of the message.</h2>
+            <p class="section-intro">Use an 8px baseline grid, generous section spacing, readable content measures, and no more than three content columns. Editorial balance matters more than filling every gap.</p>
+          </div>
+          <div class="grid-demo" aria-label="12-column editorial grid demonstration"></div>
+          <div class="spacing-grid" aria-label="Spacing scale">
+            <div class="spacing-item"><div class="spacing-bar" style="--size: 8px"></div><div class="spacing-label">08</div></div>
+            <div class="spacing-item"><div class="spacing-bar" style="--size: 16px"></div><div class="spacing-label">16</div></div>
+            <div class="spacing-item"><div class="spacing-bar" style="--size: 24px"></div><div class="spacing-label">24</div></div>
+            <div class="spacing-item"><div class="spacing-bar" style="--size: 32px"></div><div class="spacing-label">32</div></div>
+            <div class="spacing-item"><div class="spacing-bar" style="--size: 48px"></div><div class="spacing-label">48</div></div>
+            <div class="spacing-item"><div class="spacing-bar" style="--size: 64px"></div><div class="spacing-label">64</div></div>
+            <div class="spacing-item"><div class="spacing-bar" style="--size: 96px"></div><div class="spacing-label">96</div></div>
+            <div class="spacing-item"><div class="spacing-bar" style="--size: 120px"></div><div class="spacing-label">120</div></div>
+          </div>
+        </section>
+
+        <section class="section section-dark" id="logos" aria-labelledby="logos-title">
+          <div class="section-heading">
+            <p class="eyebrow">05 / Logo</p>
+            <h2 id="logos-title">Use the wordmark with restraint.</h2>
+            <p class="section-intro">The supplied OCSCO wordmark is the primary identity. Use the appropriate color variant for the surface. Do not recreate, crop, outline, rotate, or place it inside a decorative circle.</p>
+          </div>
+          <div class="logo-grid">
+            <div><div class="logo-sample logo-dark"><img src="../brand/ocsco-logo-white.svg" alt="OCSCO white wordmark"></div><p class="logo-note">White on Ink</p></div>
+            <div><div class="logo-sample logo-light"><img src="../brand/ocsco-logo-black.svg" alt="OCSCO black wordmark"></div><p class="logo-note">Black on White</p></div>
+            <div><div class="logo-sample logo-green"><img src="../brand/ocsco-logo-black.svg" alt="OCSCO black wordmark on green"></div><p class="logo-note">Black on Green</p></div>
+          </div>
+        </section>
+
+        <section class="section section-white" id="art-direction" aria-labelledby="art-direction-title">
+          <div class="section-heading">
+            <p class="eyebrow">06 / Art direction</p>
+            <h2 id="art-direction-title">Atmosphere without decoration.</h2>
+            <p class="section-intro">The OCSCO hero can use a dark editorial field with soft glass planes and low-amplitude animated grain. It should create depth and presence while keeping the message and action in control.</p>
+          </div>
+          <div class="art-direction-grid">
+            <div class="art-preview" aria-label="Native CSS hero treatment preview">
+              <span class="art-preview-plane art-preview-plane-one"></span>
+              <span class="art-preview-plane art-preview-plane-two"></span>
+              <div class="art-preview-copy"><span class="art-preview-label">Native treatment</span><strong>Soft planes.<br>Clear message.</strong></div>
+            </div>
+            <ul class="art-rule-list">
+              <li><strong>Hero visual</strong>Use an abstract field, not a stock photo or a copied composition. Keep the strongest negative space behind the headline.</li>
+              <li><strong>Motion</strong>Animate the grain and glass planes slowly. Respect <code>prefers-reduced-motion</code> and never make motion necessary to understand the page.</li>
+              <li><strong>Portfolio media</strong>Use approved project images when available. Until then, show a quiet labeled placeholder rather than inventing project evidence.</li>
+              <li><strong>Restraint</strong>One atmospheric hero treatment is enough. Supporting sections should earn their visual elements through explanation or proof.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="section section-snow" id="iconography" aria-labelledby="iconography-title">
+          <div class="section-heading">
+            <p class="eyebrow">07 / Iconography</p>
+            <h2 id="iconography-title">Useful marks, never ornament.</h2>
+            <p class="section-intro">Use Lucide React for the application: a consistent 24px line-icon family with a 1.6px stroke. Icons clarify capabilities, actions, and system concepts; they never replace a meaningful label.</p>
+          </div>
+          <div class="icon-grid" aria-label="OCSCO iconography examples">
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.232 5.232 18.768 8.768"/><path d="M3 21l1.5-5.5L16.5 3.5a2.121 2.121 0 0 1 3 3L7.5 19.5 3 21Z"/><path d="m14 6 4 4"/></svg><div class="icon-name">PenTool</div><p class="icon-use">Branding</p></div>
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="14" x="3" y="4" rx="2"/><path d="M3 9h18"/><path d="M8 20h8"/></svg><div class="icon-name">PanelsTopLeft</div><p class="icon-use">Website design</p></div>
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18 8.25 4.5a1 1 0 0 1 0 1.76l-8.25 4.5a1 1 0 0 1-.96 0l-8.25-4.5a1 1 0 0 1 0-1.76l8.25-4.5a1 1 0 0 1 .96 0Z"/><path d="m3.88 12 8.16 4.45a1 1 0 0 0 .96 0L20.99 12"/><path d="m3.88 16.5 8.16 4.45a1 1 0 0 0 .96 0l8.16-4.45"/></svg><div class="icon-name">Layers3</div><p class="icon-use">Custom CMS</p></div>
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="8" x="3" y="3" rx="2"/><rect width="8" height="8" x="13" y="13" rx="2"/><path d="M13 7h2a2 2 0 0 1 2 2v4"/><path d="M7 13v-2a2 2 0 0 1 2-2h4"/></svg><div class="icon-name">Workflow</div><p class="icon-use">Business tools</p></div>
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg><div class="icon-name">Blocks</div><p class="icon-use">Web applications</p></div>
+          </div>
+          <div class="icon-rules">
+            <div class="icon-rule"><strong>Pair with a label</strong><p>Use icons beside a visible heading, link, or button so the intent remains clear to every visitor.</p></div>
+            <div class="icon-rule"><strong>One family</strong><p>Keep the same stroke, size, corner treatment, and optical weight across the public site and future platform.</p></div>
+            <div class="icon-rule"><strong>Green is emphasis</strong><p>Use green for active, actionable, or selected states. Keep neutral icons quiet on content surfaces.</p></div>
+          </div>
+        </section>
+
+        <section class="section section-white" id="components" aria-labelledby="components-title">
+          <div class="section-heading">
+            <p class="eyebrow">08 / Components</p>
+            <h2 id="components-title">Simple parts, consistently composed.</h2>
+            <p class="section-intro">Components should feel precise and useful. Use pill-shaped action controls, 8px active navigation surfaces, 12px structural surfaces, quiet borders, and one clear action hierarchy.</p>
+          </div>
+          <div class="component-grid">
+            <article class="component"><h3>Primary action states</h3><div class="state-row"><div class="state"><span class="state-label">Default</span><a class="button button-primary" href="#components">Start a conversation ↗</a></div><div class="state"><span class="state-label">Hover</span><a class="button button-primary is-hover" href="#components">Start a conversation ↗</a></div><div class="state"><span class="state-label">Active</span><a class="button button-primary is-active" href="#components">Start a conversation ↗</a></div></div></article>
+            <article class="component"><h3>Secondary action states</h3><div class="state-row"><div class="state"><span class="state-label">Default</span><a class="button button-secondary" href="#components">See our services</a></div><div class="state"><span class="state-label">Hover</span><a class="button button-secondary is-hover" href="#components">See our services</a></div><div class="state"><span class="state-label">Active</span><a class="button button-secondary is-active" href="#components">See our services</a></div></div></article>
+            <article class="component component-dark"><h3>Top navigation states</h3><nav class="nav-demo" aria-label="Top navigation state examples"><a href="#components">About</a><a class="is-hover" href="#components">Services</a><a class="is-active" href="#components" aria-current="page">Contact</a></nav><p class="small muted">Default links stay quiet. Hover and active links use a compact graphite surface with an 8px radius.</p></article>
+            <article class="component"><h3>Capability card</h3><div class="card-demo"><span class="eyebrow">01 / Capability</span><strong>Website design &amp; development</strong><p>Digital experiences that turn clarity into trust and trust into momentum.</p></div></article>
+            <article class="component"><h3>Form field</h3><div class="field"><label for="example-field">Your email address</label><input id="example-field" type="email" placeholder="you@company.com"></div></article>
+          </div>
+        </section>
+
+        <section class="section section-snow" id="voice" aria-labelledby="voice-title">
+          <div class="section-heading">
+            <p class="eyebrow">09 / Content voice</p>
+            <h2 id="voice-title">Confident, direct, and grounded.</h2>
+            <p class="section-intro">Lead with outcomes and clarity. OCSCO should sound like a partner and architect, not a commodity vendor.</p>
+          </div>
+          <div class="voice-grid">
+            <article class="voice-card voice-do"><h3>Do</h3><ul><li>Use short declarative sentences.</li><li>Lead with business outcomes.</li><li>Be specific about what changes.</li><li>Sound warm, composed, and intelligent.</li></ul></article>
+            <article class="voice-card voice-dont"><h3>Do not</h3><ul><li>Make unsupported promises or claims.</li><li>Use vague agency buzzwords.</li><li>Overuse exclamation marks.</li><li>Publish metrics, logos, or testimonials without approval.</li></ul></article>
+          </div>
+        </section>
+
+        <section class="section section-white" id="implementation" aria-labelledby="implementation-title">
+          <div class="section-heading">
+            <p class="eyebrow">10 / Implementation</p>
+            <h2 id="implementation-title">The rules behind the work.</h2>
+            <p class="section-intro">This guide is the official v1.0 visual reference for the public website and future platform surfaces. Future changes should be versioned as v1.1 or v2.0 rather than silently changing this baseline.</p>
+          </div>
+          <div class="implementation">
+            <article class="implementation-card"><h3>Accessibility</h3><p>Maintain WCAG AA contrast, visible keyboard focus, meaningful heading order, labelled controls, and reduced-motion support.</p></article>
+            <article class="implementation-card"><h3>Interaction</h3><p>Use restrained 200–300ms ease-out transitions. Avoid auto-playing sliders, pop-ups, particle effects, and decorative motion.</p></article>
+            <article class="implementation-card"><h3>Assets</h3><p>Brand files live in <code>/public/brand</code>. Favicons live in <code>/public/favicon</code>. Prefer approved OCSCO or client work over generic stock imagery.</p></article>
+            <article class="implementation-card"><h3>Routes</h3><p>Apply the system consistently across Home, Services, Work, About, Contact, and future CMS-driven content.</p></article>
+            <article class="implementation-card"><h3>Proof</h3><p>Case studies, testimonials, client names, outcomes, and metrics require owner approval and evidence before publication.</p></article>
+            <article class="implementation-card"><h3>Versioning</h3><p>v1.0 is the locked official baseline. Non-breaking refinements become v1.1; structural or visual-system changes become v2.0 and require owner approval.</p></article>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <div class="footer-inner">
+            <img src="../brand/ocsco-logo-white.svg" alt="OCSCO">
+            <p>OCSCO official design system / Version 1.0 / Project Crimson.</p>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

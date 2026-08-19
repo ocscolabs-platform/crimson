@@ -4,7 +4,7 @@
 
 **Phase 3 — Public Website Implementation**
 
-Phase 0, Phase 1, and Phase 2 are complete. The first public route structure is implemented locally and is ready for review. Visual refinement is intentionally deferred. CMS, CRM, authentication, and Supabase remain unimplemented.
+Phase 0, Phase 1, and Phase 2 are complete. The public route structure is implemented locally, and the visual redesign is being built in reviewable slices. CMS, CRM, authentication, and Supabase remain unimplemented.
 
 ## Completed
 
@@ -29,7 +29,8 @@ Phase 0, Phase 1, and Phase 2 are complete. The first public route structure is 
 
 ## In Progress
 
-- Owner review of the public route structure and draft-safe messaging; visual refinement is deferred by owner direction.
+- Locked the standalone OCSCO HTML design style guide as the official v1.0 visual source of truth for typography, native hero atmosphere, iconography, media placeholders, and component states.
+- Preparing the official guide for staging review at `/design-style-guide` before production promotion.
 
 ## Blocked / Requires Owner Action
 
@@ -42,4 +43,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Review and approve the route structure before refining the visual system or connecting content to a CMS.
+Review the official v1.0 guide at `/design-style-guide` in staging. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion. Do not connect a CMS or backend until the public visual system is approved.
