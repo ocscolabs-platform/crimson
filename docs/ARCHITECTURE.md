@@ -2,7 +2,7 @@
 
 ## Current state
 
-The repository currently contains a Next.js App Router application using TypeScript, Tailwind CSS, and ESLint. The first public route structure is implemented for the homepage, Services, service detail pages, Work, About, and Contact. The public website is deployed through Vercel and the contact workflow uses environment-specific Supabase and Resend server integrations. Public page, service, work, and shared chrome content now use a reviewed published-only Supabase read boundary with local fallbacks. A staging-only Supabase Auth boundary and read-only `/admin` dashboard are being introduced; no CMS mutations exist yet.
+The repository currently contains a Next.js App Router application using TypeScript, Tailwind CSS, and ESLint. The first public route structure is implemented for the homepage, Services, service detail pages, Work, About, and Contact. The public website is deployed through Vercel and the contact workflow uses environment-specific Supabase and Resend server integrations. Public page, service, work, and shared chrome content now use a reviewed published-only Supabase read boundary with local fallbacks. A staging-only Supabase Auth boundary protects `/admin`, where the controlled Services editor uses role-aware RLS and database-generated audit history; broader CMS mutations remain out of scope.
 
 No CMS editor, role/permission model, storage/media library, CRM, or production admin access exists yet. Production credentials remain outside the repository.
 

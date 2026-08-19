@@ -12,7 +12,7 @@ export type AdminContent = {
   caseStudies: Array<{ project_name: string; slug: string; status: string }>;
 };
 
-export async function getPublishedAdminContent(): Promise<AdminContent> {
+export async function getAdminContent(): Promise<AdminContent> {
   const supabase = await createClient();
 
   const [settings, navigation, pages, services, caseStudies] = await Promise.all([
@@ -57,7 +57,7 @@ export async function getPublishedAdminContent(): Promise<AdminContent> {
       {
         label: "Services",
         count: services.data?.length ?? 0,
-        description: "Published capability records currently in the staging CMS.",
+        description: "Service records visible to this staging role.",
       },
       {
         label: "Case studies",

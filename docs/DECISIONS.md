@@ -190,3 +190,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** Services are the smallest useful editorial surface because they already power the public capability pages. A narrow first write boundary lets the team validate role checks, draft/review safeguards, and the editor experience before adding broader page, navigation, case-study, media, or publishing workflows.
 - **Status:** Accepted for staging review; broader CMS editing remains pending workflow and audit review
 - **Date:** 2026-08-20
+
+## ADR-028 — Require database audit history and review-before-publish
+
+- **Decision:** Add an immutable, database-generated audit log for every service insert/update and require published service content to pass through `review` before publication or edits. Only owners may publish or archive. Do not add version restoration or broader CMS write surfaces in this milestone.
+- **Rationale:** Role checks in the editor are not sufficient evidence for a publishing workflow. Database-generated history gives reviewers a trustworthy change trail, while review-before-publish prevents silent edits to live content. Deferring restoration keeps the first audit slice small and makes rollback requirements explicit before expansion.
+- **Status:** Accepted for staging review; Production and broader CMS editing remain out of scope
+- **Date:** 2026-08-20

@@ -28,20 +28,23 @@ Published → Archived (owner only)
 - Reviewers inspect content but cannot change it.
 - Owners control publication and archival.
 - Public routes continue to receive only published records with a valid publication timestamp.
-- The editor does not provide version history or audit logs yet; those are required before broad CMS rollout.
+- The editor now surfaces database-generated audit history; version restoration is still deferred and is required before broad CMS rollout.
 
 ## Staging rollout
 
 1. Apply `supabase/migrations/20260820050000_add_staging_service_editor_policies.sql` in `crimson-staging` after the membership migration.
-2. Push the staging branch and wait for Vercel to deploy it.
-3. Sign in at `/admin`, open a service, and review the controlled form.
-4. As the staging owner, update one non-sensitive service field and save it. Confirm the success state and public staging route.
-5. Do not run either migration in Production and do not promote the editor to `main` until the workflow is reviewed.
+2. Apply `supabase/migrations/20260820060000_add_staging_cms_audit.sql` after the service editor policy migration.
+3. Push the staging branch and wait for Vercel to deploy it.
+4. Sign in at `/admin`, open a service, and review the controlled form and change history.
+5. As the staging owner, follow the review-before-publish workflow with one non-sensitive service field. Confirm the success state and audit entries.
+6. Do not run either migration in Production and do not promote the editor to `main` until the workflow is reviewed.
 
 ## Safeguards
 
 - The browser never uses `SUPABASE_SECRET_KEY`.
 - RLS policies enforce the role and status boundary even if the UI is bypassed.
 - No delete policy is granted; archival is an explicit owner status instead.
+- Published records must move through Review before content changes or publication.
+- Audit rows are database-generated and read-only from the CMS.
 - The editor is not linked from the public website.
-- Any future publishing workflow should add audit logging, review evidence, and a clear rollback path before expanding beyond services.
+- Any future publishing workflow should add version restoration and a clear rollback path before expanding beyond services.

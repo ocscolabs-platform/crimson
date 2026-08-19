@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getPublishedAdminContent } from "@/lib/admin-content";
+import { getAdminContent } from "@/lib/admin-content";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
   let loadError = "";
 
   try {
-    content = await getPublishedAdminContent();
+    content = await getAdminContent();
   } catch (error) {
     loadError = error instanceof Error ? error.message : "Unable to load published CMS content.";
   }
@@ -37,7 +37,7 @@ export default async function AdminDashboardPage() {
         <header className="admin-header">
           <div>
             <Link className="admin-brand" href="/">OCSCO</Link>
-            <p className="admin-kicker">Staging CMS / Read-only</p>
+            <p className="admin-kicker">Staging CMS / Control room</p>
           </div>
           <div className="admin-header-actions">
             <span className="admin-user">{user.email}</span>
@@ -53,10 +53,10 @@ export default async function AdminDashboardPage() {
         <section className="admin-hero">
           <div>
             <p className="admin-kicker admin-kicker-green">Content control room</p>
-            <h1>Published content, in one place.</h1>
+            <h1>Staging content, in one place.</h1>
           </div>
           <p className="admin-intro">
-            A safe staging view of the content currently exposed by the public website. Editing and publishing controls will be added only after roles and permissions are approved.
+            A safe staging view of the content currently exposed by the public website. Approved members can edit Services according to role; publishing and broader CMS controls remain restricted.
           </p>
         </section>
 
@@ -77,9 +77,9 @@ export default async function AdminDashboardPage() {
               <div className="admin-section-heading">
                 <div>
                   <p className="admin-kicker">Published boundary</p>
-                  <h2>What the public site can read</h2>
+                  <h2>What this role can read</h2>
                 </div>
-                <p className="admin-section-note">These records are read through the authenticated session but remain governed by the existing published-only RLS policies.</p>
+                <p className="admin-section-note">Authorized members can review non-archived service records here. The public website remains governed by the published-only RLS boundary.</p>
               </div>
               <div className="admin-stat-grid">
                 {content.collections.map((collection) => (
@@ -100,7 +100,7 @@ export default async function AdminDashboardPage() {
                     <h2>Capabilities</h2>
                   </div>
                   <div className="admin-panel-heading-actions">
-                    <span>{content.services.length} published</span>
+                    <span>{content.services.length} records</span>
                     <Link className="admin-panel-link" href={`/admin/services/${content.services[0]?.slug ?? "branding"}`}>
                       {membership.role === "owner" || membership.role === "editor" ? "Open editor" : "Review"} ↗
                     </Link>
@@ -130,7 +130,7 @@ export default async function AdminDashboardPage() {
           </>
         ) : null}
 
-        <footer className="admin-footer">Staging only · No editing or publishing actions are enabled.</footer>
+        <footer className="admin-footer">Staging only · Services are the first controlled editor slice.</footer>
       </div>
     </main>
   );

@@ -68,3 +68,19 @@ This queue records approved next-step work before implementation. Tasks in this 
 - No delete action or service-editor public link is exposed.
 - The staging policy migration applies cleanly and one non-sensitive owner update is verified on the staging public service route.
 - Production receives no staging migration, credentials, content, or editor deployment until a separate promotion decision.
+
+## PH4-003 — Add CMS audit history and publishing safeguards
+
+- **Status:** Implementation complete locally; staging migration and workflow QA pending
+- **Goal:** Establish trustworthy change history and prevent silent edits or uncontrolled publication of service content.
+- **Reference:** `docs/PHASE-4-CMS-AUDIT.md`
+
+### Acceptance criteria
+
+- Every staging service insert/update creates an immutable database audit entry.
+- Owners alone can publish or archive service records.
+- Published service content must move through Review before edits or republishing.
+- The protected editor displays recent audit history without exposing audit mutation controls.
+- Audit rows include the actor, action, status transition, timestamp, and before/after snapshots.
+- The audit migration is applied and verified only in `crimson-staging`.
+- Version restoration and broader CMS editing remain deferred until the workflow is reviewed.

@@ -1,6 +1,6 @@
 # Phase 4 — CMS Roles and Authorization
 
-**Status:** Staging implementation in progress
+**Status:** Staging implementation in progress; audit and publishing safeguards are the current milestone
 
 ## Proposed roles
 
@@ -34,4 +34,4 @@ Do not commit the UUID, password, or any Supabase secret to the repository.
 - The intended staging user has exactly one membership row with role `owner`.
 - The signed-in dashboard displays the assigned role.
 - An authenticated user with no membership remains read-only and receives no elevated content access.
-- No CMS content mutation policy is added until the editor workflow, draft visibility, reviewer boundaries, and audit requirements are separately approved.
+- The controlled Services editor is the only write-enabled surface, and audit history is required for every service change.

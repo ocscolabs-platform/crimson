@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
-import { canEditServices, getAdminService } from "@/lib/admin-services";
+import { canEditServices, getAdminService, getAdminServiceAudit, type AdminServiceAuditEntry } from "@/lib/admin-services";
 import { createClient } from "@/lib/supabase/server";
 
 type AdminServicePageProps = {
@@ -89,6 +89,14 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
 
   if (!service) notFound();
 
+  let auditEntries: AdminServiceAuditEntry[] = [];
+  let auditError = "";
+  try {
+    auditEntries = await getAdminServiceAudit(service.id);
+  } catch {
+    auditError = "Audit history is not available yet. Apply the staging audit migration before using this editor.";
+  }
+
   const canEdit = canEditServices(membership.role);
   const statusOptions = membership.role === "owner"
     ? ["draft", "review", "published", "archived"]
@@ -134,6 +142,12 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
             <p className="admin-section-note">{canEdit ? "Owners can publish. Editors can prepare draft and review content. Every change is limited by the staging RLS policies." : "Your role can review published content, but cannot change this record."}</p>
           </div>
 
+          {service.status === "published" && canEdit ? (
+            <p className="admin-editor-warning" role="note">
+              Published content is protected. Move this record to Review before changing it, then publish it again as an owner.
+            </p>
+          ) : null}
+
           <form className="admin-editor-form" action={saveService.bind(null, slug)}>
             <label>
               Name
@@ -163,6 +177,31 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
             </label>
             {canEdit ? <button className="button button-primary admin-submit" type="submit">Save staging record <span aria-hidden="true">↗</span></button> : null}
           </form>
+        </section>
+
+        <section className="admin-audit-panel">
+          <div className="admin-section-heading">
+            <div>
+              <p className="admin-kicker">Change history</p>
+              <h2>Recent service activity</h2>
+            </div>
+            <p className="admin-section-note">Database-generated history for this service. Audit records cannot be edited from the CMS.</p>
+          </div>
+          {auditError ? <p className="admin-alert" role="status">{auditError}</p> : null}
+          {!auditError && auditEntries.length === 0 ? <p className="admin-empty-state">No changes have been recorded yet.</p> : null}
+          {auditEntries.length > 0 ? (
+            <ol className="admin-audit-list">
+              {auditEntries.map((entry) => (
+                <li key={entry.id}>
+                  <div>
+                    <strong>{entry.action === "status_changed" ? "Status changed" : entry.action === "created" ? "Service created" : "Content updated"}</strong>
+                    <span>{entry.from_status && entry.to_status ? `${entry.from_status} → ${entry.to_status}` : entry.to_status ?? "—"}</span>
+                  </div>
+                  <small>{new Date(entry.created_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</small>
+                </li>
+              ))}
+            </ol>
+          ) : null}
         </section>
         <footer className="admin-footer">Staging only · Services are the first controlled editor slice.</footer>
       </div>

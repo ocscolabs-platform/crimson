@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, and a controlled Services editor. Broader CMS editing, media storage, audit history, and production admin access remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, and the audit/publishing safeguard implementation. Broader CMS editing, version restoration, media storage, and production admin access remain unimplemented.
 
 ## Completed
 
@@ -35,8 +35,8 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 ## In Progress
 
-- Apply the Services editor policy migration after the membership migration and validate one non-sensitive staging update as the owner.
-- Review the Phase 4 CMS foundation, global content seed, protected `/admin` dashboard, role boundary, and controlled `/admin/services/[slug]` editor in staging.
+- Apply the CMS audit migration after the Services editor policy migration and validate review-before-publish as the owner.
+- Review the protected `/admin` dashboard, service editor change history, status transitions, and database-generated audit rows in staging.
 - Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
@@ -51,4 +51,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Apply `20260820050000_add_staging_service_editor_policies.sql` in `crimson-staging` after the membership migration is active, then open `/admin/services/branding` and test one non-sensitive service update as the owner. Do not apply this editor migration or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Apply `20260820060000_add_staging_cms_audit.sql` in `crimson-staging` after the membership and Services editor migrations are active. Then open `/admin/services/branding`, verify the audit panel, and test the review-before-publish workflow with one non-sensitive change. Do not apply this migration or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
