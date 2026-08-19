@@ -176,3 +176,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** The team needs a safe way to inspect the content boundary before building an editor. Separating authentication from editing allows session handling, route protection, and environment setup to be tested without prematurely deciding staff roles, draft visibility, publishing permissions, audit history, or mutation safeguards.
 - **Status:** Accepted for staging review; editor and production access pending separate approval
 - **Date:** 2026-08-20
+
+## ADR-026 — Separate CMS membership roles from content mutation
+
+- **Decision:** Establish `owner`, `editor`, and `reviewer` membership roles in a dedicated `cms_members` table, but keep all content mutation policies disabled in this slice. The first staging owner is assigned manually after reviewing the Auth user UUID.
+- **Rationale:** Identity and authorization need to be testable before an editor can change public content. Separating the role map from content policies avoids granting broad write access while the team is still deciding draft visibility, review gates, publishing authority, and audit requirements.
+- **Status:** Accepted for staging review; mutation policy and editor workflow pending separate approval
+- **Date:** 2026-08-20

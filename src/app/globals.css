@@ -231,6 +231,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-header .admin-kicker { margin-top: 8px; }
 .admin-header-actions { display: flex; align-items: center; gap: 20px; }
 .admin-user { max-width: 280px; overflow: hidden; color: #b5b5b5; font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
+.admin-role { border: 1px solid rgb(0 200 83 / 38%); border-radius: 999px; color: var(--green); font-size: .68rem; font-weight: 800; letter-spacing: .08em; padding: 7px 10px; text-transform: uppercase; }
+.admin-role-pending { border-color: rgb(255 255 255 / 20%); color: #9a9a9a; }
 .admin-signout { border: 1px solid rgb(255 255 255 / 24%); border-radius: 999px; background: transparent; color: var(--white); cursor: pointer; font: inherit; font-size: .78rem; font-weight: 700; padding: 10px 15px; }
 .admin-signout:hover { border-color: var(--green); color: var(--green); }
 .admin-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr); align-items: end; gap: 64px; padding: 100px 0 92px; }
@@ -256,6 +258,9 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-record-list li small { color: #818181; font-size: .72rem; }
 .admin-alert { display: grid; gap: 8px; border: 1px solid rgb(255 92 92 / 45%); border-radius: 12px; background: rgb(255 92 92 / 8%); color: #ffb2b2; padding: 20px 22px; }
 .admin-alert span { color: #d99494; font-size: .86rem; }
+.admin-role-alert { display: grid; gap: 7px; border: 1px solid rgb(255 255 255 / 16%); border-radius: 12px; background: #141414; color: #d5d5d5; padding: 18px 20px; }
+.admin-role-alert span { color: #969696; font-size: .82rem; line-height: 1.55; }
+.admin-role-alert code { color: var(--green); font-size: .78rem; }
 .admin-footer { border-top: 1px solid rgb(255 255 255 / 16%); color: #777; font-size: .72rem; letter-spacing: .08em; padding-top: 20px; text-transform: uppercase; }
 .admin-login-page { display: grid; min-height: 100vh; place-items: center; padding: 32px; background: radial-gradient(circle at 76% 18%, rgb(0 200 83 / 10%), transparent 34%), var(--ink); }
 .admin-login-card { width: min(100%, 520px); border: 1px solid rgb(255 255 255 / 16%); border-radius: 16px; background: #111; padding: clamp(28px, 6vw, 56px); box-shadow: 0 24px 80px rgb(0 0 0 / 26%); }

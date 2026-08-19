@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only read boundary, and a staging-only read-only admin auth slice. CRM, CMS editing, media storage, role management, and production admin access remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only read boundary, staging-only read-only admin auth, and the initial role/authorization boundary. CRM, CMS editing, media storage, publishing, and production admin access remain unimplemented.
 
 ## Completed
 
@@ -35,7 +35,8 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 ## In Progress
 
-- Review the Phase 4 CMS foundation, global content seed, and read-only `/admin` dashboard in staging.
+- Apply the CMS membership migration and assign the first staging owner.
+- Review the Phase 4 CMS foundation, global content seed, read-only `/admin` dashboard, and role boundary in staging.
 - Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
@@ -50,4 +51,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Create the intended staff user in `crimson-staging`, test `/admin/login` and the read-only dashboard on the staging deployment, then review the proposed role and permission model before any editor or mutation policy is built. Do not apply the staging auth setup to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Apply `20260820040000_create_cms_members.sql` in `crimson-staging`, assign `ocscolabs@gmail.com` the `owner` role using its Auth user UUID, and confirm the dashboard role badge. Do not apply the membership migration or staging role assignment to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getPublishedAdminContent } from "@/lib/admin-content";
+import { getCmsMembership } from "@/lib/cms-auth";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
+  const membership = await getCmsMembership(user.id);
   let content;
   let loadError = "";
 
@@ -39,6 +41,9 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="admin-header-actions">
             <span className="admin-user">{user.email}</span>
+            <span className={`admin-role admin-role-${membership.role ?? "pending"}`}>
+              {membership.role ?? "Role pending"}
+            </span>
             <form action={signOut}>
               <button className="admin-signout" type="submit">Sign out</button>
             </form>
@@ -62,6 +67,12 @@ export default async function AdminDashboardPage() {
           </section>
         ) : content ? (
           <>
+            {!membership.role ? (
+              <section className="admin-role-alert" role="status">
+                <strong>Membership is not assigned yet.</strong>
+                <span>This account remains read-only. Assign an approved staging role in <code>public.cms_members</code> before adding any elevated workflow.</span>
+              </section>
+            ) : null}
             <section className="admin-section">
               <div className="admin-section-heading">
                 <div>

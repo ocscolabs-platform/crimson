@@ -28,6 +28,8 @@ The dashboard uses the existing publishable Supabase key and the authenticated b
 
 The dashboard is therefore a review surface, not an editor. A future editor requires a separate decision covering staff identity, roles, authorization, mutation policies, auditability, and content review workflow before it is implemented.
 
+The proposed role model is documented in [`PHASE-4-CMS-ROLES.md`](./PHASE-4-CMS-ROLES.md). Role assignment does not grant content editing in this slice.
+
 ## Staging setup
 
 1. In the `crimson-staging` Supabase project, open **Authentication → Users** and create the owner/staff user that should review the CMS. Do not commit the password or share it in repository files.
