@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  async rewrites() {
+    return [{
+      source: "/design-style-guide",
+      destination: "/style-guide/index.html",
+    }];
+  },
 };
 
 export default nextConfig;
