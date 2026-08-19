@@ -6,6 +6,7 @@ export type WorkProject = {
   description: string;
   href?: string;
   featured?: boolean;
+  clientVisibility?: "hidden" | "approved";
 };
 
 export const workProjects: WorkProject[] = [

@@ -47,7 +47,7 @@ Before an owner publishes a case study, staging must confirm:
 
 ## Required gates before enabling editing
 
-1. **Privacy-safe rendering:** implemented in the public Work mapper; hidden records use safe generic copy and omit external links, while approved records retain their approved presentation.
+1. **Privacy-safe rendering:** implemented in the public Work mapper; hidden records use safe generic copy, omit external links, and do not receive internal detail links, while approved records retain their approved presentation.
 2. **Case-study audit coverage:** extend the audit boundary to case studies and relationship changes before allowing mutations.
 3. **Media contract:** define approved storage, file types, alt text, and removal/retention behavior. Do not add arbitrary uploads to the first editor.
 4. **Featured rule:** enforce one published featured record or make featured placement an explicit owner-only action with a deterministic tie-breaker.

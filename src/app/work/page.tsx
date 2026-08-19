@@ -44,7 +44,11 @@ export default async function WorkPage() {
                   <span>Project story</span>
                   <strong>In preparation</strong>
                 </div>
-                <Link className="work-card-link" href={`/work/${featuredProject.slug}`}>View project preview <span aria-hidden="true">↗</span></Link>
+                {featuredProject.clientVisibility === "hidden" ? (
+                  <span className="work-card-link work-card-link-muted">Project preview pending approval</span>
+                ) : (
+                  <Link className="work-card-link" href={`/work/${featuredProject.slug}`}>View project preview <span aria-hidden="true">↗</span></Link>
+                )}
               </div>
             </div>
           </article>
@@ -72,7 +76,11 @@ export default async function WorkPage() {
                   <h3>{project.name}</h3>
                   <p>{project.description}</p>
                   <div className="work-card-actions">
-                    <Link className="work-card-link" href={`/work/${project.slug}`}>View project <span aria-hidden="true">↗</span></Link>
+                    {project.clientVisibility === "hidden" ? (
+                      <span className="work-card-link work-card-link-muted">Project preview pending approval</span>
+                    ) : (
+                      <Link className="work-card-link" href={`/work/${project.slug}`}>View project <span aria-hidden="true">↗</span></Link>
+                    )}
                     {project.href ? (
                       <a className="work-card-link work-card-link-secondary" href={project.href} target="_blank" rel="noreferrer">
                         Open prototype <span aria-hidden="true">↗</span>

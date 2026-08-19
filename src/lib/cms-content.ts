@@ -229,6 +229,7 @@ function mapPublishedCaseStudy(caseStudy: PublishedCaseStudy): WorkProject {
   return {
     slug: caseStudy.slug,
     name: isApproved ? caseStudy.project_name : safeName,
+    clientVisibility: caseStudy.client_visibility,
     status: caseStudy.project_type === "prototype"
       ? "Prototype"
       : caseStudy.project_type === "upcoming"
