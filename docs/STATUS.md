@@ -4,7 +4,7 @@
 
 **Phase 3 — Public Website Implementation**
 
-Phase 0, Phase 1, and Phase 2 are complete. The first public homepage slice is implemented locally and is ready for review. CMS, CRM, authentication, Supabase, and the remaining public routes are not implemented.
+Phase 0, Phase 1, and Phase 2 are complete. The first public route structure is implemented locally and is ready for review. Visual refinement is intentionally deferred. CMS, CRM, authentication, and Supabase remain unimplemented.
 
 ## Completed
 
@@ -23,10 +23,13 @@ Phase 0, Phase 1, and Phase 2 are complete. The first public homepage slice is i
 - Added Phase 2 content briefs, visual design direction, and acceptance criteria.
 - Implemented the first public homepage slice with responsive layout, shared visual tokens, capability sections, approach, contact CTA, and honest proof-state copy.
 - Inspected the homepage at desktop and mobile viewport sizes with no browser console errors.
+- Added route shells for Services, five service detail pages, Work, About, and Contact.
+- Added structured local service content and generated static service detail routes.
+- Smoke-tested all public routes and confirmed page titles and H1 content.
 
 ## In Progress
 
-- Owner review of the Phase 3 homepage slice and draft-safe messaging.
+- Owner review of the public route structure and draft-safe messaging; visual refinement is deferred by owner direction.
 
 ## Blocked / Requires Owner Action
 
@@ -39,4 +42,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Review and approve the homepage slice before extending the implementation to the remaining public routes.
+Review and approve the route structure before refining the visual system or connecting content to a CMS.

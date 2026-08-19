@@ -85,3 +85,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** A homepage slice provides a reviewable expression of the visual system and messaging hierarchy without prematurely committing to the full route set, CMS, CRM, or unapproved proof content.
 - **Status:** Accepted for Phase 3; owner review pending
 - **Date:** 2026-08-19
+
+## ADR-013 — Establish the public route skeleton before visual refinement
+
+- **Decision:** Implement the approved public route tree and structured local content boundaries before spending additional effort on visual polish.
+- **Rationale:** The route and content structure are the next product risk to resolve. Establishing them first allows navigation, metadata, page responsibilities, and future CMS boundaries to be reviewed independently from the visual treatment.
+- **Status:** Accepted for current Phase 3 slice; owner review pending
+- **Date:** 2026-08-19

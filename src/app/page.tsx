@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main>
@@ -8,9 +10,10 @@ export default function Home() {
             <span>OCSCO</span>
           </a>
           <nav className="primary-nav" aria-label="Primary navigation">
-            <a href="#capabilities">Capabilities</a>
-            <a href="#approach">Approach</a>
-            <a href="#contact">Contact</a>
+            <Link href="/services">Services</Link>
+            <Link href="/work">Work</Link>
+            <Link href="/about">About</Link>
+            <Link href="/contact">Contact</Link>
           </nav>
           <a className="button button-small button-outline-light header-cta" href="#contact">
             Start a conversation
@@ -27,7 +30,7 @@ export default function Home() {
             </p>
             <div className="hero-actions">
               <a className="button button-primary" href="#contact">Start a conversation <span aria-hidden="true">↗</span></a>
-              <a className="text-link text-link-light" href="#capabilities">Explore the capabilities <span aria-hidden="true">↓</span></a>
+              <Link className="text-link text-link-light" href="/services">Explore the capabilities <span aria-hidden="true">↗</span></Link>
             </div>
           </div>
         </div>

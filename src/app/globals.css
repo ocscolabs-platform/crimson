@@ -88,6 +88,25 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .brand-footer { align-self: start; margin-top: 10px; }
 .footer-layout p { max-width: 340px; margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.6; }
 .footer-meta { align-self: end; color: var(--muted); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
+.route-hero-content { padding: 100px 0 116px; }
+.route-hero-content h1 { max-width: 930px; margin: 0; color: var(--white); font-size: clamp(3rem, 7vw, 6.4rem); letter-spacing: -.06em; line-height: .98; }
+.route-hero-intro { max-width: 600px; margin: 34px 0 0; color: var(--muted); font-size: clamp(1.05rem, 1.8vw, 1.3rem); line-height: 1.65; }
+.route-section { min-height: 360px; }
+.route-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.route-grid h2 { margin: auto 0 12px; font-size: 1.45rem; letter-spacing: -.035em; line-height: 1.1; }
+.route-detail-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 10%; }
+.route-detail-grid h2, .route-placeholder h2 { max-width: 700px; margin: 0; font-size: clamp(2.2rem, 4.5vw, 4.5rem); letter-spacing: -.055em; line-height: 1.02; }
+.route-copy { max-width: 620px; margin: 0 0 24px; color: var(--copy); font-size: clamp(1.05rem, 1.8vw, 1.3rem); line-height: 1.65; }
+.route-copy-muted { color: var(--muted); font-size: .95rem; }
+.route-list { max-width: 580px; border-top: 1px solid var(--border); }
+.route-list p { border-bottom: 1px solid var(--border); margin: 0; padding: 24px 0; color: var(--copy); font-size: 1rem; line-height: 1.65; }
+.section-green .route-list { border-color: rgb(10 10 10 / 28%); }
+.section-green .route-list p { border-color: rgb(10 10 10 / 28%); }
+.section-green .route-list strong { color: var(--ink); }
+.route-list .button { margin-top: 28px; }
+.route-placeholder { max-width: 820px; }
+.route-placeholder .route-copy { margin: 28px 0 32px; }
+.route-placeholder .text-link { margin-top: 28px; color: var(--ink); }
 
 @media (max-width: 840px) {
   .hero { min-height: 720px; }
@@ -100,6 +119,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .split-intro, .approach-layout, .proof-layout, .contact-layout { grid-template-columns: 1fr; gap: 36px; }
   .capability-grid { grid-template-columns: repeat(2, 1fr); }
   .capability-card-wide { grid-column: span 2; }
+  .route-grid { grid-template-columns: repeat(2, 1fr); }
+  .route-detail-grid { grid-template-columns: 1fr; gap: 36px; }
   .footer-layout { grid-template-columns: 1fr 1fr; }
   .footer-meta { grid-column: 2; }
 }
@@ -113,6 +134,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .capability-grid { grid-template-columns: 1fr; }
   .capability-card-wide { grid-column: auto; }
   .capability-card { min-height: 300px; }
+  .route-grid { grid-template-columns: 1fr; }
   .footer-layout { grid-template-columns: 1fr; gap: 28px; }
   .footer-meta { grid-column: auto; }
 }
