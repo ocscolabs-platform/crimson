@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { services } from "@/lib/site-content";
 
-const allowedCapabilities = new Set([
-  "Branding",
-  "Website design & development",
-  "Custom CMS",
-  "CRM & business tools",
-  "Custom web applications",
-  "Something else",
-]);
+const allowedCapabilities = new Set([...services.map((service) => service.name), "Something else"]);
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
