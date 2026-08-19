@@ -50,5 +50,5 @@ This queue records approved next-step work before implementation. Tasks in this 
 - RLS is enabled on every CMS table.
 - Public roles can read only visible navigation, default site settings, and published records.
 - Public roles cannot insert, update, or delete CMS records.
-- No content is seeded until the owner approves the first CMS-managed content slice.
+- The owner approved the Services slice; the five approved staging records are seeded only through the explicit staging seed script.
 - A server-side Next.js read boundary is implemented and validated for one public route before broader migration.

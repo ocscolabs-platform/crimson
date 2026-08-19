@@ -43,10 +43,11 @@ All tables enable Row Level Security. No anonymous or authenticated role receive
 ## Staging rollout sequence
 
 1. Review the migration and confirm the content model remains within the approved Phase 1 boundary.
-2. Apply `supabase/migrations/20260820000000_create_cms_foundation.sql` to the dedicated staging project.
+2. Apply `supabase/migrations/20260820000000_create_cms_foundation.sql` and `supabase/migrations/20260820010000_add_service_card_fields.sql` to the dedicated staging project.
 3. Verify the tables, indexes, RLS policies, and public published-only reads in Supabase.
-4. Add a server-side read boundary in Next.js and replace one local content slice in staging.
-5. Review the result before adding admin authentication or applying the migration to Production.
+4. Run `supabase/seeds/20260820000000_seed_staging_services.sql` in `crimson-staging` only.
+5. Add a server-side read boundary in Next.js and replace one local content slice in staging.
+6. Review the result before adding admin authentication or applying the migrations to Production.
 
 ## Acceptance criteria
 
