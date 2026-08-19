@@ -55,6 +55,12 @@ The next staging slice extends `case_studies` with presentation fields for proje
 
 Apply `supabase/migrations/20260820020000_add_work_presentation_fields.sql` and then run `supabase/seeds/20260820020000_seed_staging_case_studies.sql` in `crimson-staging` only. Do not run the staging seed in Production.
 
+## Global public content slice
+
+The next staging slice connects the shared header navigation, footer positioning statement, page hero copy, and page-level SEO fields to the existing CMS tables. The public application keeps a local fallback until matching published records exist. Run `supabase/seeds/20260820030000_seed_staging_global_content.sql` in `crimson-staging` only; it is intentionally not a Production seed.
+
+The page body sections remain in reviewed application components for now. A protected CMS editor and media library are separate future slices and are not introduced by this read boundary.
+
 ## Acceptance criteria
 
 - The migration applies cleanly to staging and can be applied independently to Production later.

@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RouteShell } from "@/components/route-shell";
+import { getPublishedPage } from "@/lib/cms-content";
 
-export const metadata: Metadata = {
-  title: "About",
-  description: "The thinking and working principles behind OCSCO.",
-};
+export const dynamic = "force-dynamic";
 
-export default function AboutPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPublishedPage("about");
+  return { title: page?.seoTitle || "About", description: page?.seoDescription };
+}
+
+export default async function AboutPage() {
   return (
     <RouteShell
+      pageSlug="about"
       eyebrow="The thinking"
       title="Clarity is not a presentation layer. It is how the work gets built."
       intro="OCSCO brings strategy, design, and technology into one connected practice for organizations that need their digital presence to work harder."

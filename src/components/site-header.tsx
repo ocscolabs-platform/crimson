@@ -5,20 +5,15 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { defaultPrimaryNavigation, type NavigationItem } from "@/lib/site-navigation";
 
 type SiteHeaderProps = {
   logoHref?: string;
   ctaHref?: string;
+  navigation?: NavigationItem[];
 };
 
-const navigation = [
-  { href: "/services", label: "Services" },
-  { href: "/work", label: "Work" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
-
-export function SiteHeader({ logoHref = "/", ctaHref = "/contact" }: SiteHeaderProps) {
+export function SiteHeader({ logoHref = "/", ctaHref = "/contact", navigation = defaultPrimaryNavigation }: SiteHeaderProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 

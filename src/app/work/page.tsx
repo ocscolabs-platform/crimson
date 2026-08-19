@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ImageOff } from "lucide-react";
 import { RouteShell } from "@/components/route-shell";
-import { getPublishedWorkProjects } from "@/lib/cms-content";
-
-export const metadata: Metadata = {
-  title: "Work",
-  description: "A preview of OCSCO prototypes and selected projects in preparation.",
-};
+import { getPublishedPage, getPublishedWorkProjects } from "@/lib/cms-content";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPublishedPage("work");
+  return { title: page?.seoTitle || "Work", description: page?.seoDescription };
+}
 
 export default async function WorkPage() {
   const workProjects = await getPublishedWorkProjects();
@@ -18,6 +18,7 @@ export default async function WorkPage() {
 
   return (
     <RouteShell
+      pageSlug="work"
       eyebrow="Proof of work"
       title="The work deserves the space to speak for itself."
       intro="A preview of live prototypes and upcoming projects. Full case studies will be added as facts, outcomes, media, and publication permissions are approved."

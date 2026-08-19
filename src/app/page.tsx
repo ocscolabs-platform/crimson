@@ -2,11 +2,16 @@ import Link from "next/link";
 import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getPublishedSiteChrome } from "@/lib/cms-content";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const chrome = await getPublishedSiteChrome();
+
   return (
     <main>
-      <SiteHeader logoHref="#top" ctaHref="#contact" />
+      <SiteHeader logoHref="#top" ctaHref="#contact" navigation={chrome.primaryNavigation} />
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-content shell" id="top">
           <p className="overline overline-green">Strategy / Design / Technology</p>
@@ -137,7 +142,7 @@ export default function Home() {
         </div>
       </section>
 
-      <SiteFooter />
+      <SiteFooter positioningStatement={chrome.settings.positioningStatement} ctaHref={chrome.settings.primaryContactPath} />
     </main>
   );
 }

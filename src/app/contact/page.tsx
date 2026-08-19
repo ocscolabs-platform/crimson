@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact-form";
 import { RouteShell } from "@/components/route-shell";
+import { getPublishedPage } from "@/lib/cms-content";
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: "Start a conversation with OCSCO.",
-};
+export const dynamic = "force-dynamic";
 
-export default function ContactPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPublishedPage("contact");
+  return { title: page?.seoTitle || "Contact", description: page?.seoDescription };
+}
+
+export default async function ContactPage() {
   return (
     <RouteShell
+      pageSlug="contact"
       eyebrow="The next step"
       title="Bring us the thing that needs to work better."
       intro="Start with a conversation. We will bring clarity to the opportunity, the path, and what it will take to build well."

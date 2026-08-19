@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
 import { RouteShell } from "@/components/route-shell";
-import { getPublishedServices } from "@/lib/cms-content";
+import { getPublishedPage, getPublishedServices } from "@/lib/cms-content";
 
 const serviceIcons = {
   branding: PenTool,
@@ -12,18 +12,19 @@ const serviceIcons = {
   "custom-web-applications": Blocks,
 };
 
-export const metadata: Metadata = {
-  title: "Services",
-  description: "Explore OCSCO's proposed capabilities across strategy, design, and technology.",
-};
-
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPublishedPage("services");
+  return { title: page?.seoTitle || "Services", description: page?.seoDescription };
+}
 
 export default async function ServicesPage() {
   const services = await getPublishedServices();
 
   return (
     <RouteShell
+      pageSlug="services"
       eyebrow="Capabilities"
       title="One connected system for the work that matters."
       intro="OCSCO brings strategy, design, and technology together so the parts of your digital presence reinforce one another."

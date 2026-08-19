@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is beginning with a reviewed CMS schema and publishing boundary. CRM, CMS admin UI, and authentication remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema and published-only read boundary. Services, Work, and shared global content are being reviewed in staging. CRM, CMS admin UI, media storage, and authentication remain unimplemented.
 
 ## Completed
 
@@ -35,7 +35,8 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 ## In Progress
 
-- Review the Phase 4 CMS foundation migration before applying it to staging.
+- Review the Phase 4 CMS foundation and global content seed in staging.
+- Complete live QA of CMS-backed Services, Work, navigation, footer settings, and page metadata before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
 ## Blocked / Requires Owner Action
@@ -49,4 +50,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Apply the reviewed CMS foundation migration to the dedicated staging Supabase project, verify RLS and published-only reads, then replace one local public content slice through a server-side read boundary. Do not apply the migration to Production or build admin authentication until the staging boundary is reviewed. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Apply the global content seed to the dedicated staging Supabase project, verify published-only reads across the shared shell and top-level pages, then review the result before planning the protected CMS editor. Do not apply the staging seed to Production or build admin authentication until the read boundary is accepted. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
