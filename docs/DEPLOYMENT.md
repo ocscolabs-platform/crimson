@@ -38,5 +38,8 @@ The staging `/contact` form writes validated submissions to the `public.inquirie
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_SECRET_KEY` — server-only; never expose this in client code or commit it
+- `RESEND_API_KEY` — server-only; use a sending-only key where available
+- `INQUIRY_NOTIFICATION_EMAIL` — owner inbox for new inquiry notifications
+- `INQUIRY_NOTIFICATION_FROM` — verified sender, or `OCSCO inquiries <onboarding@resend.dev>` for the initial Resend account-owner test
 
 Do not add these values to the repository or to the Production environment until the full notification and follow-up workflow has been approved.
