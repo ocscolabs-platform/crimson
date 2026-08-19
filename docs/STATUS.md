@@ -2,9 +2,9 @@
 
 ## Current Phase
 
-**Phase 3 — Public Website Launch Readiness**
+**Phase 4 — Custom CMS Foundation**
 
-Phase 0, Phase 1, and Phase 2 are complete. The public route structure, visual system, and environment-specific contact workflow are implemented. The reviewed workflow is promoted to `main`, the Production form has been tested end to end, and the website DNS is live on Vercel. CMS, CRM, and authentication remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is beginning with a reviewed CMS schema and publishing boundary. CRM, CMS admin UI, and authentication remain unimplemented.
 
 ## Completed
 
@@ -31,11 +31,12 @@ Phase 0, Phase 1, and Phase 2 are complete. The public route structure, visual s
 - Configured separate Production Supabase and Resend variables in Vercel, including the verified `send.ocsco.io` sender domain.
 - Confirmed the Production inquiry row and owner email notification.
 - Switched `ocsco.io` and `www.ocsco.io` from WordPress DNS to Vercel.
+- Added the Phase 4 CMS foundation scope and an RLS-protected relational migration for settings, navigation, pages, services, and case studies.
 
 ## In Progress
 
-- Locked the standalone OCSCO HTML design style guide as the official v1.0 visual source of truth for typography, native hero atmosphere, iconography, media placeholders, and component states.
-- Completing owner content, accessibility, and privacy/consent follow-up after the technical release.
+- Review the Phase 4 CMS foundation migration before applying it to staging.
+- Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
 ## Blocked / Requires Owner Action
 
@@ -48,4 +49,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Complete the short rollback window, then cancel the WordPress hosting plan if no issues appear. After owner content and accessibility review, begin the Phase 4 custom CMS foundation. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Apply the reviewed CMS foundation migration to the dedicated staging Supabase project, verify RLS and published-only reads, then replace one local public content slice through a server-side read boundary. Do not apply the migration to Production or build admin authentication until the staging boundary is reviewed. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.

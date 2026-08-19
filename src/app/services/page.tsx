@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
 import { RouteShell } from "@/components/route-shell";
-import { services } from "@/lib/site-content";
+import { getPublishedServices } from "@/lib/cms-content";
 
 const serviceIcons = {
   branding: PenTool,
@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   description: "Explore OCSCO's proposed capabilities across strategy, design, and technology.",
 };
 
-export default function ServicesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ServicesPage() {
+  const services = await getPublishedServices();
+
   return (
     <RouteShell
       eyebrow="Capabilities"

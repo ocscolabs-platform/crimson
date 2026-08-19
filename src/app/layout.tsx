@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ocsco.io"),
   title: {
     default: "OCSCO — Strategy, design, and technology",
     template: "%s — OCSCO",

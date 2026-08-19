@@ -37,3 +37,18 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Owner approves final copy, proof placeholders, portfolio/team assets, form language, privacy/consent copy, and response ownership.
 - Production Supabase and Resend resources are separate from staging and configured through Vercel only.
 - A controlled Production smoke test verifies route navigation, inquiry storage, owner notification, and the Vercel custom domain.
+
+## PH4-001 — Establish the custom CMS foundation
+
+- **Status:** In progress on `feature/phase-4-cms-foundation`
+- **Goal:** Create the reviewed data and publishing boundary for the future custom CMS without exposing an admin application or draft content.
+- **Reference:** `docs/PHASE-4-CMS-FOUNDATION.md`
+
+### Acceptance criteria
+
+- The CMS foundation migration applies cleanly to the dedicated staging Supabase project.
+- RLS is enabled on every CMS table.
+- Public roles can read only visible navigation, default site settings, and published records.
+- Public roles cannot insert, update, or delete CMS records.
+- The owner approved the Services slice; the five approved staging records are seeded only through the explicit staging seed script.
+- A server-side Next.js read boundary is implemented and validated for one public route before broader migration.
