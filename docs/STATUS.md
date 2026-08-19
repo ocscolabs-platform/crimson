@@ -2,9 +2,9 @@
 
 ## Current Phase
 
-**Phase 2 — Content and Visual Design Direction**
+**Phase 3 — Public Website Implementation**
 
-Phase 0 and Phase 1 are complete. The repository and minimal Next.js foundation are deployed to Vercel. Phase 2 defines content briefs, visual principles, and implementation boundaries; it does not implement the public website, CMS, or CRM.
+Phase 0, Phase 1, and Phase 2 are complete. The public route structure is implemented locally, and the visual redesign is being built in reviewable slices. CMS, CRM, authentication, and Supabase remain unimplemented.
 
 ## Completed
 
@@ -21,15 +21,20 @@ Phase 0 and Phase 1 are complete. The repository and minimal Next.js foundation 
 - Added the Phase 1 information architecture, content model, and acceptance criteria documents.
 - Reviewed the existing OCSCO Brand Style Guide as the reference for Phase 2 direction.
 - Added Phase 2 content briefs, visual design direction, and acceptance criteria.
+- Implemented the first public homepage slice with responsive layout, shared visual tokens, capability sections, approach, contact CTA, and honest proof-state copy.
+- Inspected the homepage at desktop and mobile viewport sizes with no browser console errors.
+- Added route shells for Services, five service detail pages, Work, About, and Contact.
+- Added structured local service content and generated static service detail routes.
+- Smoke-tested all public routes and confirmed page titles and H1 content.
 
 ## In Progress
 
-- Owner review of the Phase 2 content briefs, visual direction, and implementation boundary.
+- Locked the standalone OCSCO HTML design style guide as the official v1.0 visual source of truth for typography, native hero atmosphere, iconography, media placeholders, and component states.
+- Preparing the official guide for staging review at `/design-style-guide` before production promotion.
 
 ## Blocked / Requires Owner Action
 
 - Configure GitHub branch protection for `feature/*`, `staging`, and `main`.
-- Confirm the Phase 2 visual direction and working copy principles.
 - Provide approved case-study facts, outcomes, testimonials, team details, and contact destination before implementation.
 - Confirm which visual assets from the existing brand materials may be copied into Crimson.
 - Create or select separate Supabase environments only when backend work is approved.
@@ -38,4 +43,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Approve **Phase 3 — Public website implementation** after the Phase 2 documents and launch content inputs are reviewed.
+Review the official v1.0 guide at `/design-style-guide` in staging. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion. Do not connect a CMS or backend until the public visual system is approved.

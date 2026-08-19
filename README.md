@@ -1,6 +1,6 @@
-# OCSCO Project Crimson — Phase 2 Design Direction
+# OCSCO Project Crimson — Phase 3 Public Website Implementation
 
-Project Crimson is OCSCO's new platform repository. It will eventually support a public website, a custom CMS, and a custom CRM as one integrated platform. The Phase 0 foundation and Phase 1 information architecture are complete; the current phase defines content and visual direction before implementation begins.
+Project Crimson is OCSCO's new platform repository. It will eventually support a public website, a custom CMS, and a custom CRM as one integrated platform. The Phase 0 foundation, Phase 1 information architecture, and Phase 2 design direction are complete; the current phase is implementing the public website in reviewed slices.
 
 ## Stack
 
@@ -37,8 +37,10 @@ Copy `.env.example` to `.env.local` only when local configuration is needed. Kee
 
 ```text
 src/app/       App Router application shell and global styles
-docs/           Project, architecture, deployment, decisions, and status docs
-public/         Public static assets for the application
+docs/          Project, architecture, deployment, decisions, and status docs
+public/        Public static assets and the browsable HTML design style guide
 ```
 
-Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the current information architecture, content model, visual direction, content briefs, and phase acceptance documents.
+The official v1.0 visual source of truth is [`public/style-guide/index.html`](./public/style-guide/index.html), available at `/design-style-guide` in the deployed application and locally while the development server is running. `/style-guide` remains as a compatibility route. It documents the OCSCO visual principles, tokens, components, content voice, and implementation rules used for the redesign.
+
+Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the information architecture, content model, visual direction, content briefs, and [`PHASE-3-IMPLEMENTATION.md`](./docs/PHASE-3-IMPLEMENTATION.md).
