@@ -61,6 +61,11 @@ export async function getPublishedServices(): Promise<Service[]> {
   }));
 }
 
+export async function getPublishedService(slug: string): Promise<Service | undefined> {
+  const services = await getPublishedServices();
+  return services.find((service) => service.slug === slug);
+}
+
 function mapPublishedCaseStudy(caseStudy: PublishedCaseStudy): WorkProject {
   return {
     slug: caseStudy.slug,

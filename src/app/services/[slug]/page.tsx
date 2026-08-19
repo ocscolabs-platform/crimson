@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ImageOff } from "lucide-react";
 import { notFound } from "next/navigation";
 import { RouteShell } from "@/components/route-shell";
-import { getService, services } from "@/lib/site-content";
+import { getPublishedService } from "@/lib/cms-content";
+import { services } from "@/lib/site-content";
 
 type ServicePageProps = {
   params: Promise<{ slug: string }>;
@@ -15,13 +16,18 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const service = getService(slug);
-  return { title: service ? service.name : "Service" };
+  const service = await getPublishedService(slug);
+  return {
+    title: service ? service.name : "Service",
+    description: service?.summary,
+  };
 }
+
+export const dynamic = "force-dynamic";
 
 export default async function ServicePage({ params }: ServicePageProps) {
   const { slug } = await params;
-  const service = getService(slug);
+  const service = await getPublishedService(slug);
   if (!service) notFound();
 
   return (

@@ -37,7 +37,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .site-header { position: sticky; top: 0; z-index: 50; background: rgb(10 10 10 / 82%); border-bottom: 1px solid rgb(255 255 255 / 16%); box-shadow: 0 12px 30px rgb(0 0 0 / 10%); backdrop-filter: blur(18px) saturate(120%); }
 .site-header-inner { position: relative; display: flex; align-items: center; justify-content: space-between; min-height: 92px; }
 .brand { display: inline-flex; align-items: center; color: var(--white); width: 118px; }
-.brand img { display: block; height: auto; width: 118px; }
+.brand img { display: block; width: 118px; height: 24px; object-fit: contain; }
 .primary-nav { display: flex; gap: clamp(6px, 1vw, 14px); margin-left: auto; margin-right: clamp(20px, 4vw, 60px); color: var(--muted); font-size: .86rem; font-weight: 500; }
 .primary-nav a { border-radius: 8px; padding: 10px 14px; transition: background 180ms ease-out, color 180ms ease-out; }
 .primary-nav a:hover, .primary-nav a[aria-current="page"] { background: var(--graphite); color: var(--white); }
@@ -228,7 +228,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .primary-nav { display: none; }
   .header-cta { display: none; }
   .mobile-menu-toggle { display: inline-flex; }
-  .mobile-menu { position: absolute; top: calc(100% + 8px); right: 0; left: 0; grid-template-columns: 1fr; gap: 4px; padding: 10px; border: 1px solid rgb(255 255 255 / 16%); border-radius: 14px; background: rgb(26 26 26 / 96%); box-shadow: 0 18px 50px rgb(0 0 0 / 24%); backdrop-filter: blur(20px); }
+  .mobile-menu { position: absolute; top: calc(100% + 8px); right: 0; left: 0; z-index: 2; grid-template-columns: 1fr; gap: 4px; padding: 10px; border: 1px solid rgb(255 255 255 / 18%); border-radius: 14px; background: rgb(14 14 14 / 99%); box-shadow: 0 18px 50px rgb(0 0 0 / 32%); backdrop-filter: blur(22px) saturate(120%); }
   .mobile-menu.is-open { display: grid; }
   .mobile-menu a { border-radius: 8px; color: var(--white); padding: 14px 16px; font-size: .92rem; font-weight: 600; }
   .mobile-menu a:hover, .mobile-menu a[aria-current="page"] { background: rgb(255 255 255 / 8%); }
