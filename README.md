@@ -10,7 +10,7 @@ Project Crimson is OCSCO's new platform repository. It will eventually support a
 - ESLint
 - npm
 
-Supabase is a planned backend service. GitHub is the source repository and Vercel hosts the current foundation deployment. No production credentials or Supabase integrations are configured.
+Supabase is the planned backend service. The staging branch contains the reviewed inquiry workflow using a dedicated staging Supabase project and Resend notification configuration; no Production credentials or backend configuration are stored in the repository. GitHub is the source repository and Vercel hosts the deployments.
 
 ## Local development
 
