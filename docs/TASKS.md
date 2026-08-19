@@ -132,7 +132,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-007 — Build protected read-only case-study review panel
 
-- **Status:** Implementation complete locally; staging deployment and QA pending
+- **Status:** Implementation complete locally; authenticated staging preview QA completed
 - **Goal:** Give authenticated staging members a structured case-study readiness and audit review surface without enabling mutations.
 - **Reference:** `docs/PHASE-4-CMS-CASE-STUDIES.md`
 
@@ -143,3 +143,18 @@ This queue records approved next-step work before implementation. Tasks in this 
 - The review panel contains no edit, publish, archive, upload, delete, or relationship mutation controls.
 - Case-study and relationship audit history remains read-only.
 - The panel is responsive and does not alter the public website or Production routes.
+
+## PH4-008 - Define the case-study media contract and featured rule
+
+- **Status:** Implementation complete locally; staging migration and verification pending
+- **Goal:** Establish the safe media boundary and deterministic featured-project behavior before any case-study upload or editor surface is enabled.
+- **Reference:** `docs/PHASE-4-CMS-MEDIA-CONTRACT.md`
+
+### Acceptance criteria
+
+- Featured media paths are relative, case-study-scoped, and limited to approved image extensions.
+- Featured and supporting media require meaningful alternative text.
+- Media review state is explicit and approved media cannot exist without a valid featured asset.
+- At most one published case study can be featured at a time.
+- Public Work ordering is deterministic when records share a featured or sort state.
+- No storage bucket, upload control, case-study mutation policy, or Production migration is introduced.

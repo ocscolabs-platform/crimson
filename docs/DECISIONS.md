@@ -208,6 +208,13 @@ Dates use the repository work date where a decision was made during Phase 0.
 ## ADR-030 — Gate case-study editing behind privacy and media approval
 
 - **Decision:** Keep case studies read-only in the CMS until public identity redaction, case-study audit coverage, media/alt-text rules, and featured-project behavior are explicitly implemented and reviewed. Plan for one featured project plus a supporting grid, with the initial five-record staging set preserved.
-- **Rationale:** Case studies publish proof about real projects and carry higher privacy, legal, and credibility risk than service descriptions. The existing `client_visibility` field is not yet honored by the public mapper, and media permissions are not represented strongly enough for a safe write surface.
+- **Rationale:** Case studies publish proof about real projects and carry higher privacy, legal, and credibility risk than service descriptions. The public mapper now protects hidden identity, while the media contract and owner review remain prerequisites for a safe write surface.
 - **Status:** Accepted as the next Phase 4 design gate; no case-study mutations enabled
+- **Date:** 2026-08-20
+
+## ADR-031 - Define a validated case-study media contract
+
+- **Decision:** Keep case-study media relative to a case-study storage path, require meaningful alt text, track media review state, and enforce at most one published featured project. Do not create upload or mutation policies in this milestone.
+- **Rationale:** A predictable media boundary prevents arbitrary remote assets, inaccessible imagery, and ambiguous featured placement from entering the future editor. Database validation creates a durable safety net while the review panel remains read-only.
+- **Status:** Accepted for staging design gate; migration application pending
 - **Date:** 2026-08-20

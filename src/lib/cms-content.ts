@@ -255,7 +255,8 @@ export async function getPublishedWorkProjects(): Promise<WorkProject[]> {
     .from("case_studies")
     .select("project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary")
     .order("is_featured", { ascending: false })
-    .order("sort_order", { ascending: true });
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
 
   if (error || !data?.length) {
     return localWorkProjects;

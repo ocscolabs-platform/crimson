@@ -1,6 +1,6 @@
 # Phase 4 — Case Study CMS Workflow
 
-**Status:** Privacy-safe renderer implemented; no case-study write surface enabled
+**Status:** Privacy-safe renderer, audit coverage, and read-only review panel implemented; media contract pending staging verification; no case-study write surface enabled
 
 ## Recommendation
 
@@ -16,7 +16,7 @@ The current portfolio model supports one featured project plus a supporting grid
 | Narrative | `summary`, `challenge`, `approach`, `deliverables`, `outcomes` | Claims must be factual, evidence-based, and owner-reviewed. |
 | Public visibility | `client_visibility`, `status`, `published_at`, `last_reviewed_at` | These must work together; `published` alone must not imply client permission. |
 | Presentation | `is_featured`, `sort_order`, `external_url` | Featured ordering and outbound links need owner control. |
-| Media | `featured_image_path`, `supporting_media` | Storage, alt text, permissions, and transformations are not yet defined. |
+| Media | `featured_image_path`, `featured_image_alt`, `supporting_media`, `media_status`, `media_reviewed_at` | Contract is defined; storage and upload workflow remain deferred. |
 | Relationships | `case_study_services` | Related services must be valid and publicly published. |
 
 ## Proposed editorial flow
@@ -49,17 +49,18 @@ Before an owner publishes a case study, staging must confirm:
 
 1. **Privacy-safe rendering:** implemented in the public Work mapper; hidden records use safe generic copy, omit external links, and do not receive internal detail links, while approved records retain their approved presentation.
 2. **Case-study audit coverage:** implemented locally in `PHASE-4-CMS-CASE-STUDY-AUDIT.md`; apply and verify the staging migration before allowing mutations.
-3. **Media contract:** define approved storage, file types, alt text, and removal/retention behavior. Do not add arbitrary uploads to the first editor.
-4. **Featured rule:** enforce one published featured record or make featured placement an explicit owner-only action with a deterministic tie-breaker.
+3. **Media contract:** implemented locally in [`PHASE-4-CMS-MEDIA-CONTRACT.md`](./PHASE-4-CMS-MEDIA-CONTRACT.md); apply and verify the staging migration before enabling uploads. Do not add arbitrary uploads to the first editor.
+4. **Featured rule:** implemented with a partial unique index and deterministic public ordering; featured placement remains owner-controlled.
 5. **Approval metadata:** decide whether `client_visibility` plus `last_reviewed_at` is enough or whether a separate permission reference/date is required.
 
 ## Staging sequence
 
 1. QA the privacy-safe Work rendering without adding editor access.
 2. Apply and verify case-study and relationship audit coverage in staging.
-3. Add a protected read-only case-study review panel. **Implemented locally; staging QA pending.**
-4. Add the smallest owner/editor write slice only after the checklist and media contract are approved.
-5. Keep case-study changes in staging until a real approved project record is reviewed; do not seed private facts or unapproved media.
+3. Add a protected read-only case-study review panel. **Implemented and authenticated QA completed in staging preview.**
+4. Apply and verify the media contract and featured-project migration in `crimson-staging`.
+5. Add the smallest owner/editor write slice only after the checklist and media contract are approved.
+6. Keep case-study changes in staging until a real approved project record is reviewed; do not seed private facts or unapproved media.
 
 ## Out of scope for this gate
 

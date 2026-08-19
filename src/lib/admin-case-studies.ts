@@ -27,7 +27,10 @@ export type AdminCaseStudyReview = {
   deliverables: unknown;
   outcomes: unknown;
   featured_image_path: string | null;
+  featured_image_alt: string | null;
   supporting_media: unknown;
+  media_status: "pending" | "approved" | "rejected";
+  media_reviewed_at: string | null;
   status: string;
   published_at: string | null;
   last_reviewed_at: string | null;
@@ -40,7 +43,7 @@ export async function getAdminCaseStudyReview(slug: string): Promise<AdminCaseSt
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("case_studies")
-    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, supporting_media, status, published_at, last_reviewed_at, updated_at")
+    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status, media_reviewed_at, status, published_at, last_reviewed_at, updated_at")
     .eq("slug", slug)
     .maybeSingle();
 

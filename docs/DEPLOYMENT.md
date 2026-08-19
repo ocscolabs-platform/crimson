@@ -55,6 +55,8 @@ The audit safeguard migration is the next staging-only dependency. Apply `supaba
 
 The case-study audit migration is the next staging-only dependency after the service audit migration. Apply `supabase/migrations/20260820070000_add_staging_case_study_audit.sql` in `crimson-staging` only. It records case-study and case-study/service relationship changes but does not enable any case-study write policy or editor. Follow [`PHASE-4-CMS-CASE-STUDY-AUDIT.md`](./PHASE-4-CMS-CASE-STUDY-AUDIT.md) for read-only verification. Do not run this migration in Production.
 
+The case-study media contract migration follows the case-study audit migration. Apply `supabase/migrations/20260820080000_add_staging_case_study_media_contract.sql` in `crimson-staging` only. It validates relative image paths, alternative text, media review states, and the single published featured-project rule. It does not create storage, upload policies, case-study write policies, or editor controls. Follow [`PHASE-4-CMS-MEDIA-CONTRACT.md`](./PHASE-4-CMS-MEDIA-CONTRACT.md) for verification. Do not run this migration in Production.
+
 The restore workflow uses existing audit snapshots and requires no additional database migration. It is owner-only, restores content as `review`, clears publication timestamps, and never republishes automatically. Keep it in staging until rollback requirements are reviewed.
 
 Before testing the route, the owner must create the intended staff user in the `crimson-staging` Supabase project under **Authentication → Users** and add the staging deployment URL to **Authentication → URL Configuration**. Do not add the production domain to the staging auth configuration. Editing, publishing, draft access, and production admin access are not enabled.

@@ -64,8 +64,13 @@ export default async function AdminCaseStudyPage({ params }: AdminCaseStudyPageP
     },
     {
       label: "Featured media",
-      value: review.featured_image_path ? "Path configured" : "Not configured",
-      state: review.featured_image_path ? "ready" : "pending",
+      value: review.featured_image_path ? (review.media_status === "approved" ? "Approved" : "Path configured") : "Not configured",
+      state: review.featured_image_path && review.featured_image_alt && review.media_status === "approved" ? "ready" : "pending",
+    },
+    {
+      label: "Media review",
+      value: review.media_status === "approved" ? `Reviewed ${formatDate(review.media_reviewed_at)}` : review.media_status,
+      state: review.media_status === "approved" ? "ready" : "pending",
     },
     {
       label: "Supporting media",
