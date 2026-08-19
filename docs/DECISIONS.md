@@ -162,3 +162,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** The owner identified the rounded action treatment and compact active navigation surface as key characteristics of the preferred OCSCO.io visual language. Defining these states in the source-of-truth guide prevents inconsistent interaction styling across the public site and future platform surfaces.
 - **Status:** Accepted for the redesign preparation step; owner review pending
 - **Date:** 2026-08-19
+
+## ADR-024 — Establish the CMS foundation as a relational, published-only boundary
+
+- **Decision:** Start Phase 4 with relational tables for site settings, navigation items, pages, services, case studies, and case-study/service relationships. Use explicit `draft`, `review`, `published`, and `archived` states, with RLS policies that expose only intentionally published records to public roles.
+- **Rationale:** The approved content model needs to remain independent from page components and must not leak draft or review content. A small relational foundation creates a stable backend boundary while deferring admin authentication, media, scheduling, version history, and CRM scope until they receive separate review.
+- **Status:** Accepted for the Phase 4 staging foundation; migration application pending review
+- **Date:** 2026-08-20
