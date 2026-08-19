@@ -102,7 +102,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-005 — Design the case-study CMS workflow
 
-- **Status:** Design gate; case-study mutations intentionally disabled
+- **Status:** Privacy-safe renderer implemented; remaining design gates open; case-study mutations intentionally disabled
 - **Goal:** Prepare a safe portfolio editorial workflow for approved project proof without exposing private client details, unsupported claims, or unapproved media.
 - **Reference:** `docs/PHASE-4-CMS-CASE-STUDIES.md`
 

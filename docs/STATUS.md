@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, and a case-study workflow design gate. Broader CMS editing, case-study mutations, general version management, media storage, and production admin access remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, and a privacy-safe Work renderer. Broader CMS editing, case-study mutations, general version management, media storage, and production admin access remain unimplemented.
 
 ## Completed
 
@@ -32,10 +32,11 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Confirmed the Production inquiry row and owner email notification.
 - Switched `ocsco.io` and `www.ocsco.io` from WordPress DNS to Vercel.
 - Added the Phase 4 CMS foundation scope and an RLS-protected relational migration for settings, navigation, pages, services, and case studies.
+- Updated public Work rendering to redact hidden case-study identity, copy, and external links while preserving approved presentation.
 
 ## In Progress
 
-- Resolve the case-study privacy renderer, audit coverage, media contract, and featured-project rule before enabling case-study mutations.
+- QA the privacy-safe case-study renderer, then resolve audit coverage, media contract, and featured-project rule before enabling case-study mutations.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
@@ -51,4 +52,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Review [`docs/PHASE-4-CMS-CASE-STUDIES.md`](./PHASE-4-CMS-CASE-STUDIES.md), then implement and QA privacy-safe Work rendering before adding a case-study editor. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+QA the privacy-safe Work renderer in staging, then extend audit coverage before adding a case-study review panel or editor. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.

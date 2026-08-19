@@ -1,6 +1,6 @@
 # Phase 4 — Case Study CMS Workflow
 
-**Status:** Design gate; no case-study write surface enabled
+**Status:** Privacy-safe renderer implemented; no case-study write surface enabled
 
 ## Recommendation
 
@@ -47,7 +47,7 @@ Before an owner publishes a case study, staging must confirm:
 
 ## Required gates before enabling editing
 
-1. **Privacy-safe rendering:** the current public mapper must honor `client_visibility`; the field cannot remain unused while hidden records expose their project names.
+1. **Privacy-safe rendering:** implemented in the public Work mapper; hidden records use safe generic copy and omit external links, while approved records retain their approved presentation.
 2. **Case-study audit coverage:** extend the audit boundary to case studies and relationship changes before allowing mutations.
 3. **Media contract:** define approved storage, file types, alt text, and removal/retention behavior. Do not add arbitrary uploads to the first editor.
 4. **Featured rule:** enforce one published featured record or make featured placement an explicit owner-only action with a deterministic tie-breaker.
@@ -55,7 +55,7 @@ Before an owner publishes a case study, staging must confirm:
 
 ## Staging sequence
 
-1. Correct and QA privacy-safe Work rendering without adding editor access.
+1. QA the privacy-safe Work rendering without adding editor access.
 2. Add case-study and relationship audit coverage.
 3. Add a protected read-only case-study review panel.
 4. Add the smallest owner/editor write slice only after the checklist and media contract are approved.

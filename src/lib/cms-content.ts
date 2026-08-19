@@ -34,6 +34,7 @@ type PublishedService = {
 type PublishedCaseStudy = {
   project_name: string;
   slug: string;
+  client_visibility: "hidden" | "approved";
   project_type: "case-study" | "prototype" | "upcoming";
   project_category: string | null;
   external_url: string | null;
@@ -213,17 +214,31 @@ export async function getPublishedService(slug: string): Promise<Service | undef
 }
 
 function mapPublishedCaseStudy(caseStudy: PublishedCaseStudy): WorkProject {
+  const isApproved = caseStudy.client_visibility === "approved";
+  const safeName = caseStudy.project_type === "prototype"
+    ? "Selected prototype"
+    : caseStudy.project_type === "upcoming"
+      ? "Upcoming project"
+      : "Selected case study";
+  const safeDescription = caseStudy.project_type === "prototype"
+    ? "A prototype in the OCSCO work library. Approved project details will be added as publication permissions are confirmed."
+    : caseStudy.project_type === "upcoming"
+      ? "An upcoming OCSCO project. Approved project details will be added as the story is ready to publish."
+      : "A selected OCSCO case study. Approved project details will be added as the story is ready to publish.";
+
   return {
     slug: caseStudy.slug,
-    name: caseStudy.project_name,
+    name: isApproved ? caseStudy.project_name : safeName,
     status: caseStudy.project_type === "prototype"
       ? "Prototype"
       : caseStudy.project_type === "upcoming"
         ? "Upcoming"
         : "Case study",
     category: caseStudy.project_category || "Project story",
-    description: caseStudy.summary || "Approved project details will be added as the work is published.",
-    href: caseStudy.external_url || undefined,
+    description: isApproved
+      ? caseStudy.summary || "Approved project details will be added as the work is published."
+      : safeDescription,
+    href: isApproved ? caseStudy.external_url || undefined : undefined,
     featured: caseStudy.is_featured,
   };
 }
@@ -237,7 +252,7 @@ export async function getPublishedWorkProjects(): Promise<WorkProject[]> {
 
   const { data, error } = await client
     .from("case_studies")
-    .select("project_name, slug, project_type, project_category, external_url, is_featured, sort_order, summary")
+    .select("project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary")
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true });
 
