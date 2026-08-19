@@ -33,10 +33,11 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Switched `ocsco.io` and `www.ocsco.io` from WordPress DNS to Vercel.
 - Added the Phase 4 CMS foundation scope and an RLS-protected relational migration for settings, navigation, pages, services, and case studies.
 - Updated public Work rendering to redact hidden case-study identity, copy, and external links while preserving approved presentation.
+- Added the staging-only case-study and relationship audit migration locally; Supabase application and verification remain pending.
 
 ## In Progress
 
-- QA the privacy-safe case-study renderer, then resolve audit coverage, media contract, and featured-project rule before enabling case-study mutations.
+- Apply and verify case-study audit coverage in staging, then resolve the media contract and featured-project rule before enabling case-study mutations.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
@@ -52,4 +53,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-QA the privacy-safe Work renderer in staging, then extend audit coverage before adding a case-study review panel or editor. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Apply and verify the staging-only case-study audit migration, then design the protected read-only case-study review panel. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.

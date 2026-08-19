@@ -48,7 +48,7 @@ Before an owner publishes a case study, staging must confirm:
 ## Required gates before enabling editing
 
 1. **Privacy-safe rendering:** implemented in the public Work mapper; hidden records use safe generic copy, omit external links, and do not receive internal detail links, while approved records retain their approved presentation.
-2. **Case-study audit coverage:** extend the audit boundary to case studies and relationship changes before allowing mutations.
+2. **Case-study audit coverage:** implemented locally in `PHASE-4-CMS-CASE-STUDY-AUDIT.md`; apply and verify the staging migration before allowing mutations.
 3. **Media contract:** define approved storage, file types, alt text, and removal/retention behavior. Do not add arbitrary uploads to the first editor.
 4. **Featured rule:** enforce one published featured record or make featured placement an explicit owner-only action with a deterministic tie-breaker.
 5. **Approval metadata:** decide whether `client_visibility` plus `last_reviewed_at` is enough or whether a separate permission reference/date is required.
@@ -56,7 +56,7 @@ Before an owner publishes a case study, staging must confirm:
 ## Staging sequence
 
 1. QA the privacy-safe Work rendering without adding editor access.
-2. Add case-study and relationship audit coverage.
+2. Apply and verify case-study and relationship audit coverage in staging.
 3. Add a protected read-only case-study review panel.
 4. Add the smallest owner/editor write slice only after the checklist and media contract are approved.
 5. Keep case-study changes in staging until a real approved project record is reviewed; do not seed private facts or unapproved media.

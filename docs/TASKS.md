@@ -115,3 +115,17 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Featured placement is deterministic and owner-controlled.
 - The review checklist covers identity, claims, outcomes, testimonials, links, imagery, related services, and publication status.
 - No case-study editor, upload action, or Production mutation is introduced during this design gate.
+
+## PH4-006 — Add case-study and relationship audit coverage
+
+- **Status:** Migration implemented locally; staging application and verification pending
+- **Goal:** Extend immutable database-generated audit history to case-study and case-study/service relationship changes without enabling a write surface.
+- **Reference:** `docs/PHASE-4-CMS-CASE-STUDY-AUDIT.md`
+
+### Acceptance criteria
+
+- Case-study inserts, updates, status changes, and deletes are recorded with actor, timestamps, and before/after snapshots.
+- Relationship additions, changes, and removals are recorded against the case-study ID.
+- Audit history remains readable only to authenticated CMS members under the existing audit policy.
+- Source-record deletion does not cascade-delete audit history.
+- No case-study or relationship insert/update/delete policy, editor, upload, or Production migration is introduced.

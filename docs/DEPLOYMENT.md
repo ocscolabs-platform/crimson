@@ -53,6 +53,8 @@ The first staging write slice is the service editor. Apply `supabase/migrations/
 
 The audit safeguard migration is the next staging-only dependency. Apply `supabase/migrations/20260820060000_add_staging_cms_audit.sql` only after the service editor policy migration. It adds database-generated immutable service history, owner-only publication/archival defense in depth, and review-before-publish enforcement. Do not run this migration in Production.
 
+The case-study audit migration is the next staging-only dependency after the service audit migration. Apply `supabase/migrations/20260820070000_add_staging_case_study_audit.sql` in `crimson-staging` only. It records case-study and case-study/service relationship changes but does not enable any case-study write policy or editor. Follow [`PHASE-4-CMS-CASE-STUDY-AUDIT.md`](./PHASE-4-CMS-CASE-STUDY-AUDIT.md) for read-only verification. Do not run this migration in Production.
+
 The restore workflow uses existing audit snapshots and requires no additional database migration. It is owner-only, restores content as `review`, clears publication timestamps, and never republishes automatically. Keep it in staging until rollback requirements are reviewed.
 
 Before testing the route, the owner must create the intended staff user in the `crimson-staging` Supabase project under **Authentication → Users** and add the staging deployment URL to **Authentication → URL Configuration**. Do not add the production domain to the staging auth configuration. Editing, publishing, draft access, and production admin access are not enabled.
