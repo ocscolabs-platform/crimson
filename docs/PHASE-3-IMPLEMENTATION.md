@@ -27,6 +27,7 @@ The homepage currently includes:
 - Sitewide spacing has been audited and relaxed across sections, grids, route lists, media placeholders, and CTA stacks, including the About page owner-review CTA.
 - Contact form submissions are validated and stored through the environment-specific Supabase project, with owner notification sent through the environment-specific Resend configuration.
 - Public metadata now uses the OCSCO brand name, explicit favicon paths, a branded Open Graph/Twitter image, and the approved professional positioning tagline.
+- Service detail pages use a restrained audience/outcome split with a supporting visual placeholder until approved service imagery is available.
 
 The route tree now includes:
 

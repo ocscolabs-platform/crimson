@@ -140,6 +140,15 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .route-grid h2 { font-size: 1.55rem; }
 .route-detail-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(48px, 8vw, 128px); }
 .route-detail-grid h2, .route-placeholder h2 { max-width: 700px; margin: 0; font-size: clamp(2.2rem, 4.5vw, 4.5rem); letter-spacing: -.055em; line-height: 1.02; }
+.service-detail-layout { display: grid; gap: clamp(72px, 9vw, 128px); }
+.service-detail-grid { align-items: start; gap: clamp(56px, 9vw, 144px); }
+.service-detail-audience h2 { max-width: 540px; font-size: clamp(2.6rem, 4vw, 4rem); line-height: 1.04; }
+.service-detail-outcome { padding-top: 2px; }
+.service-detail-outcome .route-copy { margin-bottom: 32px; }
+.service-detail-outcome .route-copy-muted { margin-bottom: 36px; }
+.service-detail-visual { display: grid; gap: 16px; }
+.service-detail-placeholder { width: 100%; min-height: clamp(280px, 34vw, 480px); margin: 0; }
+.service-detail-caption { max-width: 520px; margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.6; }
 .route-copy { max-width: 620px; margin: 0 0 28px; color: var(--copy); font-size: clamp(1.05rem, 1.8vw, 1.3rem); line-height: 1.65; }
 .route-copy-muted { color: var(--muted); font-size: .95rem; }
 .route-list { max-width: 580px; border-top: 1px solid var(--border); }
@@ -196,6 +205,9 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .capability-card-wide { grid-column: span 2; }
   .route-grid { grid-template-columns: repeat(2, 1fr); gap: var(--grid-gap); }
   .route-detail-grid { grid-template-columns: 1fr; gap: 52px; }
+  .service-detail-layout { gap: 64px; }
+  .service-detail-grid { gap: 48px; }
+  .service-detail-audience h2 { max-width: 620px; }
   .contact-form-layout { grid-template-columns: 1fr; gap: 52px; }
   .footer-top { grid-template-columns: minmax(0, 1fr) auto; }
 }
