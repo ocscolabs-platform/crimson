@@ -2,9 +2,9 @@
 
 ## Current Phase
 
-**Phase 3 — Public Website Implementation**
+**Phase 3 — Public Website Launch Readiness**
 
-Phase 0, Phase 1, and Phase 2 are complete. The public route structure is implemented locally, and the visual redesign is being built in reviewable slices. CMS, CRM, authentication, and Supabase remain unimplemented.
+Phase 0, Phase 1, and Phase 2 are complete. The public route structure and visual system are implemented, and the staging contact workflow is working end-to-end. CMS, CRM, authentication, and Production backend configuration remain unimplemented.
 
 ## Completed
 
@@ -30,17 +30,17 @@ Phase 0, Phase 1, and Phase 2 are complete. The public route structure is implem
 ## In Progress
 
 - Locked the standalone OCSCO HTML design style guide as the official v1.0 visual source of truth for typography, native hero atmosphere, iconography, media placeholders, and component states.
-- Refining the remaining public route experiences in staging, including shared route atmosphere, Services capability cards, Work placeholder state, sticky navigation, responsive shell behavior, and sitewide spacing rhythm.
+- Completing owner content, accessibility, privacy/consent, and Production configuration review before promoting the full staging implementation.
 
 ## Blocked / Requires Owner Action
 
 - Configure GitHub branch protection for `feature/*`, `staging`, and `main`.
 - Provide approved case-study facts, outcomes, testimonials, team details, and contact destination before implementation.
 - Confirm which visual assets from the existing brand materials may be copied into Crimson.
-- Create or select separate Supabase environments only when backend work is approved.
+- Create or select separate Production Supabase and Resend environments before the contact workflow is promoted.
 
 No account IDs, URLs, domains, credentials, or production secrets were fabricated or added.
 
 ## Next Recommended Step
 
-Review the Phase 3 route-refinement and spacing slice in staging, then continue through About and Contact before any further production promotion. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion. Do not connect a CMS or backend until the public visual system is approved.
+Close `docs/LAUNCH-READINESS.md` in staging, then configure and test separate Production Supabase and Resend resources before promoting the full contact workflow. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion. Do not begin CMS or CRM work until Phase 3 is approved and released.

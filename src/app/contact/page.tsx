@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ContactForm } from "@/components/contact-form";
 import { RouteShell } from "@/components/route-shell";
 
 export const metadata: Metadata = {
@@ -24,15 +24,18 @@ export default function ContactPage() {
             <p><strong>01 / Share the context.</strong> Tell us what is changing, where the friction is, and what better looks like.</p>
             <p><strong>02 / Find the shape.</strong> We clarify the opportunity, scope, and right next step.</p>
             <p><strong>03 / Build the plan.</strong> If there is a fit, we define the work and how it should move forward.</p>
-            <a className="button button-dark" href="/contact">Start a conversation <span aria-hidden="true">↗</span></a>
+            <a className="button button-dark" href="#contact-form">Start the conversation <span aria-hidden="true">↗</span></a>
           </div>
         </div>
       </section>
-      <section className="section-light route-section">
-        <div className="shell route-placeholder">
-          <p className="overline">Form workflow</p>
-          <h2>A form will be added after the response owner and inquiry workflow are confirmed.</h2>
-          <Link className="text-link" href="/">Return home <span aria-hidden="true">↗</span></Link>
+        <section className="section-light route-section contact-form-section" id="contact-form">
+        <div className="shell contact-form-layout">
+          <div className="contact-form-intro">
+            <p className="overline">Start the conversation</p>
+            <h2>Tell us what needs to work better.</h2>
+            <p className="route-copy">Share the context, the friction, and the opportunity. We will take it from there.</p>
+          </div>
+          <ContactForm />
         </div>
       </section>
     </RouteShell>

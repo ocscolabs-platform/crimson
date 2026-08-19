@@ -107,6 +107,27 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Status:** Accepted for the redesign preparation step; owner review pending
 - **Date:** 2026-08-19
 
+## ADR-021 — Use a server-side Supabase staging inquiry slice
+
+- **Decision:** Connect the staging contact form to the dedicated `crimson-staging` Supabase project through a server-side Next.js route. Keep the Supabase secret key server-only, enable RLS on `public.inquiries`, and grant the minimum insert access required for the route.
+- **Rationale:** A database-backed staging submission gives the team a testable workflow without opening a native email application or placing privileged credentials in the browser. Owner notification, anti-abuse hardening beyond the honeypot, and production delivery remain separate approvals.
+- **Status:** Accepted for staging; production promotion pending workflow approval
+- **Date:** 2026-08-19
+
+## ADR-022 — Notify the owner through a server-side Resend integration
+
+- **Decision:** After a validated inquiry is stored in Supabase, send a plain-text owner notification through the Resend Email API. Keep `RESEND_API_KEY` and notification configuration server-only, set Reply-To to the visitor email, and preserve the database record if notification delivery fails.
+- **Rationale:** Storing first prevents loss of inquiries when an external email provider is unavailable. Resend provides a narrow server-side API path for the staging test without coupling the public form to Gmail credentials or a native mail client.
+- **Status:** Accepted for staging; provider account configuration and production sender verification pending
+- **Date:** 2026-08-19
+
+## ADR-023 — Use an existing clean Supabase project for Production
+
+- **Decision:** Use the owner-confirmed clean and untouched Supabase project as the separate Production backend for Project Crimson. Keep the dedicated `crimson-staging` project isolated for Preview and staging work.
+- **Rationale:** The owner’s Supabase account has reached its free-project limit. Reusing a verified empty project avoids unnecessary plan changes while preserving environment separation and preventing unrelated data from being mixed into Crimson.
+- **Status:** Accepted for Production configuration; migration and credentials still pending
+- **Date:** 2026-08-19
+
 ## ADR-019 - Extend the v1.0 atmosphere across public route shells
 
 - **Decision:** Apply the CSS-native glass/noise treatment to shared route heroes, use the approved Lucide mapping for Services capability cards, and use an atmospheric labeled placeholder for Work until approved media is available.

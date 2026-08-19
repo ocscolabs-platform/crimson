@@ -27,4 +27,19 @@ The repository intentionally does not contain account IDs, deployment URLs, doma
 - Create or select separate Supabase environments/projects and provide only the required variables to each deployment.
 - Configure the production domain only after the application and deployment workflow have been approved.
 
-Vercel authorization was completed after the foundation was approved. Supabase authorization and project configuration remain deferred until backend work is approved.
+Vercel authorization was completed after the foundation was approved. Supabase authorization and project configuration are active for the staging contact-form slice only.
+
+Supabase authorization and project configuration are now active for the staging contact-form slice only. The staging Vercel deployment still requires the environment variables below; production remains unconfigured.
+
+## Staging contact-form configuration
+
+The staging `/contact` form writes validated submissions to the `public.inquiries` table in the dedicated `crimson-staging` Supabase project through the server-side `/api/inquiries` route. Configure these variables in Vercel for the Preview environment only:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY` — server-only; never expose this in client code or commit it
+- `RESEND_API_KEY` — server-only; use a sending-only key where available
+- `INQUIRY_NOTIFICATION_EMAIL` — owner inbox for new inquiry notifications
+- `INQUIRY_NOTIFICATION_FROM` — verified sender, or `OCSCO inquiries <onboarding@resend.dev>` for the initial Resend account-owner test
+
+Do not add these values to the repository or to the Production environment until the full notification and follow-up workflow has been approved.

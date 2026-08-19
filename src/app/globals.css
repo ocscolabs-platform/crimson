@@ -158,6 +158,23 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .route-placeholder .route-copy { margin: 32px 0 36px; }
 .route-placeholder h2 + .button { margin-top: 40px; }
 .route-placeholder .text-link { margin-top: 36px; color: var(--ink); }
+.contact-form-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(48px, 8vw, 128px); align-items: start; }
+.contact-form-intro h2 { max-width: 620px; margin: 0; font-size: clamp(2.2rem, 4.5vw, 4.5rem); letter-spacing: -.055em; line-height: 1.02; }
+.contact-form-intro .route-copy { margin: 28px 0 0; }
+.contact-form { display: grid; max-width: 620px; gap: 24px; }
+.form-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.form-field { display: grid; gap: 10px; }
+.form-field label { font-size: .82rem; font-weight: 700; }
+.form-input { width: 100%; min-height: 52px; border: 1px solid #c9c9c9; border-radius: 8px; background: var(--white); color: var(--ink); font: inherit; font-size: .95rem; padding: 14px 16px; }
+.form-input::placeholder { color: #8a8a8a; }
+.form-input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgb(0 200 83 / 18%); outline: none; }
+.form-select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%), linear-gradient(135deg, var(--ink) 50%, transparent 50%); background-position: calc(100% - 20px) 23px, calc(100% - 15px) 23px; background-repeat: no-repeat; background-size: 5px 5px, 5px 5px; padding-right: 40px; }
+.form-textarea { min-height: 180px; resize: vertical; }
+.form-actions { display: grid; justify-items: start; gap: 14px; margin-top: 4px; }
+.form-note, .form-status { max-width: 520px; margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.6; }
+.form-status { min-height: 20px; color: var(--copy); }
+.contact-honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.button:disabled { cursor: wait; opacity: .65; transform: none; }
 
 @media (max-width: 840px) {
   .hero { min-height: 720px; }
@@ -179,6 +196,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .capability-card-wide { grid-column: span 2; }
   .route-grid { grid-template-columns: repeat(2, 1fr); gap: var(--grid-gap); }
   .route-detail-grid { grid-template-columns: 1fr; gap: 52px; }
+  .contact-form-layout { grid-template-columns: 1fr; gap: 52px; }
   .footer-top { grid-template-columns: minmax(0, 1fr) auto; }
 }
 
@@ -191,6 +209,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .capability-card-wide { grid-column: auto; }
   .capability-card { min-height: 330px; }
   .route-grid { grid-template-columns: 1fr; }
+  .form-field-grid { grid-template-columns: 1fr; gap: 20px; }
   .footer-layout { gap: 44px; padding-top: 64px; }
   .footer-top { grid-template-columns: 1fr; gap: 32px; }
   .footer-top-cta { justify-self: start; }
