@@ -1,6 +1,6 @@
 # Phase 3 — Public Website Implementation
 
-**Status:** Public route implementation and staging contact workflow complete; launch-readiness review in progress
+**Status:** Public route implementation and Production promotion complete; controlled live test pending
 **Scope:** First public route structure and shared visual expression
 **Out of scope:** CMS, CRM, authentication, protected routes, Production backend configuration, and unapproved proof content
 
@@ -13,7 +13,7 @@ The homepage currently includes:
 - Integrated capabilities section covering branding, website design and development, custom CMS, CRM and business tools, and custom web applications.
 - Approach section explaining the three-step working model.
 - Honest proof-of-work state that does not invent case studies, metrics, testimonials, or client names.
-- Contact CTAs route visitors to the `/contact` experience; the staging contact form handles inquiry submission.
+- Contact CTAs route visitors to the `/contact` experience; the contact form handles validated inquiry submission through the environment-specific backend configuration.
 - Footer and responsive navigation treatment.
 - CSS-native hero atmosphere using animated grain and translucent glass planes, with reduced-motion support.
 - Lucide React line icons for capability cards, with visible text labels preserved.
@@ -25,7 +25,7 @@ The homepage currently includes:
 - Shared navigation is sticky with a glass treatment on long pages and collapses into an accessible burger menu on mobile.
 - Header and footer are shared components so shell improvements remain consistent across every route.
 - Sitewide spacing has been audited and relaxed across sections, grids, route lists, media placeholders, and CTA stacks, including the About page owner-review CTA.
-- Contact form submissions are validated and stored in the staging Supabase project through a server-side route, with owner notification sent through the staging Resend configuration.
+- Contact form submissions are validated and stored through the environment-specific Supabase project, with owner notification sent through the environment-specific Resend configuration.
 
 The route tree now includes:
 
@@ -40,7 +40,7 @@ The route tree now includes:
 - The first slice uses in-page anchors for sections that do not yet have implemented routes.
 - The visual token layer is expressed in `src/app/globals.css` and follows the Phase 2 direction.
 - The page uses the supplied OCSCO wordmark assets, Lucide React icons, and CSS-native visual treatment; public content remains local and is not CMS-backed.
-- The staging contact workflow is the only backend-connected slice. Production Supabase and Resend configuration remains intentionally separate and unconfigured.
+- Preview/Staging and Production use separate Supabase and Resend configuration. Production values are supplied through Vercel only and are not stored in the repository.
 - The page uses CSS and semantic HTML for the first visual pass; future component extraction should happen when repeated patterns appear across multiple routes.
 - The homepage copy is a working draft. It must be reviewed before it is treated as final marketing copy.
 - Service detail pages use structured local content from `src/lib/site-content.ts`; this is an interim boundary until a CMS exists.
@@ -50,7 +50,8 @@ The route tree now includes:
 - Replace route-shell copy with approved content briefs and final copy.
 - Replace the proof-of-work note with approved case-study content.
 - Confirm and replace the draft homepage headline and supporting copy.
-- Complete Production configuration and approval for staging task STG-001 before promoting the contact workflow.
+- Complete one controlled Production form submission and confirm the database row, owner email, and deployment logs.
+- Switch the approved `ocsco.io` DNS records from WordPress to Vercel.
 - Add approved brand assets, team information, case-study media, and metadata.
 - Add full responsive and accessibility review across all implemented routes.
 - Complete owner review of the refined About and Contact spacing, then review all public routes together in staging.

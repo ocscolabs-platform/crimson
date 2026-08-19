@@ -10,7 +10,7 @@ Project Crimson is OCSCO's new platform repository. It will eventually support a
 - ESLint
 - npm
 
-Supabase is the planned backend service. The staging branch contains the reviewed inquiry workflow using a dedicated staging Supabase project and Resend notification configuration; no Production credentials or backend configuration are stored in the repository. GitHub is the source repository and Vercel hosts the deployments.
+Supabase is the backend service. Preview/Staging and Production use separate Supabase projects and Resend configuration; no credentials or backend configuration values are stored in the repository. GitHub is the source repository and Vercel hosts the deployments.
 
 ## Local development
 
@@ -41,6 +41,6 @@ docs/          Project, architecture, deployment, decisions, and status docs
 public/        Public static assets and the browsable HTML design style guide
 ```
 
-The official v1.0 visual source of truth is [`public/style-guide/index.html`](./public/style-guide/index.html), available at `/design-style-guide` in the deployed application and locally while the development server is running. `/style-guide` remains as a compatibility route. It documents the OCSCO visual principles, tokens, components, content voice, and implementation rules used for the redesign.
+The official v1.0 visual source of truth is [`public/style-guide/index.html`](./public/style-guide/index.html), available at `/style-guide` in the deployed application and locally while the development server is running. It documents the OCSCO visual principles, tokens, components, content voice, and implementation rules used for the redesign.
 
 Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the information architecture, content model, visual direction, content briefs, and [`PHASE-3-IMPLEMENTATION.md`](./docs/PHASE-3-IMPLEMENTATION.md).

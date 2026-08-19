@@ -12,7 +12,7 @@ Feature branches should be used for active development and review. The `staging`
 
 ## Current deployment
 
-The `main` branch is connected to Vercel and the current foundation deployment is publicly available at [ocsco-project-crimson.vercel.app](https://ocsco-project-crimson.vercel.app/). No custom domain or environment-specific secrets are configured.
+The `main` branch is connected to Vercel and the production deployment is publicly available at [ocsco-project-crimson.vercel.app](https://ocsco-project-crimson.vercel.app/). The `ocsco.io` and `www.ocsco.io` domains are assigned to the Vercel Production environment, but DNS still points to WordPress until the final cutover is approved.
 
 ## Environment separation
 
@@ -20,16 +20,14 @@ Preview/Staging and Production must eventually use separate environment configur
 
 The repository intentionally does not contain account IDs, deployment URLs, domains, credentials, or environment values. Human owners will need to supply those values through GitHub/Vercel/Supabase configuration when the integrations are approved.
 
-## Future owner configuration
+## Remaining owner configuration
 
 - Configure GitHub branch protection for `feature/*`, `staging`, and `main`.
-- Configure preview, staging, and production environment variables in the appropriate Vercel scopes when those integrations are needed.
-- Create or select separate Supabase environments/projects and provide only the required variables to each deployment.
-- Configure the production domain only after the application and deployment workflow have been approved.
+- Keep Preview/Staging and Production variables separate and rotate keys independently.
+- Complete one controlled Production form submission and confirm the database row and owner notification.
+- Switch the website DNS records to Vercel only after the controlled Production test passes.
 
-Vercel authorization was completed after the foundation was approved. Supabase authorization and project configuration are active for the staging contact-form slice only.
-
-Supabase authorization and project configuration are now active for the staging contact-form slice only. The staging Vercel deployment still requires the environment variables below; production remains unconfigured.
+Vercel authorization was completed after the foundation was approved. The owner has configured separate Production Supabase and Resend resources in Vercel; the final controlled Production test and DNS cutover remain pending.
 
 ## Staging contact-form configuration
 
@@ -42,4 +40,8 @@ The staging `/contact` form writes validated submissions to the `public.inquirie
 - `INQUIRY_NOTIFICATION_EMAIL` — owner inbox for new inquiry notifications
 - `INQUIRY_NOTIFICATION_FROM` — verified sender, or `OCSCO inquiries <onboarding@resend.dev>` for the initial Resend account-owner test
 
-Do not add these values to the repository or to the Production environment until the full notification and follow-up workflow has been approved.
+Do not add these values to the repository. Production uses separate values from Preview/Staging.
+
+## Production contact-form configuration
+
+The Production `/contact` form uses the selected clean Production Supabase project and the verified `send.ocsco.io` Resend sending domain. Configure the same six variable names in Vercel under Production only, using Production values. The owner has completed this account configuration; application-level delivery still requires one controlled test.
