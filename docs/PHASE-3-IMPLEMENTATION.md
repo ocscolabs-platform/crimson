@@ -20,6 +20,7 @@ The homepage currently includes:
 - Explicit portfolio media placeholder state until approved case-study assets are available.
 - Shared route heroes now carry the same restrained glass/noise atmosphere as the homepage.
 - Services capability cards now use the approved Lucide icon mapping from the v1.0 guide.
+- Capability cards now follow the documented rhythm rule: 32px icons, 12px title-to-description spacing, 24px description-to-action spacing, and a three-line description target.
 - Work uses a native atmospheric placeholder instead of fabricated project media.
 - Shared navigation is sticky with a glass treatment on long pages and collapses into an accessible burger menu on mobile.
 - Header and footer are shared components so shell improvements remain consistent across every route.
