@@ -49,7 +49,7 @@ Rules:
 - Maintain WCAG AA contrast for all text and controls.
 - Do not use green body text on white for text smaller than 18px.
 - Limit each component to a maximum of two primary colors.
-- No gradients, rainbow palettes, or decorative color effects.
+- No gradients, rainbow palettes, or decorative color effects in content sections. A restrained tonal overlay is allowed only where it protects hero copy against the approved atmospheric treatment.
 
 ### Typography
 
@@ -82,7 +82,7 @@ Mobile sizes should scale down proportionally without sacrificing readable line 
 - Button states: default, a brighter green or inverted hover state, and a slightly darker pressed state must be defined.
 - Top navigation: quiet default links, compact graphite hover/active surface, 8px radius, and 500 font weight.
 - Avoid pill buttons, all-caps button labels, hard shadows, and 3D effects.
-- Use one consistent geometric icon family, such as Lucide or Phosphor, at a consistent stroke weight.
+- Use Lucide React as the application icon family at 24px with an approximately 1.6px stroke. Icons support a visible label; they do not replace one.
 - Motion should be subtle: 200-300ms ease-out transitions and restrained fade-up reveals where they improve orientation.
 - Respect reduced-motion preferences.
 
@@ -90,7 +90,7 @@ Mobile sizes should scale down proportionally without sacrificing readable line 
 
 ### Home
 
-Start with a dark, typography-led hero. Follow with light sections for capabilities, philosophy, proof, and a closing CTA. The page should feel editorial and intentional, not like a template assembled from repeated cards.
+Start with a dark, typography-led hero. Use a CSS-native atmospheric field: animated grain, soft translucent glass planes, and a restrained contrast overlay. Keep the composition distinct to OCSCO and preserve negative space behind the message. Follow with light sections for capabilities, philosophy, proof, and a closing CTA. The page should feel editorial and intentional, not like a template assembled from repeated cards.
 
 ### Services
 
@@ -98,7 +98,7 @@ Use a system view: capabilities should connect to outcomes and to each other. Pr
 
 ### Work
 
-Make project evidence the visual focus. Use large, well-cropped imagery or work artifacts only when approved and high quality. Avoid generic stock photography.
+Make project evidence the visual focus. Use large, well-cropped imagery or work artifacts only when approved and high quality. Until those assets are available, use a quiet, clearly labeled placeholder rather than invented project media or generic stock photography.
 
 ### About
 
@@ -108,17 +108,21 @@ Use lighter, more editorial layouts with strong text hierarchy. Philosophy and p
 
 Use a warm, light composition with generous form spacing and clear expectation-setting. The page should feel like an open door rather than a sales funnel.
 
-## Image and asset direction
+## Image, motion, and asset direction
 
 - Prefer real OCSCO or client work, editorial environments, abstract geometry, or carefully selected work-in-progress imagery.
+- The homepage hero may use a CSS-native grain and glass-plane treatment; it does not require a bitmap background.
+- Keep hero motion slow and low-amplitude. Respect `prefers-reduced-motion`; motion must never carry essential meaning.
+- Supporting images need a job: explain a process, establish approved proof, or create useful visual rhythm. Do not add images merely to fill space.
 - Avoid generic stock photography of people pointing at screens, shaking hands, or posing with oversized devices.
 - Use darkened or desaturated imagery when it helps integrate media with the visual system.
-- Do not copy the existing brand guide or source assets into the repository until the owner confirms which assets are cleared for project use.
+- Do not copy a reference website's artwork or composition. Use its atmosphere as a reference and create a distinct OCSCO composition.
+- Do not add client names, logos, metrics, testimonials, or project imagery until publication approval is recorded.
 
 ## Explicit anti-patterns
 
 - Emoji as interface icons.
-- Gradient backgrounds or animated particle effects.
+- Decorative gradient backgrounds, animated particle fields, or motion that competes with the content.
 - Overloaded layouts or more than three content columns.
 - Auto-playing sliders, carousels, pop-ups, or first-visit interstitials.
 - Inconsistent corner radii, heavy shadows, or decorative motion.

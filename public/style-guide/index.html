@@ -111,20 +111,30 @@
         background: var(--ink);
         color: var(--white);
         min-height: 600px;
+        overflow: hidden;
         padding: 100px 8vw 112px;
         position: relative;
       }
       .hero::after {
-        background-image: linear-gradient(rgb(255 255 255 / 7%) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 7%) 1px, transparent 1px);
-        background-size: 120px 120px;
+        background: linear-gradient(90deg, var(--ink) 0%, rgb(10 10 10 / 94%) 30%, rgb(10 10 10 / 52%) 58%, rgb(10 10 10 / 18%) 100%);
         content: "";
         inset: 0;
-        mask-image: linear-gradient(to bottom, transparent 12%, black 72%, transparent);
-        opacity: .25;
         pointer-events: none;
         position: absolute;
+        z-index: 1;
       }
-      .hero-inner { max-width: 850px; position: relative; z-index: 1; }
+      .hero::before { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.72'/%3E%3C/svg%3E"); background-size: 180px 180px; content: ""; inset: -35%; mix-blend-mode: screen; opacity: .14; pointer-events: none; position: absolute; z-index: 0; animation: guide-noise .9s steps(6) infinite; }
+      .hero-visual { inset: 0; overflow: hidden; pointer-events: none; position: absolute; z-index: 0; }
+      .hero-visual::after { background: radial-gradient(circle at 73% 52%, transparent 0%, rgb(10 10 10 / 12%) 48%, rgb(10 10 10 / 66%) 100%); content: ""; inset: 0; position: absolute; }
+      .hero-glass { background: rgb(255 255 255 / 5%); backdrop-filter: blur(26px) saturate(120%); border: 1px solid rgb(255 255 255 / 18%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), 0 32px 80px rgb(0 0 0 / 22%); display: block; position: absolute; }
+      .hero-glass-one { height: 130%; right: 18%; top: -14%; transform: rotate(-13deg); width: 40%; animation: guide-drift-one 18s ease-in-out infinite alternate; }
+      .hero-glass-two { height: 72%; right: -8%; top: 14%; transform: rotate(21deg); width: 42%; animation: guide-drift-two 15s ease-in-out infinite alternate; }
+      .hero-glass-three { bottom: -18%; height: 56%; right: 31%; transform: rotate(7deg); width: 25%; animation: guide-drift-three 20s ease-in-out infinite alternate; }
+      @keyframes guide-noise { 0% { background-position: 0 0; } 20% { background-position: 23px -17px; } 40% { background-position: -18px 29px; } 60% { background-position: 31px 11px; } 80% { background-position: -12px -24px; } 100% { background-position: 9px 18px; } }
+      @keyframes guide-drift-one { from { margin-top: -1.5%; } to { margin-top: 2.5%; } }
+      @keyframes guide-drift-two { from { margin-right: -1.5%; } to { margin-right: 2%; } }
+      @keyframes guide-drift-three { from { margin-bottom: -2%; } to { margin-bottom: 2%; } }
+      .hero-inner { max-width: 850px; position: relative; z-index: 3; }
       .hero h1 {
         font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
         font-weight: 800;
@@ -223,6 +233,30 @@
       .logo-green { background: var(--green); }
       .logo-note { color: var(--muted); font-size: .78rem; margin-top: 12px; }
 
+      .art-direction-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr); margin-top: 64px; }
+      .art-preview { background: var(--ink); border-radius: var(--radius); min-height: 420px; overflow: hidden; position: relative; }
+      .art-preview::before { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.72'/%3E%3C/svg%3E"); background-size: 180px 180px; content: ""; inset: -30%; mix-blend-mode: screen; opacity: .14; position: absolute; animation: guide-noise .9s steps(6) infinite; }
+      .art-preview::after { background: linear-gradient(90deg, var(--ink) 0%, rgb(10 10 10 / 52%) 58%, rgb(10 10 10 / 8%) 100%); content: ""; inset: 0; position: absolute; }
+      .art-preview-plane { background: rgb(255 255 255 / 5%); backdrop-filter: blur(24px); border: 1px solid rgb(255 255 255 / 18%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), 0 24px 60px rgb(0 0 0 / 26%); display: block; position: absolute; }
+      .art-preview-plane-one { height: 130%; right: 18%; top: -16%; transform: rotate(-14deg); width: 42%; }
+      .art-preview-plane-two { height: 75%; right: -10%; top: 15%; transform: rotate(20deg); width: 44%; }
+      .art-preview-copy { bottom: 32px; color: var(--white); left: 32px; max-width: 270px; position: absolute; z-index: 2; }
+      .art-preview-copy strong { display: block; font-size: 1.35rem; letter-spacing: -.04em; line-height: 1.1; }
+      .art-preview-label { color: var(--green); display: block; font-size: .68rem; font-weight: 800; letter-spacing: .14em; margin-bottom: 14px; text-transform: uppercase; }
+      .art-rule-list { border-top: 1px solid var(--border); margin: 0; padding: 0; }
+      .art-rule-list li { border-bottom: 1px solid var(--border); color: var(--copy); font-size: .92rem; line-height: 1.6; list-style: none; padding: 18px 0; }
+      .art-rule-list strong { color: var(--ink); display: block; font-size: .8rem; margin-bottom: 4px; }
+
+      .icon-grid { display: grid; gap: 16px; grid-template-columns: repeat(5, 1fr); margin-top: 64px; }
+      .icon-sample { border: 1px solid var(--border); border-radius: var(--radius); min-height: 168px; padding: 24px; }
+      .icon-sample svg { color: var(--green); height: 28px; margin-bottom: 44px; stroke-width: 1.6; width: 28px; }
+      .icon-name { font-size: .84rem; font-weight: 800; }
+      .icon-use { color: var(--muted); font-size: .76rem; line-height: 1.45; margin: 8px 0 0; }
+      .icon-rules { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); margin-top: 28px; }
+      .icon-rule { background: var(--green-soft); border-radius: var(--radius); padding: 24px; }
+      .icon-rule strong { display: block; margin-bottom: 8px; }
+      .icon-rule p { color: var(--copy); font-size: .86rem; line-height: 1.55; margin: 0; }
+
       .spacing-grid { align-items: end; display: grid; gap: 20px; grid-template-columns: repeat(8, 1fr); margin-top: 64px; }
       .spacing-item { min-width: 0; }
       .spacing-bar { background: var(--green); height: var(--size); max-width: 100%; }
@@ -291,6 +325,9 @@
         .toc p { display: inline-block; margin: 0 18px 0 0; }
         .toc a { border-left: 0; display: inline-block; padding: 0 12px; }
         .principles, .swatches { grid-template-columns: repeat(2, 1fr); }
+        .art-direction-grid { grid-template-columns: 1fr; }
+        .icon-grid { grid-template-columns: repeat(3, 1fr); }
+        .icon-rules { grid-template-columns: 1fr; }
         .implementation { grid-template-columns: 1fr; }
       }
       @media (max-width: 620px) {
@@ -302,7 +339,7 @@
         .section { padding: 72px 24px; }
         .toc { overflow-x: auto; white-space: nowrap; }
         .toc a { font-size: .76rem; }
-        .principles, .swatches, .logo-grid, .component-grid, .voice-grid { grid-template-columns: 1fr; }
+        .principles, .swatches, .logo-grid, .component-grid, .voice-grid, .icon-grid { grid-template-columns: 1fr; }
         .type-row { grid-template-columns: 1fr; gap: 14px; }
         .spacing-grid { gap: 8px; grid-template-columns: repeat(4, 1fr); }
         .spacing-item:nth-child(n + 5) { display: none; }
@@ -311,7 +348,7 @@
       }
       @media (prefers-reduced-motion: reduce) {
         html { scroll-behavior: auto; }
-        *, *::before, *::after { transition-duration: .01ms !important; }
+        *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
       }
     </style>
   </head>
@@ -331,6 +368,8 @@
         <a href="#type">Typography</a>
         <a href="#layout">Layout</a>
         <a href="#logos">Logos</a>
+        <a href="#art-direction">Art direction</a>
+        <a href="#iconography">Iconography</a>
         <a href="#components">Components</a>
         <a href="#voice">Voice</a>
         <a href="#implementation">Rules</a>
@@ -344,6 +383,12 @@
             <p class="hero-copy">The visual system for OCSCO’s public website and future platform. Calm, architectural, and built to make strategy, design, and technology feel like one connected practice.</p>
             <div class="hero-foot"><span>Source of truth</span><span>Review before implementation</span></div>
           </div>
+          <div class="hero-visual" aria-hidden="true">
+            <span class="hero-glass hero-glass-one"></span>
+            <span class="hero-glass hero-glass-two"></span>
+            <span class="hero-glass hero-glass-three"></span>
+          </div>
+          <div class="hero-noise" aria-hidden="true"></div>
         </section>
 
         <section class="section section-white" id="principles" aria-labelledby="principles-title">
@@ -425,9 +470,50 @@
           </div>
         </section>
 
+        <section class="section section-white" id="art-direction" aria-labelledby="art-direction-title">
+          <div class="section-heading">
+            <p class="eyebrow">06 / Art direction</p>
+            <h2 id="art-direction-title">Atmosphere without decoration.</h2>
+            <p class="section-intro">The OCSCO hero can use a dark editorial field with soft glass planes and low-amplitude animated grain. It should create depth and presence while keeping the message and action in control.</p>
+          </div>
+          <div class="art-direction-grid">
+            <div class="art-preview" aria-label="Native CSS hero treatment preview">
+              <span class="art-preview-plane art-preview-plane-one"></span>
+              <span class="art-preview-plane art-preview-plane-two"></span>
+              <div class="art-preview-copy"><span class="art-preview-label">Native treatment</span><strong>Soft planes.<br>Clear message.</strong></div>
+            </div>
+            <ul class="art-rule-list">
+              <li><strong>Hero visual</strong>Use an abstract field, not a stock photo or a copied composition. Keep the strongest negative space behind the headline.</li>
+              <li><strong>Motion</strong>Animate the grain and glass planes slowly. Respect <code>prefers-reduced-motion</code> and never make motion necessary to understand the page.</li>
+              <li><strong>Portfolio media</strong>Use approved project images when available. Until then, show a quiet labeled placeholder rather than inventing project evidence.</li>
+              <li><strong>Restraint</strong>One atmospheric hero treatment is enough. Supporting sections should earn their visual elements through explanation or proof.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="section section-snow" id="iconography" aria-labelledby="iconography-title">
+          <div class="section-heading">
+            <p class="eyebrow">07 / Iconography</p>
+            <h2 id="iconography-title">Useful marks, never ornament.</h2>
+            <p class="section-intro">Use Lucide React for the application: a consistent 24px line-icon family with a 1.6px stroke. Icons clarify capabilities, actions, and system concepts; they never replace a meaningful label.</p>
+          </div>
+          <div class="icon-grid" aria-label="OCSCO iconography examples">
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.232 5.232 18.768 8.768"/><path d="M3 21l1.5-5.5L16.5 3.5a2.121 2.121 0 0 1 3 3L7.5 19.5 3 21Z"/><path d="m14 6 4 4"/></svg><div class="icon-name">PenTool</div><p class="icon-use">Branding</p></div>
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="14" x="3" y="4" rx="2"/><path d="M3 9h18"/><path d="M8 20h8"/></svg><div class="icon-name">PanelsTopLeft</div><p class="icon-use">Website design</p></div>
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18 8.25 4.5a1 1 0 0 1 0 1.76l-8.25 4.5a1 1 0 0 1-.96 0l-8.25-4.5a1 1 0 0 1 0-1.76l8.25-4.5a1 1 0 0 1 .96 0Z"/><path d="m3.88 12 8.16 4.45a1 1 0 0 0 .96 0L20.99 12"/><path d="m3.88 16.5 8.16 4.45a1 1 0 0 0 .96 0l8.16-4.45"/></svg><div class="icon-name">Layers3</div><p class="icon-use">Custom CMS</p></div>
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="8" x="3" y="3" rx="2"/><rect width="8" height="8" x="13" y="13" rx="2"/><path d="M13 7h2a2 2 0 0 1 2 2v4"/><path d="M7 13v-2a2 2 0 0 1 2-2h4"/></svg><div class="icon-name">Workflow</div><p class="icon-use">Business tools</p></div>
+            <div class="icon-sample"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg><div class="icon-name">Blocks</div><p class="icon-use">Web applications</p></div>
+          </div>
+          <div class="icon-rules">
+            <div class="icon-rule"><strong>Pair with a label</strong><p>Use icons beside a visible heading, link, or button so the intent remains clear to every visitor.</p></div>
+            <div class="icon-rule"><strong>One family</strong><p>Keep the same stroke, size, corner treatment, and optical weight across the public site and future platform.</p></div>
+            <div class="icon-rule"><strong>Green is emphasis</strong><p>Use green for active, actionable, or selected states. Keep neutral icons quiet on content surfaces.</p></div>
+          </div>
+        </section>
+
         <section class="section section-white" id="components" aria-labelledby="components-title">
           <div class="section-heading">
-            <p class="eyebrow">06 / Components</p>
+            <p class="eyebrow">08 / Components</p>
             <h2 id="components-title">Simple parts, consistently composed.</h2>
             <p class="section-intro">Components should feel precise and useful. Use pill-shaped action controls, 8px active navigation surfaces, 12px structural surfaces, quiet borders, and one clear action hierarchy.</p>
           </div>
@@ -442,7 +528,7 @@
 
         <section class="section section-snow" id="voice" aria-labelledby="voice-title">
           <div class="section-heading">
-            <p class="eyebrow">07 / Content voice</p>
+            <p class="eyebrow">09 / Content voice</p>
             <h2 id="voice-title">Confident, direct, and grounded.</h2>
             <p class="section-intro">Lead with outcomes and clarity. OCSCO should sound like a partner and architect, not a commodity vendor.</p>
           </div>
@@ -454,7 +540,7 @@
 
         <section class="section section-white" id="implementation" aria-labelledby="implementation-title">
           <div class="section-heading">
-            <p class="eyebrow">08 / Implementation</p>
+            <p class="eyebrow">10 / Implementation</p>
             <h2 id="implementation-title">The rules behind the work.</h2>
             <p class="section-intro">This guide is the visual reference for the public website and future platform surfaces. Every new page or component should be checked against these rules before it is approved.</p>
           </div>

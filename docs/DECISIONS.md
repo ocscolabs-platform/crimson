@@ -107,6 +107,13 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Status:** Accepted for the redesign preparation step; owner review pending
 - **Date:** 2026-08-19
 
+## ADR-017 - Use a CSS-native editorial hero and Lucide iconography
+
+- **Decision:** Build the OCSCO hero atmosphere with CSS-native animated grain, blurred translucent planes, and a restrained contrast overlay. Use Lucide React as the application icon family, with icons paired to visible labels. Use clearly labeled placeholders for portfolio media until approved project assets are supplied.
+- **Rationale:** The owner prefers the dark, editorial, grain-and-glass mood of walaszczyk.studio but wants a distinct OCSCO composition. A native treatment avoids copying third-party artwork, keeps the hero lightweight, and allows reduced-motion support. Lucide provides a coherent line system for capability and platform concepts without introducing decorative icon noise. Honest placeholders protect the project from fabricated proof while portfolio assets are pending.
+- **Status:** Accepted for the current redesign slice; owner review pending
+- **Date:** 2026-08-19
+
 ## ADR-016 — Use pill-shaped actions and stateful top navigation
 
 - **Decision:** Use fully rounded pill buttons for primary and secondary actions, with documented default, hover, and active states. Use quiet top navigation links with a compact graphite surface for hover and active states.

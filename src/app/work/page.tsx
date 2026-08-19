@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ImageOff } from "lucide-react";
 import { RouteShell } from "@/components/route-shell";
 
 export const metadata: Metadata = {
@@ -16,6 +17,10 @@ export default function WorkPage() {
     >
       <section className="section-light route-section">
         <div className="shell route-placeholder">
+          <div className="media-placeholder" aria-label="Portfolio media placeholder">
+            <ImageOff aria-hidden="true" size={28} strokeWidth={1.6} />
+            <span>Approved project media will appear here</span>
+          </div>
           <p className="overline">Work library</p>
           <h2>Case studies are being prepared.</h2>
           <p className="route-copy">No client names, metrics, testimonials, or project claims are published here until they are reviewed and approved.</p>

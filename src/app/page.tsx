@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
 
 export default function Home() {
   return (
@@ -33,7 +34,12 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="hero-grid" aria-hidden="true" />
+        <div className="hero-visual" aria-hidden="true">
+          <span className="hero-glass hero-glass-one" />
+          <span className="hero-glass hero-glass-two" />
+          <span className="hero-glass hero-glass-three" />
+        </div>
+        <div className="hero-noise" aria-hidden="true" />
       </section>
 
       <section className="intro-section section-light" aria-labelledby="intro-title">
@@ -62,30 +68,35 @@ export default function Home() {
           <div className="capability-grid">
             <article className="capability-card">
               <span className="card-number">01</span>
+              <PenTool className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
               <h3>Branding</h3>
               <p>Positioning and identity systems that give the quality of your business a clear, credible expression.</p>
               <a className="card-link" href="#contact">Discuss branding <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card">
               <span className="card-number">02</span>
+              <PanelsTopLeft className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
               <h3>Website design &amp; development</h3>
               <p>High-performing digital experiences that turn clarity into trust and trust into momentum.</p>
               <a className="card-link" href="#contact">Discuss a website <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card">
               <span className="card-number">03</span>
+              <Layers3 className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
               <h3>Custom CMS</h3>
               <p>Content systems shaped around how your team actually works, publishes, and grows.</p>
               <a className="card-link" href="#contact">Discuss a content system <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card">
               <span className="card-number">04</span>
+              <Workflow className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
               <h3>CRM &amp; business tools</h3>
               <p>Purpose-built workflows that reduce friction and help your team operate with more signal.</p>
               <a className="card-link" href="#contact">Discuss a business tool <span aria-hidden="true">↗</span></a>
             </article>
             <article className="capability-card capability-card-wide">
               <span className="card-number">05</span>
+              <Blocks className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
               <h3>Custom web applications</h3>
               <p>When an off-the-shelf answer is not enough, we architect the application your process needs.</p>
               <a className="card-link" href="#contact">Discuss an application <span aria-hidden="true">↗</span></a>
