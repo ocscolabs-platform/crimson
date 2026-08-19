@@ -30,7 +30,7 @@ Phase 0, Phase 1, and Phase 2 are complete. The public route structure is implem
 ## In Progress
 
 - Locked the standalone OCSCO HTML design style guide as the official v1.0 visual source of truth for typography, native hero atmosphere, iconography, media placeholders, and component states.
-- Refining the remaining public route experiences in staging, beginning with shared route atmosphere, Services capability cards, and the Work placeholder state.
+- Refining the remaining public route experiences in staging, including shared route atmosphere, Services capability cards, Work placeholder state, sticky navigation, and responsive shell behavior.
 
 ## Blocked / Requires Owner Action
 
