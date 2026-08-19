@@ -132,7 +132,7 @@ export default function Home() {
           <div>
             <h2 id="contact-title">Bring us the thing that needs to work better.</h2>
             <p className="contact-copy">Start with a conversation. We will bring clarity to the opportunity, the path, and what it will take to build well.</p>
-            <a className="button button-dark" href="mailto:ocscolabs@gmail.com">Email OCSCO <span aria-hidden="true">↗</span></a>
+            <a className="button button-dark" href="/contact">Start a conversation <span aria-hidden="true">↗</span></a>
           </div>
         </div>
       </section>
