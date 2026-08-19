@@ -29,6 +29,7 @@ Do not reuse staging credentials in Production. Before promoting the full contac
 
 - Create or select the separate Production Supabase project.
 - Apply and verify the `public.inquiries` schema, RLS, and least-privilege server access in Production.
+- Apply `supabase/migrations/20260819000000_create_inquiries.sql` to the selected Production Supabase project and verify the resulting policies and grants.
 - Add Production Vercel variables for Supabase and Resend; never commit them.
 - Use a Resend sending key and a verified OCSCO sender domain for Production.
 - Run one controlled Production submission and confirm both the database record and owner notification.
