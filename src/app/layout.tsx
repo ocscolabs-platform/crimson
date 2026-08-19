@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "OCSCO Project Crimson",
-  description: "Platform foundation for the future OCSCO website and internal platform.",
+  description: "OCSCO integrates strategy, design, and technology to build digital infrastructure for ambitious brands.",
 };
 
 export default function RootLayout({
