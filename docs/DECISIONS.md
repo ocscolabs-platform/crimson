@@ -114,6 +114,13 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Status:** Accepted for staging; production promotion pending workflow approval
 - **Date:** 2026-08-19
 
+## ADR-022 — Notify the owner through a server-side Resend integration
+
+- **Decision:** After a validated inquiry is stored in Supabase, send a plain-text owner notification through the Resend Email API. Keep `RESEND_API_KEY` and notification configuration server-only, set Reply-To to the visitor email, and preserve the database record if notification delivery fails.
+- **Rationale:** Storing first prevents loss of inquiries when an external email provider is unavailable. Resend provides a narrow server-side API path for the staging test without coupling the public form to Gmail credentials or a native mail client.
+- **Status:** Accepted for staging; provider account configuration and production sender verification pending
+- **Date:** 2026-08-19
+
 ## ADR-019 - Extend the v1.0 atmosphere across public route shells
 
 - **Decision:** Apply the CSS-native glass/noise treatment to shared route heroes, use the approved Lucide mapping for Services capability cards, and use an atmospheric labeled placeholder for Work until approved media is available.

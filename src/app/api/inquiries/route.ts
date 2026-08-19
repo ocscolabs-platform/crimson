@@ -22,6 +22,9 @@ function stringValue(value: unknown) {
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const notificationEmail = process.env.INQUIRY_NOTIFICATION_EMAIL;
+  const notificationFrom = process.env.INQUIRY_NOTIFICATION_FROM;
 
   if (!supabaseUrl || !supabaseSecretKey) {
     console.error("Supabase inquiry configuration is missing.");
@@ -75,6 +78,53 @@ export async function POST(request: Request) {
       hint: error.hint,
     });
     return NextResponse.json({ error: "We could not receive your inquiry. Please try again." }, { status: 500 });
+  }
+
+  if (!resendApiKey || !notificationEmail || !notificationFrom) {
+    console.error("Inquiry notification configuration is missing.");
+    return NextResponse.json({ error: "Your inquiry was saved, but email notification is not configured yet." }, { status: 503 });
+  }
+
+  const notificationText = [
+    "New OCSCO inquiry",
+    "",
+    `Name: ${name}`,
+    `Email: ${email}`,
+    `Company: ${company || "Not provided"}`,
+    `Capability: ${capability}`,
+    "",
+    "Project details:",
+    message,
+  ].join("\n");
+
+  let resendResponse: Response;
+  try {
+    resendResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: notificationFrom,
+        to: [notificationEmail],
+        reply_to: email,
+        subject: `New OCSCO inquiry / ${capability}`,
+        text: notificationText,
+      }),
+    });
+  } catch (notificationError) {
+    console.error("Inquiry notification request failed.", notificationError);
+    return NextResponse.json({ error: "Your inquiry was saved, but the email notification could not be sent." }, { status: 502 });
+  }
+
+  if (!resendResponse.ok) {
+    const resendError = await resendResponse.json().catch(() => null) as { message?: string } | null;
+    console.error("Inquiry notification failed.", {
+      status: resendResponse.status,
+      message: resendError?.message,
+    });
+    return NextResponse.json({ error: "Your inquiry was saved, but the email notification could not be sent." }, { status: 502 });
   }
 
   return NextResponse.json({ ok: true }, { status: 201 });
