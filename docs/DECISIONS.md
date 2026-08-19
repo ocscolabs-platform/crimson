@@ -121,6 +121,13 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Status:** Accepted for staging; provider account configuration and production sender verification pending
 - **Date:** 2026-08-19
 
+## ADR-023 — Use an existing clean Supabase project for Production
+
+- **Decision:** Use the owner-confirmed clean and untouched Supabase project as the separate Production backend for Project Crimson. Keep the dedicated `crimson-staging` project isolated for Preview and staging work.
+- **Rationale:** The owner’s Supabase account has reached its free-project limit. Reusing a verified empty project avoids unnecessary plan changes while preserving environment separation and preventing unrelated data from being mixed into Crimson.
+- **Status:** Accepted for Production configuration; migration and credentials still pending
+- **Date:** 2026-08-19
+
 ## ADR-019 - Extend the v1.0 atmosphere across public route shells
 
 - **Decision:** Apply the CSS-native glass/noise treatment to shared route heroes, use the approved Lucide mapping for Services capability cards, and use an atmospheric labeled placeholder for Work until approved media is available.
