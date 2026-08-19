@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ReactNode } from "react";
 
 type RouteShellProps = {
@@ -14,7 +15,7 @@ export function RouteShell({ eyebrow, title, intro, children }: RouteShellProps)
       <section className="route-hero">
         <header className="site-header shell">
           <Link className="brand" href="/" aria-label="OCSCO home">
-            <span>OCSCO</span>
+            <Image src="/brand/ocsco-logo-white.svg" alt="OCSCO" width={118} height={24} priority />
           </Link>
           <nav className="primary-nav" aria-label="Primary navigation">
             <Link href="/services">Services</Link>
@@ -36,7 +37,7 @@ export function RouteShell({ eyebrow, title, intro, children }: RouteShellProps)
       <footer className="site-footer section-dark">
         <div className="shell footer-layout">
           <Link className="brand brand-footer" href="/" aria-label="OCSCO home">
-            <span>OCSCO</span>
+            <Image src="/brand/ocsco-logo-white.svg" alt="OCSCO" width={118} height={24} />
           </Link>
           <p>Strategy, design, and technology for brands ready to move with precision.</p>
           <span className="footer-meta">Project Crimson / 2026</span>

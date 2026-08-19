@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
 
 export default function Home() {
@@ -7,7 +8,7 @@ export default function Home() {
       <section className="hero" aria-labelledby="hero-title">
         <header className="site-header shell">
           <a className="brand" href="#top" aria-label="OCSCO home">
-            <span>OCSCO</span>
+            <Image src="/brand/ocsco-logo-white.svg" alt="OCSCO" width={118} height={24} priority />
           </a>
           <nav className="primary-nav" aria-label="Primary navigation">
             <Link href="/services">Services</Link>
@@ -151,7 +152,7 @@ export default function Home() {
 
       <footer className="site-footer section-dark">
         <div className="shell footer-layout">
-          <a className="brand brand-footer" href="#top" aria-label="Back to top"><span className="brand-mark" aria-hidden="true">O</span><span>OCSCO</span></a>
+          <a className="brand brand-footer" href="#top" aria-label="Back to top"><Image src="/brand/ocsco-logo-white.svg" alt="OCSCO" width={118} height={24} /></a>
           <p>Strategy, design, and technology for brands ready to move with precision.</p>
           <span className="footer-meta">Project Crimson / 2026</span>
         </div>

@@ -31,7 +31,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 
 .hero { position: relative; min-height: 760px; overflow: hidden; background: var(--ink); color: var(--white); isolation: isolate; }
 .site-header { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; min-height: 92px; border-bottom: 1px solid rgb(255 255 255 / 18%); }
-.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--white); font-size: 1rem; font-weight: 800; letter-spacing: .16em; }
+.brand { display: inline-flex; align-items: center; color: var(--white); width: 118px; }
+.brand img { display: block; height: auto; width: 118px; }
 .primary-nav { display: flex; gap: clamp(6px, 1vw, 14px); margin-left: auto; margin-right: clamp(20px, 4vw, 60px); color: var(--muted); font-size: .86rem; font-weight: 500; }
 .primary-nav a { border-radius: 8px; padding: 10px 14px; transition: background 180ms ease-out, color 180ms ease-out; }
 .primary-nav a:hover, .primary-nav a[aria-current="page"] { background: var(--graphite); color: var(--white); }
