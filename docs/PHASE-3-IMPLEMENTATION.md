@@ -21,12 +21,13 @@ The homepage currently includes:
 - Shared route heroes now carry the same restrained glass/noise atmosphere as the homepage.
 - Services capability cards now use the approved Lucide icon mapping from the v1.0 guide.
 - Capability cards now follow the documented rhythm rule: 32px icons, 12px title-to-description spacing, 24px description-to-action spacing, and a three-line description target.
-- Work uses a native atmospheric placeholder instead of fabricated project media.
+- Work now includes a featured CIMET Law preview and four supporting prototype/upcoming cards with clearly labeled placeholders; full case studies remain gated by content approval.
 - Shared navigation is sticky with a glass treatment on long pages and collapses into an accessible burger menu on mobile.
 - Header and footer are shared components so shell improvements remain consistent across every route.
 - Sitewide spacing has been audited and relaxed across sections, grids, route lists, media placeholders, and CTA stacks, including the About page owner-review CTA.
 - Contact form submissions are validated and stored through the environment-specific Supabase project, with owner notification sent through the environment-specific Resend configuration.
 - Public metadata now uses the OCSCO brand name, explicit favicon paths, a branded Open Graph/Twitter image, and the approved professional positioning tagline.
+- Service detail pages lead with a full-width supporting visual placeholder, followed by aligned “Best fit” and outcome columns until approved service imagery is available.
 
 The route tree now includes:
 
@@ -49,7 +50,7 @@ The route tree now includes:
 ## Known gaps before public launch
 
 - Replace route-shell copy with approved content briefs and final copy.
-- Replace the proof-of-work note with approved case-study content.
+- Replace the local Work preview with approved case-study records, media, and publication states once the CMS media workflow is ready.
 - Confirm and replace the draft homepage headline and supporting copy.
 - Complete owner content, accessibility, and privacy/consent review as a follow-up to the technical release.
 - Add approved brand assets, team information, and case-study media.
