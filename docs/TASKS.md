@@ -84,3 +84,18 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Audit rows include the actor, action, status transition, timestamp, and before/after snapshots.
 - The audit migration is applied and verified only in `crimson-staging`.
 - Version restoration and broader CMS editing remain deferred until the workflow is reviewed.
+
+## PH4-004 — Add controlled service version restoration
+
+- **Status:** Implementation complete locally; staging workflow QA pending
+- **Goal:** Provide a safe recovery path from immutable service audit snapshots without creating an automatic republish shortcut.
+- **Reference:** `docs/PHASE-4-CMS-VERSIONS.md`
+
+### Acceptance criteria
+
+- Only the staging owner can see and trigger restore actions.
+- Restore requires explicit confirmation in the editor UI.
+- A restored snapshot is always saved as `review` with publication timestamps cleared.
+- The restore action creates a new audit entry.
+- Editors and reviewers remain read-only for restoration.
+- Production receives no restore route or CMS migration until the staging workflow and future versioning requirements are approved.

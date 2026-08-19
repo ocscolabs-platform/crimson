@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canEditServices, getAdminService, getAdminServiceAudit, type AdminServiceAuditEntry } from "@/lib/admin-services";
 import { createClient } from "@/lib/supabase/server";
+import RestoreButton from "@/app/admin/services/RestoreButton";
 
 type AdminServicePageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ error?: string; saved?: string }>;
+  searchParams: Promise<{ error?: string; restored?: string; saved?: string }>;
 };
 
 async function saveService(slug: string, formData: FormData) {
@@ -72,6 +73,76 @@ async function saveService(slug: string, formData: FormData) {
   redirect(`/admin/services/${slug}?saved=1`);
 }
 
+async function restoreServiceFromAudit(slug: string, auditId: string, _formData: FormData) {
+  "use server";
+  void _formData;
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/admin/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (membership.role !== "owner") {
+    redirect(`/admin/services/${slug}?error=Only the staging owner can restore service snapshots.`);
+  }
+
+  const { data: currentService, error: currentServiceError } = await supabase
+    .from("services")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (currentServiceError || !currentService) {
+    redirect(`/admin/services/${slug}?error=The service could not be found.`);
+  }
+
+  const { data: auditEntry, error: auditError } = await supabase
+    .from("cms_audit_log")
+    .select("after_data")
+    .eq("id", auditId)
+    .eq("entity_type", "service")
+    .eq("entity_id", currentService.id)
+    .maybeSingle();
+
+  if (auditError || !auditEntry || !auditEntry.after_data || typeof auditEntry.after_data !== "object" || Array.isArray(auditEntry.after_data)) {
+    redirect(`/admin/services/${slug}?error=That service snapshot could not be restored.`);
+  }
+
+  const snapshot = auditEntry.after_data as Record<string, unknown>;
+  const restoredName = typeof snapshot.name === "string" ? snapshot.name.trim() : "";
+  if (!restoredName) {
+    redirect(`/admin/services/${slug}?error=That service snapshot does not contain a valid name.`);
+  }
+
+  const textValue = (key: string) => typeof snapshot[key] === "string" ? snapshot[key] : null;
+  const { error: restoreError } = await supabase
+    .from("services")
+    .update({
+      name: restoredName,
+      short_description: textValue("short_description"),
+      detailed_description: textValue("detailed_description"),
+      audience: textValue("audience"),
+      deliverables: snapshot.deliverables ?? [],
+      process_summary: textValue("process_summary"),
+      cta_label: textValue("cta_label"),
+      cta_href: textValue("cta_href"),
+      status: "review",
+      published_at: null,
+      last_reviewed_at: null,
+    })
+    .eq("id", currentService.id);
+
+  if (restoreError) {
+    redirect(`/admin/services/${slug}?error=${encodeURIComponent(restoreError.message)}`);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/services/${slug}`);
+  revalidatePath("/services");
+  revalidatePath(`/services/${slug}`);
+  redirect(`/admin/services/${slug}?restored=1`);
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminServicePage({ params, searchParams }: AdminServicePageProps) {
@@ -131,6 +202,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
         </section>
 
         {query.saved ? <p className="admin-success" role="status">Service saved successfully in staging.</p> : null}
+        {query.restored ? <p className="admin-success" role="status">Snapshot restored as Review. Publish it separately after review.</p> : null}
         {query.error ? <p className="admin-error" role="alert">{query.error}</p> : null}
 
         <section className="admin-editor-panel">
@@ -197,8 +269,11 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
                     <strong>{entry.action === "status_changed" ? "Status changed" : entry.action === "created" ? "Service created" : "Content updated"}</strong>
                     <span>{entry.from_status && entry.to_status ? `${entry.from_status} → ${entry.to_status}` : entry.to_status ?? "—"}</span>
                   </div>
-                  <small>{new Date(entry.created_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</small>
-                </li>
+                    <div className="admin-audit-meta">
+                      <small>{new Date(entry.created_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</small>
+                      {membership.role === "owner" ? <RestoreButton action={restoreServiceFromAudit.bind(null, slug, entry.id)} /> : null}
+                    </div>
+                  </li>
               ))}
             </ol>
           ) : null}

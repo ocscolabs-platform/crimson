@@ -32,4 +32,4 @@ This milestone adds database-generated audit history and defense-in-depth publis
 
 ## Exit criteria
 
-Broader CMS editing remains blocked until the team has reviewed audit history, publication transitions, rollback expectations, and the future versioning model. A future milestone may add version restoration, but this slice intentionally exposes history without a restore button.
+Broader CMS editing remains blocked until the team has reviewed audit history, publication transitions, rollback expectations, and the future versioning model. The current restore action is intentionally owner-only, service-specific, and review-only.

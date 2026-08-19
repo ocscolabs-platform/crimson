@@ -197,3 +197,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** Role checks in the editor are not sufficient evidence for a publishing workflow. Database-generated history gives reviewers a trustworthy change trail, while review-before-publish prevents silent edits to live content. Deferring restoration keeps the first audit slice small and makes rollback requirements explicit before expansion.
 - **Status:** Accepted for staging review; Production and broader CMS editing remain out of scope
 - **Date:** 2026-08-20
+
+## ADR-029 — Restore audited service snapshots as Review only
+
+- **Decision:** Allow only the staging owner to restore a selected service audit snapshot. Restoration clears publication timestamps, sets the service to `review`, requires explicit UI confirmation, and creates a new audit entry. It never publishes automatically.
+- **Rationale:** Audit snapshots are useful for recovery, but automatic rollback to live content would create an unsafe publishing shortcut. A review-only restore preserves control while the team evaluates whether a dedicated version table, diffs, release notes, and bulk rollback are needed.
+- **Status:** Accepted for staging review; broader version management and Production use remain out of scope
+- **Date:** 2026-08-20

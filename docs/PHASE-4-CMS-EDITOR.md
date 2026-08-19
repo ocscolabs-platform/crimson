@@ -28,7 +28,7 @@ Published → Archived (owner only)
 - Reviewers inspect content but cannot change it.
 - Owners control publication and archival.
 - Public routes continue to receive only published records with a valid publication timestamp.
-- The editor now surfaces database-generated audit history; version restoration is still deferred and is required before broad CMS rollout.
+- The editor now surfaces database-generated audit history and an owner-only restore-as-review action; broader version management remains deferred and is required before broad CMS rollout.
 
 ## Staging rollout
 
