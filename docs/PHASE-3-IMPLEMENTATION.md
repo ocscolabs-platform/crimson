@@ -48,7 +48,7 @@ The route tree now includes:
 - Replace route-shell copy with approved content briefs and final copy.
 - Replace the proof-of-work note with approved case-study content.
 - Confirm and replace the draft homepage headline and supporting copy.
-- Confirm the public contact workflow before replacing the email CTA with a form.
+- Complete staging task STG-001: confirm the public contact workflow before replacing or extending the email CTA with a form.
 - Add approved brand assets, team information, case-study media, and metadata.
 - Add full responsive and accessibility review across all implemented routes.
 - Complete owner review of the refined About and Contact spacing, then review all public routes together in staging.
