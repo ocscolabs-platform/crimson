@@ -23,6 +23,7 @@ The homepage currently includes:
 - Work uses a native atmospheric placeholder instead of fabricated project media.
 - Shared navigation is sticky with a glass treatment on long pages and collapses into an accessible burger menu on mobile.
 - Header and footer are shared components so shell improvements remain consistent across every route.
+- Sitewide spacing has been audited and relaxed across sections, grids, route lists, media placeholders, and CTA stacks, including the About page owner-review CTA.
 
 The route tree now includes:
 
@@ -49,7 +50,7 @@ The route tree now includes:
 - Confirm the public contact workflow before replacing the email CTA with a form.
 - Add approved brand assets, team information, case-study media, and metadata.
 - Add full responsive and accessibility review across all implemented routes.
-- Apply the route refinement slice to About and Contact, then review all public routes together in staging.
+- Complete owner review of the refined About and Contact spacing, then review all public routes together in staging.
 
 ## Review gate
 
