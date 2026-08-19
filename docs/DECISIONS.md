@@ -118,14 +118,14 @@ Dates use the repository work date where a decision was made during Phase 0.
 
 - **Decision:** After a validated inquiry is stored in Supabase, send a plain-text owner notification through the Resend Email API. Keep `RESEND_API_KEY` and notification configuration server-only, set Reply-To to the visitor email, and preserve the database record if notification delivery fails.
 - **Rationale:** Storing first prevents loss of inquiries when an external email provider is unavailable. Resend provides a narrow server-side API path for the staging test without coupling the public form to Gmail credentials or a native mail client.
-- **Status:** Accepted for staging; provider account configuration and production sender verification pending
+- **Status:** Accepted; staging and Production provider configuration verified
 - **Date:** 2026-08-19
 
 ## ADR-023 — Use an existing clean Supabase project for Production
 
 - **Decision:** Use the owner-confirmed clean and untouched Supabase project as the separate Production backend for Project Crimson. Keep the dedicated `crimson-staging` project isolated for Preview and staging work.
 - **Rationale:** The owner’s Supabase account has reached its free-project limit. Reusing a verified empty project avoids unnecessary plan changes while preserving environment separation and preventing unrelated data from being mixed into Crimson.
-- **Status:** Accepted for Production configuration; migration and credentials still pending
+- **Status:** Accepted; Production migration and environment configuration verified
 - **Date:** 2026-08-19
 
 ## ADR-019 - Extend the v1.0 atmosphere across public route shells
@@ -144,7 +144,7 @@ Dates use the repository work date where a decision was made during Phase 0.
 
 ## ADR-018 - Lock the official OCSCO design system v1.0
 
-- **Decision:** Declare the current OCSCO HTML design style guide the official v1.0 baseline for Project Crimson and publish it through the Vercel application at `/design-style-guide`. Keep `/style-guide` as a compatibility route. Future non-breaking refinements become v1.1; structural or system-level changes become v2.0 and require explicit owner approval.
+- **Decision:** Declare the current OCSCO HTML design style guide the official v1.0 baseline for Project Crimson and publish it through the Vercel application at `/style-guide`. Future non-breaking refinements become v1.1; structural or system-level changes become v2.0 and require explicit owner approval.
 - **Rationale:** A stable public URL gives the team one accessible source of truth while Git and Vercel preserve review history, previews, and production promotion. Versioning prevents silent drift in typography, art direction, iconography, spacing, and interaction states.
 - **Status:** Accepted; official v1.0 baseline
 - **Date:** 2026-08-19

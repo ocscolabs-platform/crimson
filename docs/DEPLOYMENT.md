@@ -12,7 +12,7 @@ Feature branches should be used for active development and review. The `staging`
 
 ## Current deployment
 
-The `main` branch is connected to Vercel and the production deployment is publicly available at [ocsco-project-crimson.vercel.app](https://ocsco-project-crimson.vercel.app/). The `ocsco.io` and `www.ocsco.io` domains are assigned to the Vercel Production environment, but DNS still points to WordPress until the final cutover is approved.
+The `main` branch is connected to Vercel and the production deployment is publicly available at [ocsco-project-crimson.vercel.app](https://ocsco-project-crimson.vercel.app/). The `ocsco.io` and `www.ocsco.io` domains are assigned to the Vercel Production environment, and the website DNS now points to Vercel. WordPress email records remain in place.
 
 ## Environment separation
 
@@ -24,10 +24,9 @@ The repository intentionally does not contain account IDs, deployment URLs, doma
 
 - Configure GitHub branch protection for `feature/*`, `staging`, and `main`.
 - Keep Preview/Staging and Production variables separate and rotate keys independently.
-- Complete one controlled Production form submission and confirm the database row and owner notification.
-- Switch the website DNS records to Vercel only after the controlled Production test passes.
+- Keep WordPress hosting available during the short rollback window, then cancel it after final owner confirmation.
 
-Vercel authorization was completed after the foundation was approved. The owner has configured separate Production Supabase and Resend resources in Vercel; the final controlled Production test and DNS cutover remain pending.
+Vercel authorization was completed after the foundation was approved. The owner has configured separate Production Supabase and Resend resources in Vercel, completed a controlled submission, and switched the website DNS to Vercel.
 
 ## Staging contact-form configuration
 
@@ -44,4 +43,4 @@ Do not add these values to the repository. Production uses separate values from 
 
 ## Production contact-form configuration
 
-The Production `/contact` form uses the selected clean Production Supabase project and the verified `send.ocsco.io` Resend sending domain. Configure the same six variable names in Vercel under Production only, using Production values. The owner has completed this account configuration; application-level delivery still requires one controlled test.
+The Production `/contact` form uses the selected clean Production Supabase project and the verified `send.ocsco.io` Resend sending domain. The six required variables are configured in Vercel under Production only, and the owner has confirmed database storage and email delivery.

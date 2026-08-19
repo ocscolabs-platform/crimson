@@ -1,6 +1,6 @@
 # Phase 3 — Public Website Implementation
 
-**Status:** Public route implementation and Production promotion complete; controlled live test pending
+**Status:** Technical production release complete; owner content and accessibility follow-up pending
 **Scope:** First public route structure and shared visual expression
 **Out of scope:** CMS, CRM, authentication, protected routes, Production backend configuration, and unapproved proof content
 
@@ -50,8 +50,7 @@ The route tree now includes:
 - Replace route-shell copy with approved content briefs and final copy.
 - Replace the proof-of-work note with approved case-study content.
 - Confirm and replace the draft homepage headline and supporting copy.
-- Complete one controlled Production form submission and confirm the database row, owner email, and deployment logs.
-- Switch the approved `ocsco.io` DNS records from WordPress to Vercel.
+- Complete owner content, accessibility, and privacy/consent review as a follow-up to the technical release.
 - Add approved brand assets, team information, case-study media, and metadata.
 - Add full responsive and accessibility review across all implemented routes.
 - Complete owner review of the refined About and Contact spacing, then review all public routes together in staging.
