@@ -42,7 +42,7 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Applied the Admin UX follow-up locally: replaced the literal select caret with a shared icon control, widened the jump navigation rhythm, increased disclosure and row spacing, and moved global-content rows to a two-column field layout earlier at tablet widths to prevent collisions. Staging desktop QA passed; responsive rules remain in place for tablet/mobile review.
 - Applied the action hierarchy follow-up locally: media replacement actions now use the neutral secondary treatment while upload and approval actions remain primary. Staging desktop QA passed.
 - Fixed the confirmed global-content grid collision by constraining shared admin inputs and select wrappers to their grid tracks; staging QA completed successfully at desktop width with no horizontal overflow.
-- Admin UX refinement is implemented locally: shared account controls, compact audit pagination, inline page-status accordions, reduced admin hero density, a consistent select icon, and a separated media approval action row. Staging desktop QA passed with no control overflow.
+- Admin UX refinement is implemented locally: shared account controls, full-shell audit rows and pagination, inline page-status accordions, reduced admin hero density, a consistent select icon, and a separated media approval action row. Staging desktop QA passed with aligned right edges, 40px pagination-to-footer spacing, and no control overflow.
 
 ## In Progress
 
