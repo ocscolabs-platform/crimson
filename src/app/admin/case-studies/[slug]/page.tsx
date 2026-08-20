@@ -657,7 +657,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
               <div className="admin-media-approval">
                 <p className="admin-action-note">Approve after the featured and supporting visuals have passed review.</p>
                 <form action={approveCaseStudyMedia.bind(null, slug)}>
-                <AdminSubmitButton label="Approve media package" pendingLabel="Approving…" />
+                  <AdminSubmitButton label="Approve media package" pendingLabel="Approving…" />
                 </form>
               </div>
             </>

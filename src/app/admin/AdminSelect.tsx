@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import type { ReactNode, SelectHTMLAttributes } from "react";
 
 type AdminSelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
@@ -10,7 +11,7 @@ export default function AdminSelect({ children, className = "", ...props }: Admi
       <select className={`admin-input admin-select ${className}`.trim()} {...props}>
         {children}
       </select>
-      <span className="admin-select-caret" aria-hidden="true" />
+      <ChevronDown className="admin-select-caret" aria-hidden="true" size={16} strokeWidth={1.8} />
     </span>
   );
 }

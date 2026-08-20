@@ -317,7 +317,7 @@ Dates use the repository work date where a decision was made during Phase 0.
 ## ADR-046 - Use shared responsive controls for admin editing surfaces
 
 - **Status:** Accepted for staging
-- **Decision:** Keep admin select controls on one shared component with a CSS-drawn caret, give jump navigation deliberate internal spacing, and move global-content rows to a stacked field layout before tablet widths make four controls compete for space.
+- **Decision:** Keep admin select controls on one shared component with a consistent icon cue, give jump navigation deliberate internal spacing, and move global-content rows to a stacked field layout before tablet widths make four controls compete for space.
 - **Reason:** A literal text glyph is inconsistent across fonts and can look like a stray character or misaligned chevron. The previous breakpoint allowed four fields to remain compressed at intermediate widths, creating the perception of overlap and making the editor harder to scan.
 - **Consequence:** The follow-up is presentation-only. It changes no form names, server actions, role checks, RLS policies, content values, or production routes.
 
