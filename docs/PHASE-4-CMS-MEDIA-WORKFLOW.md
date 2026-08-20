@@ -20,6 +20,7 @@ The storage bucket is private by default. A public image URL is available only w
 
 - Images only: AVIF, JPEG, PNG, or WebP as source files.
 - Maximum source file size: 2 MB per upload.
+- The Server Action request ceiling is 3 MB to accommodate a 2 MB file plus multipart form overhead; files above 2 MB are still rejected by the application.
 - The server rotates, resizes to a maximum 2400px edge, and converts each source file to WebP quality 82 before storage.
 - Maximum final WebP size: 2 MB. Objects are stored under `case-studies/{slug}/` with a generated `.webp` filename.
 - Public featured media and work-card frames use a fixed 16:9 display ratio; supporting gallery frames use 4:3. The CMS recommends 2400 × 1350 for featured images and 1600 × 1200 for supporting images.

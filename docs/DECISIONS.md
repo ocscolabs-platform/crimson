@@ -264,3 +264,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Use fixed 16:9 display frames for featured work media and work-library cards, and fixed 4:3 frames for supporting gallery media. Preserve the uploaded composition during WebP conversion and use a non-destructive contain treatment rather than cropping source visuals.
 - **Reason:** A portfolio grid should not change height based on an individual upload. Screenshots and product visuals often contain important edge content, so automatic cropping would create avoidable publication risk.
 - **Consequence:** The CMS recommends 2400 × 1350 for featured media and 1600 × 1200 for supporting media. Other ratios remain valid but may appear with letterboxing inside the fixed public frame.
+
+## ADR-039 - Set the upload request ceiling above the media file limit
+
+- **Status:** Accepted for staging
+- **Decision:** Configure Next.js Server Actions with a 3 MB request limit while keeping the application and storage source limit at 2 MB.
+- **Reason:** Multipart form overhead means a request containing a valid 2 MB image must exceed 2 MB. The higher request ceiling prevents valid uploads from being rejected by the framework before application validation runs.
+- **Consequence:** The application remains the source-of-truth validator at 2 MB, and the private Supabase bucket continues to enforce the final 2 MB WebP limit.
