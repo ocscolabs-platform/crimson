@@ -52,7 +52,7 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Keep case-study creation/deletion and Production administration separate until the content and consent review is complete.
 - Complete the tablet/mobile live QA pass for the Admin UX hardening v2 follow-up; desktop accessibility and privacy QA is complete.
-- Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
+- Complete the live mobile viewport QA follow-up; the owner has approved the current staging content, privacy/consent direction, and placeholder package.
 
 ## Blocked / Requires Owner Action
 
@@ -65,4 +65,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-The staging CMS media and relationship workflows are now verified on the Cairnstack record, and the Admin UX hardening v2 follow-up passed desktop accessibility/privacy QA. The next product step is to complete the [`OWNER-CONTENT-REVIEW.md`](./OWNER-CONTENT-REVIEW.md) sign-off while the Work library remains read-only; complete live tablet/mobile review when a mobile viewport is available. Do not promote CMS administration, media storage, or staging content changes to Production.
+The staging CMS media and relationship workflows are now verified on the Cairnstack record, and the Admin UX hardening v2 follow-up passed desktop accessibility/privacy QA. The current staging content package is owner-approved. The remaining release follow-up is live tablet/mobile review when a mobile viewport is available; do not promote CMS administration, media storage, or staging content changes to Production without a separate promotion request.
