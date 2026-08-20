@@ -158,7 +158,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
                       <AdminSelect name="role" defaultValue={member.role} aria-label={`Role for ${member.email}`}>
                         {CMS_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
                       </AdminSelect>
-                      <AdminSubmitButton label="Update" pendingLabel="Updating…" />
+                      <AdminSubmitButton label="Update" pendingLabel="Updating…" variant="secondary" />
                     </form>
                   </li>
                 ))}

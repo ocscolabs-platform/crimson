@@ -306,3 +306,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Render each published case study's linked, published capabilities on its public detail route as a compact list of links to the corresponding service pages. Do not render an empty relationship section, and do not expose links when either side of the relationship is unpublished.
 - **Reason:** A relationship field is only useful to visitors when it explains the capabilities behind a project and creates a clear path into the service library. Keeping the read path published-only preserves the existing privacy boundary and avoids exposing editorial or unpublished content.
 - **Consequence:** The public mapper performs a published-only relationship read and the detail page owns the presentation. No new CMS write controls, CRM relationship model, or production policy is introduced.
+
+## ADR-045 - Use disclosure groups and contextual action hierarchy in the admin CMS
+
+- **Status:** Accepted for staging
+- **Decision:** Structure long admin editing surfaces around native, keyboard-accessible disclosure groups. Use a responsive two-level layout for navigation rows, reserve the green primary treatment for commit/publish actions, and use a neutral secondary treatment for repeated row-level updates.
+- **Reason:** The first global-content editor was functionally safe but visually dense: navigation fields were compressed into a fragile five-column grid, repeated green buttons weakened action hierarchy, and page metadata created unnecessary scroll. Native disclosure controls reduce cognitive load without introducing a page-builder abstraction, while contextual action colors make the consequence of each action easier to understand.
+- **Consequence:** `/admin/content` gains collapsible global sections, collapsed page metadata records, a sticky section jump bar, and clearer responsive field grouping. The change is presentation-only and does not change CMS roles, RLS, server actions, or the production boundary.

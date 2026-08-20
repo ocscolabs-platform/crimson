@@ -241,6 +241,12 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
 
         {saved ? <AdminToast tone="success" message={saved === "settings" ? "Site settings saved successfully in staging." : saved === "navigation" ? "Navigation item saved successfully in staging." : saved === "section" ? "Page section saved successfully in staging." : "Page metadata saved successfully in staging."} /> : null}
         {error ? <AdminToast tone="error" message={error} /> : null}
+        <nav className="admin-content-jump-nav" aria-label="Global content sections">
+          <span>Jump to</span>
+          <a href="#site-settings">Site settings</a>
+          <a href="#navigation">Navigation</a>
+          <a href="#pages">Page metadata</a>
+        </nav>
 
         {loadError ? (
           <section className="admin-alert" role="alert">
@@ -250,76 +256,104 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
         ) : content ? (
           <>
             <section className="admin-content-section" id="site-settings">
-              <div className="admin-section-heading">
-                <div>
-                  <p className="admin-kicker">Site settings</p>
-                  <h2>Global defaults</h2>
+              <details className="admin-content-disclosure" open>
+                <summary className="admin-disclosure-summary">
+                  <div>
+                    <p className="admin-kicker">Site settings</p>
+                    <h2>Global defaults</h2>
+                  </div>
+                  <div className="admin-disclosure-summary-side">
+                    <p className="admin-section-note">Footer, shared metadata, and contact routing.</p>
+                    <span className="admin-disclosure-icon" aria-hidden="true" />
+                  </div>
+                </summary>
+                <div className="admin-content-section-body">
+                  <p className="admin-disclosure-note">Changes are staging-only and recorded in the global audit history.</p>
+                  {content.settings ? (
+                    <form className="admin-content-form" action={saveSiteSettings}>
+                      <label>Site name<input className="admin-input" name="site_name" defaultValue={content.settings.site_name} disabled={!canEdit} required /></label>
+                      <label>Primary contact path<input className="admin-input" name="primary_contact_path" defaultValue={content.settings.primary_contact_path} disabled={!canEdit} required /></label>
+                      <label className="admin-field-wide">Positioning statement<textarea className="admin-input admin-textarea" name="positioning_statement" defaultValue={content.settings.positioning_statement ?? ""} disabled={!canEdit} rows={3} /></label>
+                      <label>Default SEO title<input className="admin-input" name="default_seo_title" defaultValue={content.settings.default_seo_title ?? ""} disabled={!canEdit} /></label>
+                      <label>Default OG image path<input className="admin-input" name="default_og_image_path" defaultValue={content.settings.default_og_image_path ?? ""} disabled={!canEdit} placeholder="/og-image.png" /></label>
+                      <label className="admin-field-wide">Default SEO description<textarea className="admin-input admin-textarea" name="default_seo_description" defaultValue={content.settings.default_seo_description ?? ""} disabled={!canEdit} rows={3} /></label>
+                      {canEdit ? <AdminSubmitButton label="Save site settings" pendingLabel="Saving settings…" /> : null}
+                    </form>
+                  ) : <p className="admin-empty-state">The default site settings record is not available.</p>}
                 </div>
-                <p className="admin-section-note">These values support the footer, shared metadata, and contact routing. Changes are staging-only and recorded in the global audit history.</p>
-              </div>
-              {content.settings ? (
-                <form className="admin-content-form" action={saveSiteSettings}>
-                  <label>Site name<input className="admin-input" name="site_name" defaultValue={content.settings.site_name} disabled={!canEdit} required /></label>
-                  <label>Primary contact path<input className="admin-input" name="primary_contact_path" defaultValue={content.settings.primary_contact_path} disabled={!canEdit} required /></label>
-                  <label className="admin-field-wide">Positioning statement<textarea className="admin-input admin-textarea" name="positioning_statement" defaultValue={content.settings.positioning_statement ?? ""} disabled={!canEdit} rows={3} /></label>
-                  <label>Default SEO title<input className="admin-input" name="default_seo_title" defaultValue={content.settings.default_seo_title ?? ""} disabled={!canEdit} /></label>
-                  <label>Default OG image path<input className="admin-input" name="default_og_image_path" defaultValue={content.settings.default_og_image_path ?? ""} disabled={!canEdit} placeholder="/og-image.png" /></label>
-                  <label className="admin-field-wide">Default SEO description<textarea className="admin-input admin-textarea" name="default_seo_description" defaultValue={content.settings.default_seo_description ?? ""} disabled={!canEdit} rows={3} /></label>
-                  {canEdit ? <AdminSubmitButton label="Save site settings" pendingLabel="Saving settings…" /> : null}
-                </form>
-              ) : <p className="admin-empty-state">The default site settings record is not available.</p>}
+              </details>
             </section>
 
             <section className="admin-content-section" id="navigation">
-              <div className="admin-section-heading">
-                <div>
-                  <p className="admin-kicker">Navigation</p>
-                  <h2>Clear routes, in order.</h2>
+              <details className="admin-content-disclosure" open>
+                <summary className="admin-disclosure-summary">
+                  <div>
+                    <p className="admin-kicker">Navigation</p>
+                    <h2>Clear routes, in order.</h2>
+                  </div>
+                  <div className="admin-disclosure-summary-side">
+                    <p className="admin-section-note">Rename, reorder, or hide approved routes.</p>
+                    <span className="admin-disclosure-icon" aria-hidden="true" />
+                  </div>
+                </summary>
+                <div className="admin-content-section-body">
+                  <p className="admin-disclosure-note">Owners control visibility and primary/footer grouping. Each link saves independently.</p>
+                  <div className="admin-content-list">
+                    {content.navigation.map((item) => {
+                      const canChangeVisibility = isOwner;
+                      return (
+                        <form className="admin-content-row" key={item.id} action={saveNavigationItem.bind(null, item.id)}>
+                          <div className="admin-content-row-heading">
+                            <div><strong>{item.navigation_group}</strong><small>Order {item.sort_order}</small></div>
+                            <span className={item.is_visible ? "admin-status-ready" : "admin-status-muted"}>{item.is_visible ? "Visible" : "Hidden"}</span>
+                          </div>
+                          <div className="admin-content-fields">
+                            <label>Label<input className="admin-input" name="label" defaultValue={item.label} disabled={!canEdit} required /></label>
+                            <label>Destination<input className="admin-input" name="href" defaultValue={item.href} disabled={!canEdit} required /></label>
+                            <label>Sort order<input className="admin-input" name="sort_order" type="number" defaultValue={item.sort_order} disabled={!canEdit} required /></label>
+                            <label>Visibility<AdminSelect name="is_visible" defaultValue={String(item.is_visible)} disabled={!canChangeVisibility} aria-label={`Visibility for ${item.label}`}><option value="true">Visible</option><option value="false">Hidden</option></AdminSelect></label>
+                          </div>
+                          {canEdit ? <div className="admin-content-row-actions"><AdminSubmitButton label="Save link" pendingLabel="Saving…" variant="secondary" /></div> : null}
+                        </form>
+                      );
+                    })}
+                  </div>
                 </div>
-                <p className="admin-section-note">Existing links can be renamed, reordered, and pointed to an approved path. Owners control visibility and primary/footer grouping.</p>
-              </div>
-              <div className="admin-content-list">
-                {content.navigation.map((item) => {
-                  const canChangeVisibility = isOwner;
-                  return (
-                    <form className="admin-content-row" key={item.id} action={saveNavigationItem.bind(null, item.id)}>
-                      <div className="admin-content-row-heading">
-                        <div><strong>{item.navigation_group}</strong><small>Order {item.sort_order}</small></div>
-                        <span className={item.is_visible ? "admin-status-ready" : "admin-status-muted"}>{item.is_visible ? "Visible" : "Hidden"}</span>
-                      </div>
-                      <label>Label<input className="admin-input" name="label" defaultValue={item.label} disabled={!canEdit} required /></label>
-                      <label>Destination<input className="admin-input" name="href" defaultValue={item.href} disabled={!canEdit} required /></label>
-                      <label>Sort order<input className="admin-input" name="sort_order" type="number" defaultValue={item.sort_order} disabled={!canEdit} required /></label>
-                      <label>Visibility<AdminSelect name="is_visible" defaultValue={String(item.is_visible)} disabled={!canChangeVisibility} aria-label={`Visibility for ${item.label}`}><option value="true">Visible</option><option value="false">Hidden</option></AdminSelect></label>
-                      {canEdit ? <AdminSubmitButton label="Save link" pendingLabel="Saving…" /> : null}
-                    </form>
-                  );
-                })}
-              </div>
+              </details>
             </section>
 
             <section className="admin-content-section" id="pages">
-              <div className="admin-section-heading">
-                <div>
-                  <p className="admin-kicker">Page metadata</p>
-                  <h2>Publish with intention.</h2>
-                </div>
-                <p className="admin-section-note">Edit existing page titles, SEO fields, calls to action, and editorial status. Page body sections remain approved application components for now.</p>
-              </div>
-              <div className="admin-page-metadata-list">
-                {content.pages.map((page) => {
+              <details className="admin-content-disclosure" open>
+                <summary className="admin-disclosure-summary">
+                  <div>
+                    <p className="admin-kicker">Page metadata</p>
+                    <h2>Publish with intention.</h2>
+                  </div>
+                  <div className="admin-disclosure-summary-side">
+                    <p className="admin-section-note">Titles, SEO, CTAs, and publication state.</p>
+                    <span className="admin-disclosure-icon" aria-hidden="true" />
+                  </div>
+                </summary>
+                <div className="admin-content-section-body">
+                  <p className="admin-disclosure-note">Page body sections remain approved application components for now. Open a page only when you need to edit it.</p>
+                  <div className="admin-page-metadata-list">
+                {content.pages.map((page, pageIndex) => {
                   const publishedLocked = page.status === "published" && !isOwner;
                   const pageCanEdit = canEdit && !publishedLocked;
                   const statusOptions = isOwner ? pageStatusOptions : ["draft", "review"] as AdminPageMetadata["status"][];
                   const pageSections = content.sections[page.id] ?? [];
                   return (
-                    <div className="admin-page-metadata-card" key={page.id}>
-                      <div className="admin-content-row-heading">
+                    <details className="admin-page-metadata-card" key={page.id} open={pageIndex === 0}>
+                      <summary className="admin-content-row-heading admin-page-metadata-summary">
                         <div><strong>{page.title}</strong><small>/{page.slug} · {formatDate(page.published_at)}</small></div>
-                        <span className={page.status === "published" ? "admin-status-ready" : "admin-status-pending"}>{page.status}</span>
-                      </div>
-                      {publishedLocked ? <p className="admin-editor-warning">Published metadata is protected for editors. An owner must move this page to Review before changes can be made.</p> : null}
-                      <form className="admin-editor-form admin-page-metadata-form" action={savePageMetadata.bind(null, page.id)}>
+                        <div className="admin-page-metadata-summary-side">
+                          <span className={page.status === "published" ? "admin-status-ready" : "admin-status-pending"}>{page.status}</span>
+                          <span className="admin-disclosure-icon" aria-hidden="true" />
+                        </div>
+                      </summary>
+                      <div className="admin-page-metadata-body">
+                        {publishedLocked ? <p className="admin-editor-warning">Published metadata is protected for editors. An owner must move this page to Review before changes can be made.</p> : null}
+                        <form className="admin-editor-form admin-page-metadata-form" action={savePageMetadata.bind(null, page.id)}>
                         <label>Page title<input className="admin-input" name="title" defaultValue={page.title} disabled={!pageCanEdit} required /></label>
                         <label>Page purpose<input className="admin-input" name="page_purpose" defaultValue={page.page_purpose ?? ""} disabled={!pageCanEdit} /></label>
                         <label>Audience<input className="admin-input" name="audience" defaultValue={page.audience ?? ""} disabled={!pageCanEdit} /></label>
@@ -330,8 +364,8 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                         <label>CTA destination<input className="admin-input" name="cta_href" defaultValue={page.cta_href ?? ""} disabled={!pageCanEdit} /></label>
                         <label>Editorial status<AdminSelect name="status" defaultValue={page.status} disabled={!pageCanEdit}>{statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}</AdminSelect></label>
                         {pageCanEdit ? <AdminSubmitButton label="Save page metadata" pendingLabel="Saving page…" /> : null}
-                      </form>
-                      <div className="admin-page-section-controls">
+                        </form>
+                        <div className="admin-page-section-controls">
                         <div className="admin-content-row-heading">
                           <div><strong>Approved sections</strong><small>Fixed application sections; owner-controlled visibility and order.</small></div>
                           <span className="admin-status-muted">{pageSections.length} configured</span>
@@ -342,15 +376,18 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                             <form action={savePageSection.bind(null, section.id)}>
                               <label>Order<input className="admin-input" name="sort_order" type="number" min="0" defaultValue={section.sort_order} disabled={!isOwner} /></label>
                               <label>Visibility<AdminSelect name="is_visible" defaultValue={String(section.is_visible)} disabled={!isOwner} aria-label={`Section visibility for ${section.label}`}><option value="true">Visible</option><option value="false">Hidden</option></AdminSelect></label>
-                              {isOwner ? <AdminSubmitButton label="Save section" pendingLabel="Saving…" /> : null}
+                              {isOwner ? <AdminSubmitButton label="Save section" pendingLabel="Saving…" variant="secondary" /> : null}
                             </form>
                           </div>
                         ))}
+                        </div>
                       </div>
-                    </div>
+                    </details>
                   );
                 })}
-              </div>
+                  </div>
+                </div>
+              </details>
             </section>
           </>
         ) : null}
