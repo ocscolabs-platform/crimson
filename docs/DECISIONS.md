@@ -271,3 +271,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Configure Next.js Server Actions with a 3 MB request limit while keeping the application and storage source limit at 2 MB.
 - **Reason:** Multipart form overhead means a request containing a valid 2 MB image must exceed 2 MB. The higher request ceiling prevents valid uploads from being rejected by the framework before application validation runs.
 - **Consequence:** The application remains the source-of-truth validator at 2 MB, and the private Supabase bucket continues to enforce the final 2 MB WebP limit.
+
+## ADR-040 - Use one hero and two supporting visual slots for case studies
+
+- **Status:** Accepted for staging
+- **Decision:** Give each case study one featured 16:9 visual and two independently replaceable 4:3 supporting visual slots. Render the supporting slots as a two-column desktop grid and a vertical mobile stack.
+- **Reason:** One hero followed by one half-width supporting image leaves the case-study page visually unbalanced. Two controlled supporting slots create a clearer portfolio rhythm without hiding proof behind a carousel.
+- **Consequence:** A carousel remains deferred for projects that need a true visual sequence. The CMS now exposes explicit supporting slots instead of an unbounded append-only gallery.

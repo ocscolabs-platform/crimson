@@ -208,7 +208,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .work-detail-layout { display: grid; gap: clamp(64px, 9vw, 128px); }
 .work-media-image { display: block; width: 100%; aspect-ratio: 16 / 9; background: #0d0d0d; object-fit: contain; }
 .work-detail-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.work-detail-gallery img { display: block; width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; object-fit: cover; }
+.work-detail-gallery img { display: block; width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; background: #0d0d0d; object-fit: contain; }
 .work-detail-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(48px, 8vw, 128px); align-items: start; }
 .work-detail-grid h2 { max-width: 640px; margin: 18px 0 0; font-size: clamp(2.2rem, 4.5vw, 4.5rem); letter-spacing: -.055em; line-height: 1.02; }
 .work-detail-copy { padding-top: 2px; }

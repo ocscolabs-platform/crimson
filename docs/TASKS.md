@@ -248,6 +248,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Only owners can upload, replace, remove, or approve case-study media; editors and reviewers remain read-only.
 - Featured and supporting media stay under a case-study-scoped path and require meaningful alternative text.
 - Public featured/card frames use 16:9 and supporting gallery frames use 4:3; CMS guidance recommends 2400 × 1350 and 1600 × 1200 respectively without cropping source composition.
+- Each case study exposes one featured slot and two replaceable supporting visual slots; the public page renders supporting visuals as a balanced grid on desktop and a stack on mobile.
 - A published public route can read media only after the case study is published and its media package is approved.
 - Uploading or approving media does not silently publish a case study or approve client visibility.
 - No case-study creation, deletion, relationship editor, Production upload policy, or CRM control is introduced.

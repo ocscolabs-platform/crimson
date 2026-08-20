@@ -1,6 +1,6 @@
 # Phase 4 — Controlled case-study media workflow
 
-**Status:** Implemented locally; staging migration and upload QA pending
+**Status:** Implemented locally; two-slot staging upload QA pending
 
 ## Scope
 
@@ -24,6 +24,7 @@ The storage bucket is private by default. A public image URL is available only w
 - The server rotates, resizes to a maximum 2400px edge, and converts each source file to WebP quality 82 before storage.
 - Maximum final WebP size: 2 MB. Objects are stored under `case-studies/{slug}/` with a generated `.webp` filename.
 - Public featured media and work-card frames use a fixed 16:9 display ratio; supporting gallery frames use 4:3. The CMS recommends 2400 × 1350 for featured images and 1600 × 1200 for supporting images.
+- Each case study has one featured slot and two supporting visual slots. Supporting slots can be filled or replaced independently; the public page renders the two supporting visuals as a balanced grid on desktop and a vertical stack on mobile.
 - Source composition is preserved during conversion. Public frames use a non-destructive contain treatment so screenshots are not cropped; mismatched ratios may show letterboxing inside the fixed frame.
 - Featured media requires meaningful alternative text.
 - Supporting media requires meaningful alternative text and is initially marked `pending`.
@@ -40,8 +41,8 @@ The owner can approve the media package after the featured asset and alternative
 2. Open a non-featured staging record such as `cairnstack` as the owner.
 3. Move the record to Review before uploading a test image.
 4. Upload one featured image with descriptive alt text and confirm the success toast and preview.
-5. Optionally upload one supporting image, then approve the media package.
-6. Confirm the review checklist changes to Approved while the case study remains governed by its existing publication and client-visibility rules.
+5. Upload two supporting images into the two visible slots, then replace one slot to verify the slot-level workflow.
+6. Approve the media package and confirm the review checklist changes to Approved while the case study remains governed by its existing publication and client-visibility rules.
 7. Do not run this migration or upload staging assets in Production.
 
 ## Deferred

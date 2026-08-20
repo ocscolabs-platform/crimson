@@ -74,7 +74,7 @@ function mediaError(slug: string, message: string): never {
   redirect(`/admin/case-studies/${slug}?error=${encodeURIComponent(message)}`);
 }
 
-async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting", formData: FormData) {
+async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting", slot: number | null, formData: FormData) {
   "use server";
 
   const supabase = await createClient();
@@ -98,6 +98,11 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
 
   if (existing.status === "published") {
     mediaError(slug, "Move the case study to Review before changing its media.");
+  }
+
+  const currentMedia = mediaItems(existing.supporting_media);
+  if (kind === "supporting" && (!Number.isInteger(slot) || slot === null || slot < 0 || slot > 1 || slot > currentMedia.length)) {
+    mediaError(slug, slot === 1 && currentMedia.length === 0 ? "Upload supporting visual 1 before adding visual 2." : "Choose one of the two supporting media slots.");
   }
 
   const file = formData.get("media_file");
@@ -146,7 +151,15 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
     mediaError(slug, uploadError.message);
   }
 
-  const currentMedia = mediaItems(existing.supporting_media);
+  const supportingItem = { path: objectPath, alt, media_type: "image" as const, approval: "pending" as const };
+  const nextSupportingMedia = [...currentMedia];
+  if (kind === "supporting" && slot !== null) {
+    if (slot === nextSupportingMedia.length) {
+      nextSupportingMedia.push(supportingItem);
+    } else {
+      nextSupportingMedia[slot] = supportingItem;
+    }
+  }
   const update = kind === "featured"
     ? {
       featured_image_path: objectPath,
@@ -155,10 +168,7 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
       media_reviewed_at: null,
     }
     : {
-      supporting_media: [
-        ...currentMedia.map((item) => ({ path: item.path, alt: item.alt, media_type: "image" as const, approval: item.approval })),
-        { path: objectPath, alt, media_type: "image", approval: "pending" },
-      ],
+      supporting_media: nextSupportingMedia.map((item) => ({ path: item.path, alt: item.alt, media_type: "image" as const, approval: item.approval })),
       media_status: "pending",
       media_reviewed_at: null,
     };
@@ -403,7 +413,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
 
         <p className="admin-editor-warning" role="note">
           {canEdit
-            ? "Controlled staging editor. Media uploads, relationship changes, and deletion remain disabled."
+            ? "Controlled staging editor. Relationship changes and deletion remain disabled."
             : "Read-only review panel. This role cannot change the record, and media uploads, relationship changes, and deletion remain disabled."}
         </p>
 
@@ -473,18 +483,28 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             <>
               <p className="admin-editor-note">Move a published record to Review before changing its media. Replacing an image creates a new object; old objects are retained for safe cleanup later.</p>
               <div className="admin-media-forms">
-                <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "featured")}>
+                <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "featured", null)}>
                   <strong>Upload featured image</strong>
                   <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>Recommended: 2400 × 1350 (16:9). PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
                   <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the project visual" required /></label>
                   <AdminSubmitButton label="Upload featured media" pendingLabel="Uploading…" />
                 </form>
-                <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "supporting")}>
-                  <strong>Upload supporting image</strong>
-                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>Recommended: 1600 × 1200 (4:3). PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
-                  <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the supporting visual" required /></label>
-                  <AdminSubmitButton label="Upload supporting media" pendingLabel="Uploading…" />
-                </form>
+                {[0, 1].map((slot) => {
+                  const item = supportingMedia[slot];
+                  const isAvailable = slot === 0 || supportingMedia.length > 0;
+                  return (
+                    <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "supporting", slot)} key={slot}>
+                      <strong>{item ? `Replace supporting visual ${slot + 1}` : `Upload supporting visual ${slot + 1}`}</strong>
+                      {isAvailable ? (
+                        <>
+                          <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>Recommended: 1600 × 1200 (4:3). PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
+                          <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the supporting visual" defaultValue={item?.alt || ""} required /></label>
+                          <AdminSubmitButton label={item ? "Replace supporting media" : "Upload supporting media"} pendingLabel="Uploading…" />
+                        </>
+                      ) : <p className="admin-editor-note">Upload supporting visual 1 before adding visual 2.</p>}
+                    </form>
+                  );
+                })}
               </div>
               <form action={approveCaseStudyMedia.bind(null, slug)}>
                 <AdminSubmitButton label="Approve media package" pendingLabel="Approving…" />
