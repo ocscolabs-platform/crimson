@@ -47,6 +47,12 @@ async function readMany(client, table, query = (builder) => builder) {
   return data || [];
 }
 
+function targetOrSourceBySlug(targetRows, sourceRows) {
+  const rows = new Map(sourceRows.map((row) => [row.slug, row]));
+  for (const row of targetRows) rows.set(row.slug, row);
+  return rows;
+}
+
 async function readOne(client, table, query = (builder) => builder) {
   const { data, error } = await query(client.from(table).select("*").maybeSingle());
   fail(`Read ${table}`, error);
@@ -345,15 +351,15 @@ async function main() {
   const targetCaseStudies = await readMany(target, "case_studies");
   await upsertPageSections(
     sections,
-    new Map(targetPages.map((page) => [page.slug, page])),
+    targetOrSourceBySlug(targetPages, pages),
     new Map(pages.map((page) => [page.id, page])),
   );
   await replaceRelationships(
     links,
     new Map(caseStudies.map((project) => [project.id, project])),
     new Map(services.map((service) => [service.id, service])),
-    new Map(targetCaseStudies.map((project) => [project.slug, project])),
-    new Map(targetServices.map((service) => [service.slug, service])),
+    targetOrSourceBySlug(targetCaseStudies, caseStudies),
+    targetOrSourceBySlug(targetServices, services),
   );
   console.log(isDryRun ? "Dry run complete. No Production records or media were changed." : "Promotion complete. Verify the Production public routes and media before declaring release complete.");
 }
