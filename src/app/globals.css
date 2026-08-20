@@ -322,6 +322,19 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-audit-list small { white-space: nowrap; }
 .admin-audit-restore { border: 1px solid rgb(255 255 255 / 18%); border-radius: 999px; background: transparent; color: #d2d2d2; cursor: pointer; font: inherit; font-size: .72rem; padding: 7px 11px; }
 .admin-audit-restore:hover { border-color: var(--green); color: var(--green); }
+.admin-team-layout { display: grid; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.2fr); gap: 16px; }
+.admin-team-card { border: 1px solid rgb(255 255 255 / 14%); border-radius: 12px; background: #141414; padding: 28px; }
+.admin-team-card h2 { margin: 12px 0 10px; font-size: clamp(1.7rem, 3vw, 2.5rem); letter-spacing: -.05em; line-height: 1.05; }
+.admin-team-note, .admin-team-footnote { margin: 0 0 24px; color: #8f8f8f; font-size: .82rem; line-height: 1.6; }
+.admin-team-footnote { border-top: 1px solid rgb(255 255 255 / 10%); margin: 22px 0 0; padding-top: 16px; }
+.admin-member-list { display: grid; gap: 0; margin: 22px 0 0; padding: 0; list-style: none; }
+.admin-member-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 20px; border-top: 1px solid rgb(255 255 255 / 10%); padding: 16px 0; }
+.admin-member-identity { display: grid; gap: 6px; min-width: 0; }
+.admin-member-identity strong { overflow: hidden; color: #eee; font-size: .88rem; text-overflow: ellipsis; white-space: nowrap; }
+.admin-member-identity small { color: #898989; font-size: .72rem; }
+.admin-member-role-form { display: flex; align-items: center; gap: 10px; }
+.admin-member-role-form .admin-select-wrap { min-width: 128px; }
+.admin-member-role-form .admin-submit { width: auto; min-width: 82px; margin-top: 0; }
 .admin-footer { border-top: 1px solid rgb(255 255 255 / 16%); color: #777; font-size: .72rem; letter-spacing: .08em; padding-top: 20px; text-transform: uppercase; }
 .admin-review-section { padding-bottom: 48px; }
 .admin-review-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
@@ -436,6 +449,10 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-review-card { padding: 22px; }
   .admin-review-dl div { align-items: start; flex-direction: column; gap: 5px; }
   .admin-review-dl dd { text-align: left; }
+  .admin-team-layout { grid-template-columns: 1fr; }
+  .admin-member-row { align-items: start; grid-template-columns: 1fr; gap: 12px; }
+  .admin-member-role-form { align-items: stretch; }
+  .admin-member-role-form .admin-select-wrap { flex: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

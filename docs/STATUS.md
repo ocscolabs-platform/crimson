@@ -37,11 +37,11 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Added a protected read-only case-study review panel; authenticated staging preview QA completed.
 - Added the staging-only case-study media contract and single published featured-project migration locally; staging application and verification remain pending.
 - Added and verified the update-only staging case-study editor and role-aware publication safeguards in `crimson-staging`; the core review/publish workflow passed, and the latest save-feedback UX is ready for staging deployment.
-- Completed the local Admin UX hardening slice: shared spacing/navigation treatment, visible select cues, server-side audit pagination, password recovery screens, and accessible authentication feedback.
+- Completed the Admin UX hardening slice: shared spacing/navigation treatment, visible select cues, server-side audit pagination, password recovery screens, accessible authentication feedback, and responsive case-study detail layout.
 
 ## In Progress
 
-- Push and QA the Admin UX hardening slice in staging: spacing, breadcrumbs, select controls, audit pagination, password reset, and responsive behavior.
+- Add the owner-only Team & Access slice in staging for invitations and CMS role assignment.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
@@ -57,4 +57,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Push the Admin UX hardening slice to `staging`, add the exact staging `/admin/reset-password` URL in Supabase Auth URL Configuration, and run the QA workflow described in PHASE-4-CMS-CASE-STUDY-EDITOR.md. No database migration is required for this slice. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Complete staging QA for `/admin/team`, then continue with controlled editors for Site Settings, Navigation, Page Metadata, and approved page-section visibility/order. No database migration is required for Team & Access. Do not promote CMS administration or staging content changes to Production.

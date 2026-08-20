@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 type AdminBreadcrumbsProps = {
-  section: "Services" | "Work library";
+  section: "Services" | "Work library" | "Team & access";
   record: string;
 };
 

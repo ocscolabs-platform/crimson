@@ -1,6 +1,6 @@
 # Phase 4 — CMS Roles and Authorization
 
-**Status:** Staging implementation in progress; audit and publishing safeguards are the current milestone
+**Status:** Role foundation implemented; owner-only Team & Access slice is being added in staging
 
 ## Proposed roles
 
@@ -11,6 +11,12 @@
 | `reviewer` | Review content for accuracy and publication readiness | Read-only review of service content |
 
 The first implementation deliberately limits content mutation to the services table. Pages, navigation, site settings, case studies, media, and CRM remain read-only or unavailable in the CMS until their workflows are separately approved.
+
+## Owner-only Team & Access slice
+
+The staging CMS includes an owner-only membership surface at `/admin/team`. It may invite a user through the server-side Supabase Auth admin API and assign one of the approved roles. Owners can also change an existing member's role. The browser never receives `SUPABASE_SECRET_KEY`, and the last owner cannot be downgraded.
+
+This slice does not add account deletion, bulk membership changes, production access, or CRM permissions. Those require separate review.
 
 ## Staging migration
 

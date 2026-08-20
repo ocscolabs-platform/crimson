@@ -189,3 +189,18 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Sign-in includes a password recovery path and clear loading/error feedback.
 - No Remember me control is added until a deliberate session-duration policy is approved.
 - The staging Supabase Auth redirect URL is documented and configured before password reset is tested.
+
+## PH4-011 - Add owner-only Team & Access
+
+- **Status:** Implementation in progress on `staging`
+- **Goal:** Let the staging owner invite approved CMS users and assign the smallest required role without opening Supabase administration to the team.
+- **Reference:** `docs/PHASE-4-CMS-ROLES.md`
+
+### Acceptance criteria
+
+- Only a signed-in `owner` can access `/admin/team` or invoke its server actions.
+- Owners can invite a user through the server-side Supabase Auth admin API and assign `owner`, `editor`, or `reviewer`.
+- Owners can change an existing CMS member's role.
+- The last owner cannot be downgraded.
+- The Supabase secret key remains server-only and is never exposed to browser code.
+- Membership changes are limited to staging; account deletion, production access, and CRM permissions remain out of scope.

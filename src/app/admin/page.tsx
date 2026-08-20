@@ -54,6 +54,7 @@ export default async function AdminDashboardPage() {
           <Link href="#overview">Overview</Link>
           <Link href="#services-records">Services</Link>
           <Link href="#work-records">Work library</Link>
+          {membership.role === "owner" ? <Link href="/admin/team">Team &amp; access</Link> : null}
         </nav>
 
         <section className="admin-hero" id="overview">

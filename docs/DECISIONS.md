@@ -224,4 +224,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Enable a protected staging editor for existing case-study records only. Owners may update, approve client visibility, publish, and archive; editors may update draft/review records; reviewers remain read-only. Keep inserts, deletes, relationships, media uploads, and Production access disabled.
 - **Rationale:** The team needs a real review and publication workflow, but case-study creation and media handling carry higher risk than text preparation. An update-only slice exercises RLS, review-before-publish, and audit history without opening the full portfolio surface.
 - **Status:** Accepted for staging review; migration application pending
+
+## ADR-033 - Keep CMS membership management owner-only and server-side
+
+- **Decision:** Add a staging-only Team & Access surface where owners can invite CMS users and assign `owner`, `editor`, or `reviewer`. Perform Auth administration through a server-only Supabase admin client; never expose the Supabase secret key to browser code. Protect the last owner from downgrade.
+- **Rationale:** Role assignment should not require routine access to Supabase administration, but it is itself a privileged operation. Keeping it owner-only and server-side reduces accidental privilege escalation while preserving the existing environment boundary. Account deletion, production access, and CRM permissions remain separate decisions.
+- **Status:** Accepted for staging implementation
 - **Date:** 2026-08-20
