@@ -7,6 +7,9 @@ export type WorkProject = {
   href?: string;
   featured?: boolean;
   clientVisibility?: "hidden" | "approved";
+  featuredImageUrl?: string;
+  featuredImageAlt?: string;
+  supportingMedia?: Array<{ url: string; alt: string }>;
 };
 
 export const workProjects: WorkProject[] = [

@@ -223,7 +223,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-013 - Add approved page-section controls
 
-- **Status:** Implementation in progress on `staging`
+- **Status:** Implemented and authenticated responsive/public QA completed on `staging`
 - **Goal:** Let the staging owner enable, disable, and reorder approved top-level page sections without introducing a freeform page builder.
 - **Reference:** `docs/PHASE-4-CMS-PAGE-SECTIONS.md`
 
@@ -235,3 +235,18 @@ This queue records approved next-step work before implementation. Tasks in this 
 - The database prevents hiding the last visible section on a page.
 - Section changes are recorded in the global audit history.
 - No arbitrary section creation, deletion, media upload, service-detail builder, case-study layout builder, CRM, or Production control is introduced.
+
+## PH4-014 - Add controlled case-study media workflow
+
+- **Status:** Implementation complete locally; staging migration and upload QA pending
+- **Goal:** Let the staging owner upload and approve approved project visuals without opening case-study creation, relationship editing, or Production controls.
+- **Reference:** `docs/PHASE-4-CMS-MEDIA-WORKFLOW.md`
+
+### Acceptance criteria
+
+- The staging media bucket is private by default and limited to approved image MIME types and a 10 MB file size.
+- Only owners can upload, replace, remove, or approve case-study media; editors and reviewers remain read-only.
+- Featured and supporting media stay under a case-study-scoped path and require meaningful alternative text.
+- A published public route can read media only after the case study is published and its media package is approved.
+- Uploading or approving media does not silently publish a case study or approve client visibility.
+- No case-study creation, deletion, relationship editor, Production upload policy, or CRM control is introduced.

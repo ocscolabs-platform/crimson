@@ -243,3 +243,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Model approved top-level page sections as fixed database rows with owner-controlled visibility and order. Keep section types, markup, and content contracts in the application until each is deliberately approved.
 - **Reason:** Section toggles are useful for staging composition, but a freeform builder would introduce layout, accessibility, SEO, and content-governance risk before the reusable contracts are mature.
 - **Consequence:** The CMS can compose the existing public system but cannot create arbitrary sections, service-detail sections, case-study layouts, or media blocks in this milestone.
+
+## ADR-036 - Keep case-study media private until owner approval
+
+- **Status:** Accepted for staging
+- **Decision:** Store case-study images in a private staging bucket. Owners may upload existing-record media with required alternative text and explicitly approve the media package. Public storage reads are allowed only when the attached case study is published and its media package is approved.
+- **Reason:** Portfolio imagery is public proof and may contain private client information. A private-by-default bucket prevents an uploaded draft asset from becoming public merely because its path is known, while keeping the upload workflow useful for staging review.
+- **Consequence:** Uploads are owner-only, replacements do not automatically delete old objects, and case-study creation, relationships, transformations, and Production media remain separate decisions.

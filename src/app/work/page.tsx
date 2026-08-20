@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- signed Supabase media URLs are runtime-generated. */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ImageOff } from "lucide-react";
@@ -35,10 +36,14 @@ export default async function WorkPage() {
             <section className="section-light route-section">
               <div className="shell work-library">
           <article className="work-featured">
+            {featuredProject.featuredImageUrl ? (
+              <img className="work-featured-media work-media-image" src={featuredProject.featuredImageUrl} alt={featuredProject.featuredImageAlt || `${featuredProject.name} project visual`} />
+            ) : (
             <div className="media-placeholder work-featured-media" role="img" aria-label={`${featuredProject.name} project visual placeholder`}>
               <ImageOff aria-hidden="true" size={34} strokeWidth={1.4} />
               <span>Featured project visual placeholder · approved imagery pending</span>
             </div>
+            )}
             <div className="work-featured-copy">
               <div>
                 <div className="work-card-top">
@@ -73,10 +78,14 @@ export default async function WorkPage() {
           <div className="work-grid">
             {supportingProjects.map((project) => (
               <article className="work-card" key={project.slug}>
+                {project.featuredImageUrl ? (
+                  <img className="work-card-media work-media-image" src={project.featuredImageUrl} alt={project.featuredImageAlt || `${project.name} project visual`} />
+                ) : (
                 <div className="media-placeholder work-card-media" role="img" aria-label={`${project.name} project visual placeholder`}>
                   <ImageOff aria-hidden="true" size={28} strokeWidth={1.4} />
                   <span>Project visual placeholder</span>
                 </div>
+                )}
                 <div className="work-card-content">
                   <div className="work-card-top">
                     <p className="overline">{project.status}</p>

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- signed Supabase media URLs are runtime-generated. */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ImageOff } from "lucide-react";
@@ -36,10 +37,21 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
     <RouteShell eyebrow={project.status} title={project.name} intro={project.description}>
       <section className="section-light route-section">
         <div className="shell work-detail-layout">
+          {project.featuredImageUrl ? (
+            <img className="work-detail-media work-media-image" src={project.featuredImageUrl} alt={project.featuredImageAlt || `${project.name} project visual`} />
+          ) : (
           <div className="media-placeholder work-detail-media" role="img" aria-label={`${project.name} project visual placeholder`}>
             <ImageOff aria-hidden="true" size={34} strokeWidth={1.4} />
             <span>Project visual placeholder · approved imagery pending</span>
           </div>
+          )}
+          {project.supportingMedia?.length ? (
+            <div className="work-detail-gallery" aria-label="Supporting project visuals">
+              {project.supportingMedia.map((media) => (
+                <img key={media.url} src={media.url} alt={media.alt} />
+              ))}
+            </div>
+          ) : null}
           <div className="work-detail-grid">
             <div>
               <p className="overline">Project story</p>

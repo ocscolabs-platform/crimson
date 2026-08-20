@@ -12,6 +12,14 @@ export type AdminCaseStudyAuditEntry = {
   created_at: string;
 };
 
+export type AdminCaseStudyMediaItem = {
+  path: string;
+  alt: string;
+  approval: "pending" | "approved";
+  media_type: "image";
+  url?: string | null;
+};
+
 export type AdminCaseStudyReview = {
   id: string;
   project_name: string;
@@ -29,9 +37,10 @@ export type AdminCaseStudyReview = {
   outcomes: unknown;
   featured_image_path: string | null;
   featured_image_alt: string | null;
-  supporting_media: unknown;
+  supporting_media: AdminCaseStudyMediaItem[];
   media_status: "pending" | "approved" | "rejected";
   media_reviewed_at: string | null;
+  featured_image_url: string | null;
   status: "draft" | "review" | "published" | "archived";
   published_at: string | null;
   last_reviewed_at: string | null;
@@ -49,6 +58,16 @@ export function canEditCaseStudies(role: CmsRole | null) {
 
 export function canApproveCaseStudyVisibility(role: CmsRole | null) {
   return role === "owner";
+}
+
+function isMediaItem(value: unknown): value is Omit<AdminCaseStudyMediaItem, "url"> {
+  return Boolean(
+    value
+      && typeof value === "object"
+      && !Array.isArray(value)
+      && typeof (value as Record<string, unknown>).path === "string"
+      && typeof (value as Record<string, unknown>).alt === "string",
+  );
 }
 
 export async function getAdminCaseStudyReview(slug: string, auditPage = 1, auditPageSize = 5): Promise<AdminCaseStudyReview | null> {
@@ -91,6 +110,26 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
     throw new Error(audit.error.message);
   }
 
+  const supportingMedia = Array.isArray(data.supporting_media)
+    ? data.supporting_media
+      .filter(isMediaItem)
+      .map((item) => ({
+        path: item.path,
+        alt: item.alt,
+        approval: item.approval === "approved" ? "approved" : "pending",
+        media_type: "image" as const,
+      }))
+    : [];
+  const [featuredImage, supportingMediaWithUrls] = await Promise.all([
+    data.featured_image_path
+      ? supabase.storage.from("case-study-media").createSignedUrl(data.featured_image_path, 3600)
+      : Promise.resolve({ data: null, error: null }),
+    Promise.all(supportingMedia.map(async (item) => {
+      const { data: signedData } = await supabase.storage.from("case-study-media").createSignedUrl(item.path, 3600);
+      return { ...item, url: signedData?.signedUrl || null };
+    })),
+  ]);
+
   const serviceIds = (relationships.data ?? []).map((relationship) => relationship.service_id);
   let services: AdminCaseStudyReview["services"] = [];
 
@@ -110,6 +149,8 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
 
   return {
     ...data,
+    featured_image_url: featuredImage.data?.signedUrl || null,
+    supporting_media: supportingMediaWithUrls,
     services,
     audit: (audit.data ?? []) as AdminCaseStudyAuditEntry[],
     auditTotal: audit.count ?? 0,

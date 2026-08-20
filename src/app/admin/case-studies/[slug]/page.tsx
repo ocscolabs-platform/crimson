@@ -1,8 +1,10 @@
+/* eslint-disable @next/next/no-img-element -- signed Supabase media URLs are runtime-generated. */
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { randomUUID } from "node:crypto";
 import { getCmsMembership } from "@/lib/cms-auth";
-import { canApproveCaseStudyVisibility, canEditCaseStudies, getAdminCaseStudyReview } from "@/lib/admin-case-studies";
+import { canApproveCaseStudyVisibility, canEditCaseStudies, getAdminCaseStudyReview, type AdminCaseStudyMediaItem } from "@/lib/admin-case-studies";
 import { createClient } from "@/lib/supabase/server";
 import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import AdminPagination from "@/app/admin/AdminPagination";
@@ -13,6 +15,15 @@ import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 type AdminCaseStudyPageProps = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ error?: string; saved?: string; audit_page?: string }>;
+};
+
+const MEDIA_BUCKET = "case-study-media";
+const MEDIA_SIZE_LIMIT = 10 * 1024 * 1024;
+const MEDIA_TYPES: Record<string, string> = {
+  "image/avif": "avif",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
 };
 
 function listItems(value: unknown): string[] {
@@ -40,6 +51,165 @@ function lineItems(value: string): string[] {
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function mediaItems(value: unknown): AdminCaseStudyMediaItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is AdminCaseStudyMediaItem => Boolean(
+    item
+      && typeof item === "object"
+      && !Array.isArray(item)
+      && typeof (item as Record<string, unknown>).path === "string"
+      && typeof (item as Record<string, unknown>).alt === "string",
+  )).map((item) => ({
+    path: item.path,
+    alt: item.alt,
+    approval: item.approval === "approved" ? "approved" : "pending",
+    media_type: "image",
+    url: item.url || null,
+  }));
+}
+
+function mediaError(slug: string, message: string): never {
+  redirect(`/admin/case-studies/${slug}?error=${encodeURIComponent(message)}`);
+}
+
+async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting", formData: FormData) {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/admin/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (membership.role !== "owner") {
+    mediaError(slug, "Only the staging owner can upload case-study media.");
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from("case_studies")
+    .select("id, slug, status, supporting_media")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (existingError || !existing) {
+    mediaError(slug, "The case study could not be found.");
+  }
+
+  if (existing.status === "published") {
+    mediaError(slug, "Move the case study to Review before changing its media.");
+  }
+
+  const file = formData.get("media_file");
+  const alt = String(formData.get("media_alt") || "").trim();
+  if (!(file instanceof File) || file.size === 0) {
+    mediaError(slug, "Choose an image before uploading.");
+  }
+
+  if (!MEDIA_TYPES[file.type]) {
+    mediaError(slug, "Use an AVIF, JPEG, PNG, or WebP image.");
+  }
+
+  if (file.size > MEDIA_SIZE_LIMIT) {
+    mediaError(slug, "Images must be 10 MB or smaller.");
+  }
+
+  if (alt.length < 8) {
+    mediaError(slug, "Alternative text must be at least 8 characters and describe the image.");
+  }
+
+  const objectPath = `case-studies/${slug}/${randomUUID()}.${MEDIA_TYPES[file.type]}`;
+  const { error: uploadError } = await supabase.storage.from(MEDIA_BUCKET).upload(objectPath, file, {
+    cacheControl: "3600",
+    contentType: file.type,
+    upsert: false,
+  });
+
+  if (uploadError) {
+    mediaError(slug, uploadError.message);
+  }
+
+  const currentMedia = mediaItems(existing.supporting_media);
+  const update = kind === "featured"
+    ? {
+      featured_image_path: objectPath,
+      featured_image_alt: alt,
+      media_status: "pending",
+      media_reviewed_at: null,
+    }
+    : {
+      supporting_media: [
+        ...currentMedia.map((item) => ({ path: item.path, alt: item.alt, media_type: "image" as const, approval: item.approval })),
+        { path: objectPath, alt, media_type: "image", approval: "pending" },
+      ],
+      media_status: "pending",
+      media_reviewed_at: null,
+    };
+  const { error: updateError } = await supabase.from("case_studies").update(update).eq("id", existing.id);
+
+  if (updateError) {
+    mediaError(slug, updateError.message);
+  }
+
+  revalidatePath("/admin/case-studies/" + slug);
+  revalidatePath("/work");
+  revalidatePath("/work/" + slug);
+  redirect(`/admin/case-studies/${slug}?saved=media`);
+}
+
+async function approveCaseStudyMedia(slug: string) {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/admin/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (membership.role !== "owner") {
+    mediaError(slug, "Only the staging owner can approve case-study media.");
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from("case_studies")
+    .select("id, status, featured_image_path, featured_image_alt, supporting_media")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (existingError || !existing) {
+    mediaError(slug, "The case study could not be found.");
+  }
+
+  if (existing.status === "published") {
+    mediaError(slug, "Move the case study to Review before approving its media.");
+  }
+
+  if (!existing.featured_image_path || String(existing.featured_image_alt || "").trim().length < 8) {
+    mediaError(slug, "Add a featured image with meaningful alternative text before approving the media package.");
+  }
+
+  const approvedSupportingMedia = mediaItems(existing.supporting_media).map((item) => ({
+    path: item.path,
+    alt: item.alt,
+    media_type: "image" as const,
+    approval: "approved" as const,
+  }));
+  const { error: updateError } = await supabase.from("case_studies").update({
+    supporting_media: approvedSupportingMedia,
+    media_status: "approved",
+    media_reviewed_at: new Date().toISOString(),
+  }).eq("id", existing.id);
+
+  if (updateError) {
+    mediaError(slug, updateError.message);
+  }
+
+  revalidatePath("/admin/case-studies/" + slug);
+  revalidatePath("/work");
+  revalidatePath("/work/" + slug);
+  redirect(`/admin/case-studies/${slug}?saved=media-approved`);
 }
 
 async function saveCaseStudy(slug: string, formData: FormData) {
@@ -147,7 +317,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
 
   const deliverables = listItems(review.deliverables);
   const outcomes = listItems(review.outcomes);
-  const supportingMedia = Array.isArray(review.supporting_media) ? review.supporting_media : [];
+  const supportingMedia = review.supporting_media;
   const isOwner = membership.role === "owner";
   const canEdit = canEditCaseStudies(membership.role) && (review.status !== "published" || isOwner);
   const statusOptions = isOwner ? ["draft", "review", "published", "archived"] : ["draft", "review"];
@@ -225,12 +395,18 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
 
         {query.saved ? (
           <>
-            <p className="admin-success" role="status">Case study saved successfully in staging.</p>
+            <p className="admin-success" role="status">
+              {query.saved === "media-approved" ? "Media package approved successfully in staging." : query.saved === "media" ? "Case-study media saved successfully in staging." : "Case study saved successfully in staging."}
+            </p>
             <AdminToast
               tone="success"
-              message={review.client_visibility === "approved"
-                ? "Saved successfully. Approved identity can appear on the public Work page."
-                : "Saved successfully. Public Work remains anonymized because visibility is Hidden."}
+              message={query.saved === "media-approved"
+                ? "Media approved. It can appear publicly only after the case study is published."
+                : query.saved === "media"
+                  ? "Media saved as pending review."
+                  : review.client_visibility === "approved"
+                    ? "Saved successfully. Approved identity can appear on the public Work page."
+                    : "Saved successfully. Public Work remains anonymized because visibility is Hidden."}
             />
           </>
         ) : null}
@@ -240,6 +416,68 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             <AdminToast tone="error" message={"Save failed: " + query.error} />
           </>
         ) : null}
+
+        <section className="admin-editor-panel admin-media-panel">
+          <div className="admin-section-heading">
+            <div>
+              <p className="admin-kicker">Media package</p>
+              <h2>Prepare the project visuals.</h2>
+            </div>
+            <p className="admin-section-note">Images stay private in staging until the owner approves the package. Publishing and client-visibility approval remain separate decisions.</p>
+          </div>
+
+          <div className="admin-media-summary">
+            <div className="admin-media-preview">
+              {review.featured_image_url ? (
+                <img src={review.featured_image_url} alt={review.featured_image_alt || `${review.project_name} featured visual`} />
+              ) : (
+                <span>No featured image uploaded</span>
+              )}
+            </div>
+            <div>
+              <p className="admin-kicker">Featured media</p>
+              <strong>{review.media_status === "approved" ? "Approved" : review.featured_image_path ? "Pending review" : "Not configured"}</strong>
+              <p className="admin-review-muted">{review.featured_image_alt || "A featured image and meaningful alternative text are required."}</p>
+            </div>
+          </div>
+
+          {supportingMedia.length ? (
+            <div className="admin-media-list" aria-label="Supporting media">
+              {supportingMedia.map((item) => (
+                <div className="admin-media-item" key={item.path}>
+                  {item.url ? <img src={item.url} alt={item.alt} /> : <span className="admin-media-item-empty">Preview unavailable</span>}
+                  <div>
+                    <strong>{item.alt}</strong>
+                    <span>{item.approval === "approved" ? "Approved" : "Pending review"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {isOwner ? (
+            <>
+              <p className="admin-editor-note">Move a published record to Review before changing its media. Replacing an image creates a new object; old objects are retained for safe cleanup later.</p>
+              <div className="admin-media-forms">
+                <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "featured")}>
+                  <strong>Upload featured image</strong>
+                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /></label>
+                  <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the project visual" required /></label>
+                  <AdminSubmitButton label="Upload featured media" pendingLabel="Uploading…" />
+                </form>
+                <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "supporting")}>
+                  <strong>Upload supporting image</strong>
+                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /></label>
+                  <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the supporting visual" required /></label>
+                  <AdminSubmitButton label="Upload supporting media" pendingLabel="Uploading…" />
+                </form>
+              </div>
+              <form action={approveCaseStudyMedia.bind(null, slug)}>
+                <AdminSubmitButton label="Approve media package" pendingLabel="Approving…" />
+              </form>
+            </>
+          ) : <p className="admin-editor-note">Your role can review the media package, but only the staging owner can upload or approve visuals.</p>}
+        </section>
 
         <section className="admin-editor-panel admin-review-section">
           <div className="admin-section-heading">
