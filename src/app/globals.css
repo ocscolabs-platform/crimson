@@ -313,7 +313,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-editor-note { border: 1px solid rgb(255 255 255 / 12%); border-radius: 8px; color: #8d8d8d; font-size: .78rem; line-height: 1.6; padding: 13px 14px; }
 .admin-editor-form label:nth-child(3), .admin-editor-form label:nth-child(4), .admin-editor-form label:nth-child(5), .admin-editor-form label:nth-child(6), .admin-editor-form button { grid-column: 1 / -1; }
 .admin-textarea { min-height: 130px; resize: vertical; }
-.admin-select-wrap { position: relative; display: block; }
+.admin-select-wrap { position: relative; display: block; min-width: 0; width: 100%; }
 .admin-select { width: 100%; appearance: none; padding: 13px 44px 13px 14px; }
 .admin-input.admin-select { padding-right: 44px; }
 .admin-select-caret { position: absolute; top: 50%; right: 17px; width: 9px; height: 9px; border-right: 1.5px solid #cfcfcf; border-bottom: 1.5px solid #cfcfcf; pointer-events: none; transform: translateY(-68%) rotate(45deg); transition: border-color 180ms ease-out; }
@@ -424,7 +424,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-login-card .admin-intro { margin-bottom: 36px; }
 .admin-form { display: grid; gap: 20px; }
 .admin-form label { display: grid; gap: 9px; color: #c7c7c7; font-size: .78rem; font-weight: 700; }
-.admin-input { min-height: 50px; border: 1px solid rgb(255 255 255 / 18%); border-radius: 8px; background: #191919; color: var(--white); font: inherit; padding: 13px 14px; }
+.admin-input { min-width: 0; width: 100%; min-height: 50px; border: 1px solid rgb(255 255 255 / 18%); border-radius: 8px; background: #191919; color: var(--white); font: inherit; padding: 13px 14px; }
 .admin-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgb(0 200 83 / 16%); outline: none; }
 .admin-page button:focus-visible, .admin-page select:focus-visible, .admin-page input:focus-visible, .admin-page textarea:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
 .admin-submit { width: 100%; margin-top: 8px; }

@@ -190,6 +190,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Global content sections and page metadata records can be collapsed with keyboard-accessible disclosure controls.
 - Long global-content pages expose a sticky section jump navigation.
 - Jump navigation uses deliberate spacing and clear grouping between the label and destinations.
+- Admin grid controls must not overflow their tracks; number inputs and select wrappers use the shared constrained-control rule.
 - Select controls use a consistent CSS-drawn caret that remains aligned at desktop, tablet, and mobile widths.
 - Global-content rows switch to a stacked field layout before tablet widths can cause control collisions.
 - Media replacement actions use the secondary treatment while upload and approval actions retain the primary treatment.

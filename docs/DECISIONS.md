@@ -327,3 +327,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Use the primary green treatment for new media uploads and media-package approval. Use the neutral secondary treatment for replacing an existing supporting visual.
 - **Reason:** Replacement is a maintenance action, not a new editorial milestone. Giving it the same visual weight as approval makes the action hierarchy ambiguous and increases the chance of an accidental destructive-looking operation.
 - **Consequence:** The media workflow remains functionally unchanged; only the visual treatment of the supporting-media replacement action changes.
+
+## ADR-048 - Force admin controls to honor their grid tracks
+
+- **Status:** Accepted for staging
+- **Decision:** Shared admin inputs and select wrappers use `min-width: 0` and `width: 100%` so intrinsic control sizing cannot overflow a responsive grid column.
+- **Reason:** Number inputs can retain a browser-defined intrinsic minimum width. In the global-content navigation editor, that caused Sort order to extend into Visibility at wide desktop widths even though the grid itself had a defined gap. Fixing the shared control primitive prevents the same collision across CMS forms.
+- **Consequence:** Existing field names, server actions, permissions, and stored values remain unchanged; the correction only prevents visual overflow in responsive admin grids.
