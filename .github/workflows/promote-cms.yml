@@ -1,0 +1,52 @@
+name: Promote approved CMS content
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the approved staging package to Production"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    environment: production-cms
+    steps:
+      - name: Require the Production branch
+        run: test "${GITHUB_REF_NAME}" = "main"
+
+      - name: Check out release code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run CMS promotion preflight
+        if: ${{ inputs.apply == false }}
+        env:
+          CMS_SOURCE_SUPABASE_URL: ${{ secrets.CMS_SOURCE_SUPABASE_URL }}
+          CMS_SOURCE_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.CMS_SOURCE_SUPABASE_SERVICE_ROLE_KEY }}
+          CMS_TARGET_SUPABASE_URL: ${{ secrets.CMS_TARGET_SUPABASE_URL }}
+          CMS_TARGET_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.CMS_TARGET_SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run cms:promote
+
+      - name: Promote approved CMS package
+        if: ${{ inputs.apply == true }}
+        env:
+          CMS_SOURCE_SUPABASE_URL: ${{ secrets.CMS_SOURCE_SUPABASE_URL }}
+          CMS_SOURCE_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.CMS_SOURCE_SUPABASE_SERVICE_ROLE_KEY }}
+          CMS_TARGET_SUPABASE_URL: ${{ secrets.CMS_TARGET_SUPABASE_URL }}
+          CMS_TARGET_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.CMS_TARGET_SUPABASE_SERVICE_ROLE_KEY }}
+          CMS_PROMOTION_CONFIRM: PROMOTE_TO_PRODUCTION
+        run: npm run cms:promote -- --apply
