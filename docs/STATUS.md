@@ -43,13 +43,14 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Applied the action hierarchy follow-up locally: media replacement actions now use the neutral secondary treatment while upload and approval actions remain primary. Staging desktop QA passed.
 - Fixed the confirmed global-content grid collision by constraining shared admin inputs and select wrappers to their grid tracks; staging QA completed successfully at desktop width with no horizontal overflow.
 - Admin UX refinement is implemented locally: shared account controls, full-shell audit rows and pagination, inline page-status accordions, reduced admin hero density, a consistent select icon, and a separated media approval action row. Staging desktop QA passed with aligned right edges, 40px pagination-to-footer spacing, and no control overflow.
+- Completed the staging accessibility/privacy QA pass: admin labels and disclosure controls are associated correctly, select icons are hidden from assistive technology, auth forms have named controls, `/admin` remains session-gated, and unapproved case-study media is absent from public routes.
 
 ## In Progress
 
 - Complete staging migration and upload QA for the controlled case-study media workflow.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Keep case-study relationships, creation/deletion, and Production administration separate until the media workflow is approved.
-- Complete the tablet/mobile live QA pass for the Admin UX hardening v2 follow-up.
+- Complete the tablet/mobile live QA pass for the Admin UX hardening v2 follow-up; desktop accessibility and privacy QA is complete.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
 ## Blocked / Requires Owner Action
@@ -63,4 +64,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-The Admin UX hardening v2 follow-up is pushed to `staging` and passed live desktop QA on `/admin/content` and a case-study editor: navigation fields no longer collide, disclosure statuses are inline, the select cue is clean, pagination is contained, and primary/secondary actions are visually distinct. Complete the live tablet/mobile pass next. Do not promote CMS administration, media storage, or staging content changes to Production.
+The Admin UX hardening v2 follow-up is pushed to `staging` and passed live desktop QA on `/admin/content` and a case-study editor: navigation fields no longer collide, disclosure statuses are inline, the select cue is clean, pagination is contained, primary/secondary actions are visually distinct, and the accessibility/privacy pass is clean. Complete the live tablet/mobile pass next. Do not promote CMS administration, media storage, or staging content changes to Production.
