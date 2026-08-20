@@ -437,7 +437,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
               <p className="admin-kicker">Media package</p>
               <h2>Prepare the project visuals.</h2>
             </div>
-            <p className="admin-section-note">Images stay private in staging until the owner approves the package. Publishing and client-visibility approval remain separate decisions.</p>
+            <p className="admin-section-note">Images stay private in staging until the owner approves the package. Featured frame: 16:9, recommended 2400 × 1350. Supporting frame: 4:3, recommended 1600 × 1200. Any source ratio is accepted and displayed without destructive cropping.</p>
           </div>
 
           <div className="admin-media-summary">
@@ -475,13 +475,13 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
               <div className="admin-media-forms">
                 <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "featured")}>
                   <strong>Upload featured image</strong>
-                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
+                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>Recommended: 2400 × 1350 (16:9). PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
                   <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the project visual" required /></label>
                   <AdminSubmitButton label="Upload featured media" pendingLabel="Uploading…" />
                 </form>
                 <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "supporting")}>
                   <strong>Upload supporting image</strong>
-                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
+                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>Recommended: 1600 × 1200 (4:3). PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
                   <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the supporting visual" required /></label>
                   <AdminSubmitButton label="Upload supporting media" pendingLabel="Uploading…" />
                 </form>

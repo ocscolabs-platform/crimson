@@ -22,6 +22,8 @@ The storage bucket is private by default. A public image URL is available only w
 - Maximum source file size: 2 MB per upload.
 - The server rotates, resizes to a maximum 2400px edge, and converts each source file to WebP quality 82 before storage.
 - Maximum final WebP size: 2 MB. Objects are stored under `case-studies/{slug}/` with a generated `.webp` filename.
+- Public featured media and work-card frames use a fixed 16:9 display ratio; supporting gallery frames use 4:3. The CMS recommends 2400 × 1350 for featured images and 1600 × 1200 for supporting images.
+- Source composition is preserved during conversion. Public frames use a non-destructive contain treatment so screenshots are not cropped; mismatched ratios may show letterboxing inside the fixed frame.
 - Featured media requires meaningful alternative text.
 - Supporting media requires meaningful alternative text and is initially marked `pending`.
 - Replacing a file creates a new object; automatic deletion is not performed.

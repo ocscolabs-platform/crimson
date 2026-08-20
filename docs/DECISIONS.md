@@ -257,3 +257,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Accept AVIF, JPEG, PNG, and WebP source files up to 2 MB, then rotate, constrain the longest edge to 2400px, and convert them to WebP quality 82 before storage. Enforce a 2 MB limit on the final object as well.
 - **Reason:** A single storage format makes public delivery predictable and reduces the risk of large unoptimized portfolio assets. The final limit protects staging storage and page performance without requiring the user to prepare every image manually.
 - **Consequence:** Original files are not retained by the upload workflow; replacing an image creates a new normalized WebP object, while previous stored objects remain available for later owner-reviewed cleanup.
+
+## ADR-038 - Keep public case-study media frames dimensionally consistent
+
+- **Status:** Accepted for staging
+- **Decision:** Use fixed 16:9 display frames for featured work media and work-library cards, and fixed 4:3 frames for supporting gallery media. Preserve the uploaded composition during WebP conversion and use a non-destructive contain treatment rather than cropping source visuals.
+- **Reason:** A portfolio grid should not change height based on an individual upload. Screenshots and product visuals often contain important edge content, so automatic cropping would create avoidable publication risk.
+- **Consequence:** The CMS recommends 2400 × 1350 for featured media and 1600 × 1200 for supporting media. Other ratios remain valid but may appear with letterboxing inside the fixed public frame.

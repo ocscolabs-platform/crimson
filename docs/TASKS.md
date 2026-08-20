@@ -247,6 +247,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 - The staging media bucket is private by default and stores WebP output with a 2 MB final file size limit; supported PNG/JPEG/AVIF/WebP source files are converted server-side.
 - Only owners can upload, replace, remove, or approve case-study media; editors and reviewers remain read-only.
 - Featured and supporting media stay under a case-study-scoped path and require meaningful alternative text.
+- Public featured/card frames use 16:9 and supporting gallery frames use 4:3; CMS guidance recommends 2400 × 1350 and 1600 × 1200 respectively without cropping source composition.
 - A published public route can read media only after the case study is published and its media package is approved.
 - Uploading or approving media does not silently publish a case study or approve client visibility.
 - No case-study creation, deletion, relationship editor, Production upload policy, or CRM control is introduced.
