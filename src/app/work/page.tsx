@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element -- signed Supabase media URLs are runtime-generated. */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ImageOff } from "lucide-react";
@@ -6,6 +5,7 @@ import { OrderedPageSections } from "@/components/ordered-page-sections";
 import { RouteShell } from "@/components/route-shell";
 import { getPublishedPage, getPublishedWorkProjects } from "@/lib/cms-content";
 import { getPublishedPageSections } from "@/lib/page-sections";
+import { WorkCardMediaPreview } from "./WorkCardMediaPreview";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +37,10 @@ export default async function WorkPage() {
               <div className="shell work-library">
           <article className="work-featured">
             {featuredProject.featuredImageUrl ? (
-              <img className="work-featured-media work-media-image" src={featuredProject.featuredImageUrl} alt={featuredProject.featuredImageAlt || `${featuredProject.name} project visual`} />
+              <WorkCardMediaPreview
+                name={featuredProject.name}
+                images={[{ url: featuredProject.featuredImageUrl, alt: featuredProject.featuredImageAlt || `${featuredProject.name} project visual` }, ...(featuredProject.supportingMedia || [])]}
+              />
             ) : (
             <div className="media-placeholder work-featured-media" role="img" aria-label={`${featuredProject.name} project visual placeholder`}>
               <ImageOff aria-hidden="true" size={34} strokeWidth={1.4} />
@@ -79,7 +82,10 @@ export default async function WorkPage() {
             {supportingProjects.map((project) => (
               <article className="work-card" key={project.slug}>
                 {project.featuredImageUrl ? (
-                  <img className="work-card-media work-media-image" src={project.featuredImageUrl} alt={project.featuredImageAlt || `${project.name} project visual`} />
+                  <WorkCardMediaPreview
+                    name={project.name}
+                    images={[{ url: project.featuredImageUrl, alt: project.featuredImageAlt || `${project.name} project visual` }, ...(project.supportingMedia || [])]}
+                  />
                 ) : (
                 <div className="media-placeholder work-card-media" role="img" aria-label={`${project.name} project visual placeholder`}>
                   <ImageOff aria-hidden="true" size={28} strokeWidth={1.4} />

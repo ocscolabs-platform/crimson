@@ -292,3 +292,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Give public featured and supporting case-study images consistent rounded corners and a subtle neutral light frame. Keep the source pixels unchanged and do not apply a global contrast or color filter.
 - **Reason:** Client screenshots are evidence and often use light backgrounds. A dark `object-fit: contain` matte creates visible dark edging around rounded or anti-aliased image boundaries, while a contrast filter would alter the fidelity of the client work. A restrained light surface separates the image from the page without changing its content.
 - **Consequence:** Featured media uses the same 16:9 frame with a 12px radius as supporting media's 4:3 frame. Work-card images inherit the card's existing clipping so the library does not acquire a double border.
+
+## ADR-043 - Use progressive visual previews on the Work library
+
+- **Status:** Accepted for staging
+- **Decision:** Apply one shared hover/focus treatment to all Work library cards. Cards with multiple approved visuals may crossfade through their available views and show a small view count; cards with one or no visual retain the same elevation and focus treatment without simulating a gallery. On touch layouts, cards remain tap-first and do not require hover to understand the interaction.
+- **Reason:** The Work page should reward exploration consistently across projects, not only for Cairnstack. A restrained preview adds proof density without turning every card into a full carousel or hiding the primary navigation action.
+- **Consequence:** The effect is limited to approved media already returned by the public CMS mapper, uses reduced-motion support, and introduces no database or storage changes.
