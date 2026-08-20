@@ -46,6 +46,7 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Completed the staging accessibility/privacy QA pass: admin labels and disclosure controls are associated correctly, select icons are hidden from assistive technology, auth forms have named controls, `/admin` remains session-gated, and unapproved case-study media is absent from public routes.
 - Verified the controlled case-study media workflow in staging: three normalized media slots are rendered with fixed public frames, the approved package is private until publication rules allow signed delivery, and the public Cairnstack route exposes the approved featured/supporting visuals.
 - Verified the controlled case-study relationship workflow in staging: the Cairnstack record has one linked published capability, the audit surface is present, and the public route renders the relationship as an accessible service link.
+- Corrected the shared admin presentation copy after Production review: login, recovery, dashboard, content, service, team, and case-study surfaces now use deployment-neutral CMS language instead of incorrectly labeling Production as staging.
 
 ## In Progress
 

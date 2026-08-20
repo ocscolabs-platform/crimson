@@ -48,9 +48,9 @@ export default function AdminResetPasswordPage() {
   return (
     <main className="admin-page admin-login-page">
       <div className="admin-login-card">
-        <p className="admin-kicker">OCSCO / Staging CMS</p>
+        <p className="admin-kicker">OCSCO / CMS</p>
         <h1>Create a new password.</h1>
-        <p className="admin-intro">Choose a new password for your staging CMS account.</p>
+        <p className="admin-intro">Choose a new password for your CMS account.</p>
         <form className="admin-form" onSubmit={handleSubmit}>
           <label>
             New password

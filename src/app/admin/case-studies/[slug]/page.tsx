@@ -85,7 +85,7 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
-    mediaError(slug, "Only the staging owner can upload case-study media.");
+    mediaError(slug, "Only the owner can upload case-study media.");
   }
 
   const { data: existing, error: existingError } = await supabase
@@ -195,7 +195,7 @@ async function approveCaseStudyMedia(slug: string) {
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
-    mediaError(slug, "Only the staging owner can approve case-study media.");
+    mediaError(slug, "Only the owner can approve case-study media.");
   }
 
   const { data: existing, error: existingError } = await supabase
@@ -247,7 +247,7 @@ async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
-    mediaError(slug, "Only the staging owner can remove case-study media.");
+    mediaError(slug, "Only the owner can remove case-study media.");
   }
 
   const { data: existing, error: existingError } = await supabase
@@ -518,7 +518,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
         <header className="admin-header">
           <div>
             <Link className="admin-brand" href="/admin">OCSCO</Link>
-            <p className="admin-kicker">Staging CMS / Case-study review</p>
+            <p className="admin-kicker">CMS / Case-study review</p>
           </div>
           <AdminAccountActions email={user.email} role={membership.role} />
         </header>
@@ -537,16 +537,16 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
 
         <p className="admin-editor-warning" role="note">
           {canEditRelationships
-            ? "Controlled staging editor. Relationship changes are available in the dedicated panel; case-study deletion remains disabled."
+            ? "Controlled editor. Relationship changes are available in the dedicated panel; case-study deletion remains disabled."
             : canEdit
-              ? "Controlled staging editor. Move this record to Review before changing relationships; case-study deletion remains disabled."
+              ? "Controlled editor. Move this record to Review before changing relationships; case-study deletion remains disabled."
             : "Read-only review panel. This role cannot change the record, and media uploads, relationship changes, and deletion remain disabled."}
         </p>
 
         {query.saved ? (
           <>
             <p className="admin-success" role="status">
-              {query.saved === "media-approved" ? "Media package approved successfully in staging." : query.saved === "media" ? "Case-study media saved successfully in staging." : query.saved === "relationships" ? "Related capabilities saved successfully in staging." : "Case study saved successfully in staging."}
+              {query.saved === "media-approved" ? "Media package approved successfully." : query.saved === "media" ? "Case-study media saved successfully." : query.saved === "relationships" ? "Related capabilities saved successfully." : "Case study saved successfully."}
             </p>
             <AdminToast
               tone="success"
@@ -576,7 +576,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
               <p className="admin-kicker">Media package</p>
               <h2>Prepare the project visuals.</h2>
             </div>
-            <p className="admin-section-note">Images stay private in staging until the owner approves the package. Featured frame: 16:9, recommended 2400 × 1350. Supporting frame: 4:3, recommended 1600 × 1200. Any source ratio is accepted and displayed without destructive cropping.</p>
+            <p className="admin-section-note">Images stay private until the owner approves the package. Featured frame: 16:9, recommended 2400 × 1350. Supporting frame: 4:3, recommended 1600 × 1200. Any source ratio is accepted and displayed without destructive cropping.</p>
           </div>
 
           <div className="admin-media-summary">
@@ -661,7 +661,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
                 </form>
               </div>
             </>
-          ) : <p className="admin-editor-note">Your role can review the media package, but only the staging owner can upload or approve visuals.</p>}
+          ) : <p className="admin-editor-note">Your role can review the media package, but only the owner can upload or approve visuals.</p>}
         </section>
 
         <section className="admin-editor-panel admin-relationship-panel">
@@ -855,7 +855,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
           <AdminPagination page={review.auditPage} pageSize={review.auditPageSize} total={review.auditTotal} />
         </section>
 
-        <footer className="admin-footer">Staging only · Case-study content editing is controlled by role.</footer>
+        <footer className="admin-footer">Case-study content editing is controlled by role.</footer>
       </div>
     </main>
   );

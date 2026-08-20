@@ -31,7 +31,7 @@ export default async function AdminDashboardPage() {
         <header className="admin-header">
           <div>
             <Link className="admin-brand" href="/">OCSCO</Link>
-            <p className="admin-kicker">Staging CMS / Control room</p>
+            <p className="admin-kicker">CMS / Control room</p>
           </div>
           <AdminAccountActions email={user.email} role={membership.role} />
         </header>
@@ -47,10 +47,10 @@ export default async function AdminDashboardPage() {
         <section className="admin-hero" id="overview">
           <div>
             <p className="admin-kicker admin-kicker-green">Content control room</p>
-            <h1>Staging content, in one place.</h1>
+            <h1>Content, in one place.</h1>
           </div>
           <p className="admin-intro">
-            A safe staging view of the content currently exposed by the public website. Approved members can edit controlled content according to role; publishing and broader CMS controls remain restricted.
+            A controlled view of the content currently exposed by the public website. Approved members can edit content according to role; publishing and broader controls remain restricted.
           </p>
         </section>
 
@@ -64,7 +64,7 @@ export default async function AdminDashboardPage() {
             {!membership.role ? (
               <section className="admin-role-alert" role="status">
                 <strong>Membership is not assigned yet.</strong>
-                <span>This account remains read-only. Assign an approved staging role in <code>public.cms_members</code> before adding any elevated workflow.</span>
+                <span>This account remains read-only. Assign an approved CMS role in <code>public.cms_members</code> before adding any elevated workflow.</span>
               </section>
             ) : null}
             <section className="admin-section">
@@ -73,7 +73,7 @@ export default async function AdminDashboardPage() {
                   <p className="admin-kicker">Published boundary</p>
                   <h2>What this role can read</h2>
                 </div>
-                <p className="admin-section-note">Authorized members can review records available through the staging read boundary. The public website remains governed by the published-only RLS boundary.</p>
+                <p className="admin-section-note">Authorized members can review records available through the published read boundary. The public website remains governed by published-only RLS policies.</p>
               </div>
               <div className="admin-stat-grid">
                 {content.collections.map((collection) => (
@@ -129,7 +129,7 @@ export default async function AdminDashboardPage() {
           </>
         ) : null}
 
-        <footer className="admin-footer">Staging only · Services are the first controlled editor slice.</footer>
+        <footer className="admin-footer">Content access is controlled by role.</footer>
       </div>
     </main>
   );

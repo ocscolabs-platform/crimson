@@ -348,3 +348,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Let audit rows and pagination span the full admin shell width, and reserve a deliberate spacing band before the admin footer.
 - **Reason:** A narrower audit column beside a full-width footer creates an arbitrary visual stop. Consistent left and right edges, followed by clear footer separation, improve scanability and make the page feel intentionally composed.
 - **Consequence:** This is a layout-only refinement. Audit data, pagination behavior, permissions, and production routes remain unchanged.
+
+## ADR-051 - Keep admin presentation copy deployment-neutral
+
+- **Status:** Accepted for Production and staging
+- **Decision:** Use neutral CMS language in the shared admin interface instead of hard-coding “staging” into visible headings, feedback, and navigation copy. Environment-specific deployment, authentication, and data-boundary rules remain documented and configured outside the presentation copy.
+- **Reason:** The same application build can be reviewed through Preview and deployed to Production. Staging-only wording on the Production login and dashboard is misleading and makes a correct deployment look like the wrong environment.
+- **Consequence:** Admin copy describes the CMS and role-controlled access consistently in every environment; environment separation remains enforced by deployment configuration, Supabase projects, RLS, and release process rather than by labels alone.

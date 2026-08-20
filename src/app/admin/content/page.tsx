@@ -175,7 +175,7 @@ async function savePageSection(sectionId: string, formData: FormData) {
   "use server";
 
   const { supabase, membership } = await requireMember();
-  if (membership.role !== "owner") redirectWithError("Only the staging owner can change page section visibility or order.");
+  if (membership.role !== "owner") redirectWithError("Only the owner can change page section visibility or order.");
 
   const sortOrder = Number.parseInt(String(formData.get("sort_order") || "0"), 10);
   const isVisible = formData.get("is_visible") === "true";
@@ -225,7 +225,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
         <header className="admin-header">
           <div>
             <Link className="admin-brand" href="/admin">OCSCO</Link>
-            <p className="admin-kicker">Staging CMS / Global content</p>
+            <p className="admin-kicker">CMS / Global content</p>
           </div>
           <AdminAccountActions email={user.email} role={membership.role} backHref="/admin" />
         </header>
@@ -240,7 +240,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
           <p className="admin-intro">Update the global settings, navigation labels, and page metadata that support the public site. Body sections and media remain intentionally controlled in code until their contracts are approved.</p>
         </section>
 
-        {saved ? <AdminToast tone="success" message={saved === "settings" ? "Site settings saved successfully in staging." : saved === "navigation" ? "Navigation item saved successfully in staging." : saved === "section" ? "Page section saved successfully in staging." : "Page metadata saved successfully in staging."} /> : null}
+        {saved ? <AdminToast tone="success" message={saved === "settings" ? "Site settings saved successfully." : saved === "navigation" ? "Navigation item saved successfully." : saved === "section" ? "Page section saved successfully." : "Page metadata saved successfully."} /> : null}
         {error ? <AdminToast tone="error" message={error} /> : null}
         <nav className="admin-content-jump-nav" aria-label="Global content sections">
           <span>Jump to</span>
@@ -252,7 +252,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
         {loadError ? (
           <section className="admin-alert" role="alert">
             <strong>Global content could not be loaded.</strong>
-            <span>{loadError}. Apply the staging global-content editor migration before saving.</span>
+            <span>{loadError}. Apply the global-content editor migration before saving.</span>
           </section>
         ) : content ? (
           <>
@@ -269,7 +269,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                   </div>
                 </summary>
                 <div className="admin-content-section-body">
-                  <p className="admin-disclosure-note">Changes are staging-only and recorded in the global audit history.</p>
+                  <p className="admin-disclosure-note">Changes are recorded in the global audit history.</p>
                   {content.settings ? (
                     <form className="admin-content-form" action={saveSiteSettings}>
                       <label>Site name<input className="admin-input" name="site_name" defaultValue={content.settings.site_name} disabled={!canEdit} required /></label>
@@ -393,7 +393,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
           </>
         ) : null}
 
-        <footer className="admin-footer">Staging only · Global content is update-only; section builders and media remain deferred.</footer>
+        <footer className="admin-footer">Global content is update-only; section builders and media remain deferred.</footer>
       </div>
     </main>
   );
