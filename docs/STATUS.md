@@ -65,4 +65,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-The staging CMS media and relationship workflows are now verified on the Cairnstack record, and the Admin UX hardening v2 follow-up passed desktop accessibility/privacy QA. The next product step is owner content and consent review while the Work library remains read-only; complete live tablet/mobile review when a mobile viewport is available. Do not promote CMS administration, media storage, or staging content changes to Production.
+The staging CMS media and relationship workflows are now verified on the Cairnstack record, and the Admin UX hardening v2 follow-up passed desktop accessibility/privacy QA. The next product step is to complete the [`OWNER-CONTENT-REVIEW.md`](./OWNER-CONTENT-REVIEW.md) sign-off while the Work library remains read-only; complete live tablet/mobile review when a mobile viewport is available. Do not promote CMS administration, media storage, or staging content changes to Production.

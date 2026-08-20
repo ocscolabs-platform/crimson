@@ -20,6 +20,8 @@ This checklist is the release gate for the public OCSCO website before the full 
 
 ## Owner review still required
 
+Use [`OWNER-CONTENT-REVIEW.md`](./OWNER-CONTENT-REVIEW.md) as the sign-off sheet for the remaining content, permissions, privacy, and accessibility decisions.
+
 - Approve final homepage and route copy; current messaging is still draft content.
 - Supply approved case-study facts, outcomes, testimonials, team details, and portfolio media.
 - Confirm whether the labeled Work placeholder is acceptable until approved project material is available.
