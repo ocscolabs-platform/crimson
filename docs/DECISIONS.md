@@ -299,3 +299,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Apply one shared hover/focus treatment to all Work library cards. Cards with multiple approved visuals may crossfade through their available views and show a small view count; cards with one or no visual retain the same elevation and focus treatment without simulating a gallery. On touch layouts, cards remain tap-first and do not require hover to understand the interaction.
 - **Reason:** The Work page should reward exploration consistently across projects, not only for Cairnstack. A restrained preview adds proof density without turning every card into a full carousel or hiding the primary navigation action.
 - **Consequence:** The effect is limited to approved media already returned by the public CMS mapper, uses reduced-motion support, and introduces no database or storage changes.
+
+## ADR-044 - Render published case-study relationships on the public detail route
+
+- **Status:** Accepted for staging
+- **Decision:** Render each published case study's linked, published capabilities on its public detail route as a compact list of links to the corresponding service pages. Do not render an empty relationship section, and do not expose links when either side of the relationship is unpublished.
+- **Reason:** A relationship field is only useful to visitors when it explains the capabilities behind a project and creates a clear path into the service library. Keeping the read path published-only preserves the existing privacy boundary and avoids exposing editorial or unpublished content.
+- **Consequence:** The public mapper performs a published-only relationship read and the detail page owns the presentation. No new CMS write controls, CRM relationship model, or production policy is introduced.

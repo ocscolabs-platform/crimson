@@ -10,6 +10,7 @@ export type WorkProject = {
   featuredImageUrl?: string;
   featuredImageAlt?: string;
   supportingMedia?: Array<{ url: string; alt: string }>;
+  relatedCapabilities?: Array<{ slug: string; name: string; cardName: string }>;
 };
 
 export const workProjects: WorkProject[] = [

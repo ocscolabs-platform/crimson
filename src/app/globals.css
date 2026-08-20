@@ -216,6 +216,15 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .work-card-media.work-media-image { border: 0; border-radius: 0; }
 .work-detail-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .work-detail-gallery img { display: block; width: 100%; aspect-ratio: 4 / 3; border: 1px solid rgb(10 10 10 / 10%); border-radius: 12px; background: #f2f2f0; object-fit: contain; }
+.work-detail-related { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(48px, 8vw, 128px); align-items: start; border-top: 1px solid var(--border); padding-top: clamp(48px, 7vw, 88px); }
+.work-detail-related h2 { max-width: 520px; margin: 18px 0 0; font-size: clamp(2rem, 3.8vw, 3.8rem); letter-spacing: -.055em; line-height: 1.02; }
+.work-detail-related-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.work-detail-related-link { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 104px; border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; transition: border-color 180ms ease-out, background 180ms ease-out, transform 180ms ease-out; }
+.work-detail-related-link:hover { border-color: var(--ink); background: var(--snow); transform: translateY(-2px); }
+.work-detail-related-link span:first-child { display: grid; gap: 6px; }
+.work-detail-related-link strong { font-size: .95rem; letter-spacing: -.02em; }
+.work-detail-related-link small { color: var(--copy); font-size: .75rem; line-height: 1.4; }
+.work-detail-related-link > span:last-child { flex: 0 0 auto; font-size: 1rem; font-weight: 700; }
 .work-detail-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(48px, 8vw, 128px); align-items: start; }
 .work-detail-grid h2 { max-width: 640px; margin: 18px 0 0; font-size: clamp(2.2rem, 4.5vw, 4.5rem); letter-spacing: -.055em; line-height: 1.02; }
 .work-detail-copy { padding-top: 2px; }
@@ -472,6 +481,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .work-library-heading { grid-template-columns: 1fr; gap: 32px; }
   .work-grid { grid-template-columns: 1fr; }
   .work-library-cta { align-items: start; flex-direction: column; }
+  .work-detail-related { grid-template-columns: 1fr; gap: 32px; }
   .work-detail-grid { grid-template-columns: 1fr; gap: 48px; }
   .work-detail-copy { padding-top: 0; }
   .route-detail-grid { grid-template-columns: 1fr; gap: 52px; }

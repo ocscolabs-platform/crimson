@@ -52,6 +52,25 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
               ))}
             </div>
           ) : null}
+          {project.relatedCapabilities?.length ? (
+            <section className="work-detail-related" aria-labelledby="related-capabilities-title">
+              <div>
+                <p className="overline">Related capabilities</p>
+                <h2 id="related-capabilities-title">The capabilities behind the work.</h2>
+              </div>
+              <div className="work-detail-related-list">
+                {project.relatedCapabilities.map((capability) => (
+                  <Link className="work-detail-related-link" href={`/services/${capability.slug}`} key={capability.slug}>
+                    <span>
+                      <strong>{capability.cardName}</strong>
+                      <small>{capability.name}</small>
+                    </span>
+                    <span aria-hidden="true">â†—</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
           <div className="work-detail-grid">
             <div>
               <p className="overline">Project story</p>

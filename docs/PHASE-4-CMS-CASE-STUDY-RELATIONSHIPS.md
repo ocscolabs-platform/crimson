@@ -1,6 +1,6 @@
 # Phase 4 — Controlled case-study relationships
 
-**Status:** Implemented locally; staging migration and workflow QA pending
+**Status:** Relationship editor and public read path implemented locally; staging migration and workflow QA pending
 
 ## Scope
 
@@ -21,6 +21,7 @@ Published case studies must be moved to Review before relationship changes. The 
 - Only services that are currently published and past their publication time appear as choices.
 - An empty selection is valid and removes all relationships from the case study.
 - The public renderer continues to expose a relationship only when both the case study and service are published.
+- Published case-study detail pages show linked capabilities as accessible links to their public service pages; empty relationship sets do not create an empty public section.
 - The CMS relationship panel is separate from narrative, media, and publication-status saves so each action has a clear success boundary.
 - Case-study creation/deletion, service creation/deletion, bulk relationship editing, and CRM relationships remain deferred.
 

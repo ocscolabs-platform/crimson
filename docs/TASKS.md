@@ -256,7 +256,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-015 - Add controlled case-study relationships
 
-- **Status:** Implemented locally; staging migration and workflow QA pending
+- **Status:** Relationship editor and public read path implemented locally; staging migration and workflow QA pending
 - **Goal:** Let staging owners and editors connect existing case studies to published capabilities through a clear, atomic, audited workflow.
 - **Reference:** `docs/PHASE-4-CMS-CASE-STUDY-RELATIONSHIPS.md`
 
@@ -267,5 +267,6 @@ This queue records approved next-step work before implementation. Tasks in this 
 - A published case study must move to Review before its relationships can change.
 - Saving the checkbox set replaces the relationship set atomically and records additions/removals in the existing audit history.
 - Reviewers remain read-only and public output remains published-only.
+- Published case-study detail pages render linked capabilities as accessible links to the corresponding public service pages; unlinked records render no empty section.
 - An empty selection is supported and clearly communicates that no capabilities are linked.
 - No case-study creation/deletion, service creation/deletion, bulk editor, Production relationship policy, or CRM control is introduced.

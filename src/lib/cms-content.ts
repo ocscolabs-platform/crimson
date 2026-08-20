@@ -32,6 +32,7 @@ type PublishedService = {
 };
 
 type PublishedCaseStudy = {
+  id: string;
   project_name: string;
   slug: string;
   client_visibility: "hidden" | "approved";
@@ -45,6 +46,18 @@ type PublishedCaseStudy = {
   featured_image_alt: string | null;
   supporting_media: unknown;
   media_status: "pending" | "approved" | "rejected";
+};
+
+type PublishedCaseStudyServiceLink = {
+  case_study_id: string;
+  service_id: string;
+};
+
+type PublishedRelatedService = {
+  id: string;
+  name: string;
+  card_name: string | null;
+  slug: string;
 };
 
 const CASE_STUDY_MEDIA_BUCKET = "case-study-media";
@@ -247,7 +260,11 @@ export async function getPublishedService(slug: string): Promise<Service | undef
   return services.find((service) => service.slug === slug);
 }
 
-async function mapPublishedCaseStudy(client: PublicCmsClient, caseStudy: PublishedCaseStudy): Promise<WorkProject> {
+async function mapPublishedCaseStudy(
+  client: PublicCmsClient,
+  caseStudy: PublishedCaseStudy,
+  relatedCapabilities: Array<{ slug: string; name: string; cardName: string }>,
+): Promise<WorkProject> {
   const isApproved = caseStudy.client_visibility === "approved";
   const safeName = caseStudy.project_type === "prototype"
     ? "Selected prototype"
@@ -291,6 +308,7 @@ async function mapPublishedCaseStudy(client: PublicCmsClient, caseStudy: Publish
     featuredImageUrl: featuredImageUrl || undefined,
     featuredImageAlt: caseStudy.featured_image_alt || undefined,
     supportingMedia: supportingMedia.filter((item): item is { url: string; alt: string } => Boolean(item)),
+    relatedCapabilities,
   };
 }
 
@@ -303,7 +321,7 @@ export async function getPublishedWorkProjects(): Promise<WorkProject[]> {
 
   const { data, error } = await client
     .from("case_studies")
-    .select("project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, featured_image_path, featured_image_alt, supporting_media, media_status")
+    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, featured_image_path, featured_image_alt, supporting_media, media_status")
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
@@ -312,7 +330,47 @@ export async function getPublishedWorkProjects(): Promise<WorkProject[]> {
     return localWorkProjects;
   }
 
-  return Promise.all((data as PublishedCaseStudy[]).map((caseStudy) => mapPublishedCaseStudy(client, caseStudy)));
+  const caseStudies = data as PublishedCaseStudy[];
+  const { data: links } = await client
+    .from("case_study_services")
+    .select("case_study_id, service_id")
+    .in("case_study_id", caseStudies.map((caseStudy) => caseStudy.id));
+
+  const relationshipLinks = (links as PublishedCaseStudyServiceLink[] | null) ?? [];
+  const serviceIds = [...new Set(relationshipLinks.map((link) => link.service_id))];
+  const { data: services } = serviceIds.length
+    ? await client
+      .from("services")
+      .select("id, name, card_name, slug")
+      .in("id", serviceIds)
+      .order("created_at", { ascending: true })
+    : { data: [] as PublishedRelatedService[] };
+
+  const relatedServicesById = new Map(
+    ((services as PublishedRelatedService[] | null) ?? []).map((service) => [service.id, service]),
+  );
+  const relatedCapabilitiesByCaseStudy = new Map<string, Array<{ slug: string; name: string; cardName: string }>>();
+
+  relationshipLinks.forEach((link) => {
+    const service = relatedServicesById.get(link.service_id);
+    if (!service) {
+      return;
+    }
+
+    const capabilities = relatedCapabilitiesByCaseStudy.get(link.case_study_id) ?? [];
+    capabilities.push({
+      slug: service.slug,
+      name: service.name,
+      cardName: service.card_name || service.name,
+    });
+    relatedCapabilitiesByCaseStudy.set(link.case_study_id, capabilities);
+  });
+
+  return Promise.all(caseStudies.map((caseStudy) => mapPublishedCaseStudy(
+    client,
+    caseStudy,
+    relatedCapabilitiesByCaseStudy.get(caseStudy.id) ?? [],
+  )));
 }
 
 export async function getPublishedWorkProject(slug: string): Promise<WorkProject | undefined> {
