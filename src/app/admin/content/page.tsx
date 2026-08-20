@@ -8,6 +8,7 @@ import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import AdminSelect from "@/app/admin/AdminSelect";
 import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 import AdminToast from "@/app/admin/AdminToast";
+import AdminAccountActions from "@/app/admin/AdminAccountActions";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ async function requireMember() {
   const membership = await getCmsMembership(user.id);
   if (!membership.role) redirect("/admin");
 
-  return { supabase, membership };
+  return { supabase, user, membership };
 }
 
 function redirectWithError(message: string): never {
@@ -204,7 +205,7 @@ function formatDate(value: string | null) {
 }
 
 export default async function AdminContentPage({ searchParams }: ContentPageProps) {
-  const { membership } = await requireMember();
+  const { user, membership } = await requireMember();
   const { error, saved } = await searchParams;
   let content = null;
   let loadError = "";
@@ -226,7 +227,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
             <Link className="admin-brand" href="/admin">OCSCO</Link>
             <p className="admin-kicker">Staging CMS / Global content</p>
           </div>
-          <Link className="admin-back-link" href="/admin">Back to dashboard</Link>
+          <AdminAccountActions email={user.email} role={membership.role} backHref="/admin" />
         </header>
 
         <AdminBreadcrumbs section="Content" record="Global content" />

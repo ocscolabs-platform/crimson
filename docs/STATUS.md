@@ -42,6 +42,7 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Applied the Admin UX follow-up locally: replaced the literal select caret with a CSS control, widened the jump navigation rhythm, increased disclosure and row spacing, and moved global-content rows to a two-column field layout earlier at tablet widths to prevent collisions. Staging QA is pending.
 - Applied the action hierarchy follow-up locally: media replacement actions now use the neutral secondary treatment while upload and approval actions remain primary. Staging QA is pending.
 - Fixed the confirmed global-content grid collision by constraining shared admin inputs and select wrappers to their grid tracks; staging QA completed successfully at desktop width with no horizontal overflow.
+- Admin UX refinement is implemented locally: shared account controls, compact audit pagination, inline page-status accordions, reduced admin hero density, and a separated media approval action row. Staging QA is pending.
 
 ## In Progress
 

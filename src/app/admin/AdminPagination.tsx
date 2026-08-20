@@ -17,10 +17,10 @@ export default function AdminPagination({ page, pageSize, total }: AdminPaginati
 
   return (
     <nav className="admin-pagination" aria-label="Audit history pagination">
-      <span>Showing {first}–{last} of {total}</span>
+      <span className="admin-pagination-range">Showing {first}–{last} of {total}</span>
       <div className="admin-pagination-actions">
         {page > 1 ? <Link href={`?audit_page=${page - 1}`}>Previous</Link> : <span aria-disabled="true">Previous</span>}
-        <strong>Page {page} of {pageCount}</strong>
+        <strong className="admin-pagination-page">Page {page} of {pageCount}</strong>
         {page < pageCount ? <Link href={`?audit_page=${page + 1}`}>Next</Link> : <span aria-disabled="true">Next</span>}
       </div>
     </nav>

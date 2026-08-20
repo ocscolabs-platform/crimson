@@ -3,15 +3,9 @@ import Link from "next/link";
 import { getAdminContent } from "@/lib/admin-content";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { createClient } from "@/lib/supabase/server";
+import AdminAccountActions from "@/app/admin/AdminAccountActions";
 
 export const dynamic = "force-dynamic";
-
-async function signOut() {
-  "use server";
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/admin/login");
-}
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -39,15 +33,7 @@ export default async function AdminDashboardPage() {
             <Link className="admin-brand" href="/">OCSCO</Link>
             <p className="admin-kicker">Staging CMS / Control room</p>
           </div>
-          <div className="admin-header-actions">
-            <span className="admin-user">{user.email}</span>
-            <span className={`admin-role admin-role-${membership.role ?? "pending"}`}>
-              {membership.role ?? "Role pending"}
-            </span>
-            <form action={signOut}>
-              <button className="admin-signout" type="submit">Sign out</button>
-            </form>
-          </div>
+          <AdminAccountActions email={user.email} role={membership.role} />
         </header>
 
         <nav className="admin-nav" aria-label="CMS sections">

@@ -13,6 +13,7 @@ import AdminSelect from "@/app/admin/AdminSelect";
 import AdminToast from "@/app/admin/AdminToast";
 import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 import AdminDeleteButton from "@/app/admin/AdminDeleteButton";
+import AdminAccountActions from "@/app/admin/AdminAccountActions";
 
 type AdminCaseStudyPageProps = {
   params: Promise<{ slug: string }>;
@@ -519,12 +520,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             <Link className="admin-brand" href="/admin">OCSCO</Link>
             <p className="admin-kicker">Staging CMS / Case-study review</p>
           </div>
-          <div className="admin-header-actions">
-            <span className="admin-user">{user.email}</span>
-            <span className={`admin-role admin-role-${membership.role ?? "pending"}`}>
-              {membership.role ?? "Role pending"}
-            </span>
-          </div>
+          <AdminAccountActions email={user.email} role={membership.role} />
         </header>
 
         <section className="admin-editor-heading">
@@ -658,9 +654,12 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
                   );
                 })}
               </div>
-              <form action={approveCaseStudyMedia.bind(null, slug)}>
+              <div className="admin-media-approval">
+                <p className="admin-action-note">Approve after the featured and supporting visuals have passed review.</p>
+                <form action={approveCaseStudyMedia.bind(null, slug)}>
                 <AdminSubmitButton label="Approve media package" pendingLabel="Approving…" />
-              </form>
+                </form>
+              </div>
             </>
           ) : <p className="admin-editor-note">Your role can review the media package, but only the staging owner can upload or approve visuals.</p>}
         </section>

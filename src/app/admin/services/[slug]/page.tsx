@@ -10,6 +10,7 @@ import AdminSelect from "@/app/admin/AdminSelect";
 import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 import AdminToast from "@/app/admin/AdminToast";
 import RestoreButton from "@/app/admin/services/RestoreButton";
+import AdminAccountActions from "@/app/admin/AdminAccountActions";
 
 type AdminServicePageProps = {
   params: Promise<{ slug: string }>;
@@ -191,12 +192,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
             <Link className="admin-brand" href="/admin">OCSCO</Link>
             <p className="admin-kicker">Staging CMS / Service editor</p>
           </div>
-          <div className="admin-header-actions">
-            <span className="admin-user">{user.email}</span>
-            <span className={`admin-role admin-role-${membership.role ?? "pending"}`}>
-              {membership.role ?? "Role pending"}
-            </span>
-          </div>
+          <AdminAccountActions email={user.email} role={membership.role} />
         </header>
 
         <section className="admin-editor-heading">

@@ -8,6 +8,7 @@ import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import AdminSelect from "@/app/admin/AdminSelect";
 import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 import AdminToast from "@/app/admin/AdminToast";
+import AdminAccountActions from "@/app/admin/AdminAccountActions";
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +77,7 @@ function formatDate(value: string) {
 }
 
 export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
-  await requireOwner();
+  const user = await requireOwner();
   const { error, saved } = await searchParams;
   let members: AdminMember[] = [];
   let loadError = "";
@@ -95,7 +96,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
             <Link className="admin-brand" href="/">OCSCO</Link>
             <p className="admin-kicker">Staging CMS / Team &amp; access</p>
           </div>
-          <Link className="admin-back-link" href="/admin">Back to dashboard</Link>
+          <AdminAccountActions email={user.email} role="owner" backHref="/admin" />
         </header>
 
         <AdminBreadcrumbs section="Team & access" record="Membership" />

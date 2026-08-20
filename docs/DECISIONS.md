@@ -334,3 +334,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Shared admin inputs and select wrappers use `min-width: 0` and `width: 100%` so intrinsic control sizing cannot overflow a responsive grid column.
 - **Reason:** Number inputs can retain a browser-defined intrinsic minimum width. In the global-content navigation editor, that caused Sort order to extend into Visibility at wide desktop widths even though the grid itself had a defined gap. Fixing the shared control primitive prevents the same collision across CMS forms.
 - **Consequence:** Existing field names, server actions, permissions, and stored values remain unchanged; the correction only prevents visual overflow in responsive admin grids.
+
+## ADR-049 - Use compact, shared admin interaction patterns
+
+- **Status:** Accepted for staging
+- **Decision:** Standardize the signed-in account cluster across CMS routes, use compact bordered pagination controls, keep accordion status and chevrons on one horizontal line, and place media approval in a separated action row.
+- **Reason:** The admin UI is an operational tool, so hierarchy and scanability matter more than oversized presentation. Repeated account controls, audit navigation, disclosure states, and high-impact media approval actions need predictable placement and spacing across screens.
+- **Consequence:** This is a presentation and navigation refinement only. It adds no new permissions, data fields, storage behavior, or public-route changes.
