@@ -12,10 +12,11 @@ import AdminPagination from "@/app/admin/AdminPagination";
 import AdminSelect from "@/app/admin/AdminSelect";
 import AdminToast from "@/app/admin/AdminToast";
 import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
+import AdminDeleteButton from "@/app/admin/AdminDeleteButton";
 
 type AdminCaseStudyPageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ error?: string; saved?: string; audit_page?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; warning?: string; audit_page?: string }>;
 };
 
 const MEDIA_BUCKET = "case-study-media";
@@ -236,6 +237,79 @@ async function approveCaseStudyMedia(slug: string) {
   redirect(`/admin/case-studies/${slug}?saved=media-approved`);
 }
 
+async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting", slot: number | null) {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/admin/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (membership.role !== "owner") {
+    mediaError(slug, "Only the staging owner can remove case-study media.");
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from("case_studies")
+    .select("id, status, featured_image_path, featured_image_alt, supporting_media")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (existingError || !existing) {
+    mediaError(slug, "The case study could not be found.");
+  }
+
+  if (existing.status === "published") {
+    mediaError(slug, "Move the case study to Review before removing its media.");
+  }
+
+  const currentMedia = mediaItems(existing.supporting_media);
+  let storagePath: string | null = null;
+  let update: Record<string, unknown>;
+
+  if (kind === "featured") {
+    if (!existing.featured_image_path) {
+      mediaError(slug, "No featured image is configured.");
+    }
+    storagePath = existing.featured_image_path;
+    update = {
+      featured_image_path: null,
+      featured_image_alt: null,
+      media_status: "pending",
+      media_reviewed_at: null,
+    };
+  } else {
+    if (!Number.isInteger(slot) || slot === null || slot < 0 || slot >= currentMedia.length) {
+      mediaError(slug, "Choose an existing supporting media slot to remove.");
+    }
+    storagePath = currentMedia[slot].path;
+    update = {
+      supporting_media: currentMedia
+        .filter((_, index) => index !== slot)
+        .map((item) => ({ path: item.path, alt: item.alt, media_type: "image" as const, approval: item.approval })),
+      media_status: "pending",
+      media_reviewed_at: null,
+    };
+  }
+
+  const { error: updateError } = await supabase.from("case_studies").update(update).eq("id", existing.id);
+  if (updateError) {
+    mediaError(slug, updateError.message);
+  }
+
+  const { error: storageError } = storagePath
+    ? await supabase.storage.from(MEDIA_BUCKET).remove([storagePath])
+    : { error: null };
+
+  revalidatePath("/admin/case-studies/" + slug);
+  revalidatePath("/work");
+  revalidatePath("/work/" + slug);
+  if (storageError) {
+    redirect(`/admin/case-studies/${slug}?saved=media-removed&warning=${encodeURIComponent("The media was removed from the case study, but its old storage object needs cleanup.")}`);
+  }
+  redirect(`/admin/case-studies/${slug}?saved=media-removed`);
+}
+
 async function saveCaseStudy(slug: string, formData: FormData) {
   "use server";
 
@@ -440,6 +514,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             <AdminToast tone="error" message={"Save failed: " + query.error} />
           </>
         ) : null}
+        {query.warning ? <p className="admin-editor-warning" role="status">{query.warning}</p> : null}
 
         <section className="admin-editor-panel admin-media-panel">
           <div className="admin-section-heading">
@@ -451,12 +526,21 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
           </div>
 
           <div className="admin-media-summary">
-            <div className="admin-media-preview">
-              {review.featured_image_url ? (
-                <img src={review.featured_image_url} alt={review.featured_image_alt || `${review.project_name} featured visual`} />
-              ) : (
-                <span>No featured image uploaded</span>
-              )}
+            <div className="admin-media-preview-wrap">
+              <div className="admin-media-preview">
+                {review.featured_image_url ? (
+                  <img src={review.featured_image_url} alt={review.featured_image_alt || `${review.project_name} featured visual`} />
+                ) : (
+                  <span>No featured image uploaded</span>
+                )}
+              </div>
+              {isOwner && review.featured_image_path ? (
+                <AdminDeleteButton
+                  action={removeCaseStudyMedia.bind(null, slug, "featured", null)}
+                  label="Remove featured image"
+                  confirmation="Remove this featured image from the case study? The record will require media approval again."
+                />
+              ) : null}
             </div>
             <div>
               <p className="admin-kicker">Featured media</p>
@@ -469,7 +553,16 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             <div className="admin-media-list" aria-label="Supporting media">
               {supportingMedia.map((item) => (
                 <div className="admin-media-item" key={item.path}>
-                  {item.url ? <img src={item.url} alt={item.alt} /> : <span className="admin-media-item-empty">Preview unavailable</span>}
+                  <div className="admin-media-item-preview">
+                    {item.url ? <img src={item.url} alt={item.alt} /> : <span className="admin-media-item-empty">Preview unavailable</span>}
+                    {isOwner ? (
+                      <AdminDeleteButton
+                        action={removeCaseStudyMedia.bind(null, slug, "supporting", supportingMedia.indexOf(item))}
+                        label="Remove supporting image"
+                        confirmation="Remove this supporting image from the case study? The record will require media approval again."
+                      />
+                    ) : null}
+                  </div>
                   <div>
                     <strong>{item.alt}</strong>
                     <span>{item.approval === "approved" ? "Approved" : "Pending review"}</span>
@@ -482,6 +575,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
           {isOwner ? (
             <>
               <p className="admin-editor-note">Move a published record to Review before changing its media. Replacing an image creates a new object; old objects are retained for safe cleanup later.</p>
+              {supportingMedia.length > 2 ? <p className="admin-editor-warning" role="note">This record contains {supportingMedia.length} supporting visuals from an earlier workflow. Remove the extra visuals until two remain.</p> : null}
               <div className="admin-media-forms">
                 <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "featured", null)}>
                   <strong>Upload featured image</strong>
@@ -608,7 +702,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
               </AdminSelect>
             </label>
             <div className="admin-editor-note admin-field-wide">
-              Media is governed by the approved media contract. Uploads, featured placement, supporting relationships, and delete actions are not available in this editor.
+              Media is governed by the approved media contract. Featured and supporting media can be managed by the owner; case-study deletion and relationship editing remain unavailable in this editor.
             </div>
             {canEdit ? <AdminSubmitButton /> : null}
           </form>

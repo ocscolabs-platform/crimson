@@ -278,3 +278,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Give each case study one featured 16:9 visual and two independently replaceable 4:3 supporting visual slots. Render the supporting slots as a two-column desktop grid and a vertical mobile stack.
 - **Reason:** One hero followed by one half-width supporting image leaves the case-study page visually unbalanced. Two controlled supporting slots create a clearer portfolio rhythm without hiding proof behind a carousel.
 - **Consequence:** A carousel remains deferred for projects that need a true visual sequence. The CMS now exposes explicit supporting slots instead of an unbounded append-only gallery.
+
+## ADR-041 - Make media removal explicit and owner-confirmed
+
+- **Status:** Accepted for staging
+- **Decision:** Add a trash action to each configured media preview. Only the owner can remove media, only Review records can be changed, and the UI requires confirmation before removing a featured or supporting asset.
+- **Reason:** Upload and replacement without removal creates clutter and makes mistakes difficult to correct. A visible, confirmed removal action gives the media package a complete lifecycle without opening case-study deletion.
+- **Consequence:** The case-study row is updated first so the audit trigger records the change; the private storage object is then removed. If storage cleanup fails, the record remains correct and the CMS reports that cleanup is still needed.

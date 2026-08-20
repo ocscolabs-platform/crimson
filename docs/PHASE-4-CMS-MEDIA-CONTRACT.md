@@ -34,9 +34,9 @@ Example supporting item:
 - Store project media under a case-study-specific relative path; do not use arbitrary remote image URLs.
 - Keep client names, logos, recognizable interfaces, testimonials, and metrics hidden until the owner confirms permission and factual accuracy.
 - `media_status = approved` means the complete featured-media package passed owner review; it does not itself grant client visibility.
-- Media removal must be an explicit owner-controlled workflow and must create an audit record before a future storage delete is considered.
-- Retain approved media while the related published or archived record requires it. No automatic deletion is introduced in this milestone.
-- Storage bucket choice, upload limits, transformations, image optimization, and deletion UI remain deferred until the write workflow is approved.
+- Media removal is an explicit owner-controlled workflow. The case-study row is updated first so the audit trigger records the change, then the selected private storage object is removed.
+- Retain approved media while the related published or archived record requires it. Replacements create new objects; automatic cleanup of superseded objects is not introduced in this milestone.
+- Storage bucket choice, upload limits, transformations, image optimization, and owner-confirmed deletion are implemented by the controlled staging media workflow.
 
 ## Featured-project rule
 

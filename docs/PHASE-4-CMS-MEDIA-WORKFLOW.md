@@ -4,7 +4,7 @@
 
 ## Scope
 
-This slice adds a narrow media workflow to the existing update-only case-study editor. It supports owner-uploaded project images for existing staging records. It does not create case studies, delete records, edit relationships, or open Production administration.
+This slice adds a narrow media workflow to the existing update-only case-study editor. It supports owner-uploaded and owner-removed project images for existing staging records. It does not create case studies, delete records, edit relationships, or open Production administration.
 
 The storage bucket is private by default. A public image URL is available only when the attached case study is published and its complete media package is approved.
 
@@ -29,6 +29,7 @@ The storage bucket is private by default. A public image URL is available only w
 - Featured media requires meaningful alternative text.
 - Supporting media requires meaningful alternative text and is initially marked `pending`.
 - Replacing a file creates a new object; automatic deletion is not performed.
+- Owners can remove a featured image or supporting slot from a Review record after confirmation. The database record is updated first for auditability, then the private storage object is removed.
 - Uploading or approving media for a published record requires moving that record to Review first.
 
 ## Approval boundary
