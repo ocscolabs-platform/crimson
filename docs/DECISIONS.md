@@ -285,3 +285,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Add a trash action to each configured media preview. Only the owner can remove media, only Review records can be changed, and the UI requires confirmation before removing a featured or supporting asset.
 - **Reason:** Upload and replacement without removal creates clutter and makes mistakes difficult to correct. A visible, confirmed removal action gives the media package a complete lifecycle without opening case-study deletion.
 - **Consequence:** The case-study row is updated first so the audit trigger records the change; the private storage object is then removed. If storage cleanup fails, the record remains correct and the CMS reports that cleanup is still needed.
+
+## ADR-042 - Use a neutral presentation surface for light case-study media
+
+- **Status:** Accepted for staging
+- **Decision:** Give public featured and supporting case-study images consistent rounded corners and a subtle neutral light frame. Keep the source pixels unchanged and do not apply a global contrast or color filter.
+- **Reason:** Client screenshots are evidence and often use light backgrounds. A dark `object-fit: contain` matte creates visible dark edging around rounded or anti-aliased image boundaries, while a contrast filter would alter the fidelity of the client work. A restrained light surface separates the image from the page without changing its content.
+- **Consequence:** Featured media uses the same 16:9 frame with a 12px radius as supporting media's 4:3 frame. Work-card images inherit the card's existing clipping so the library does not acquire a double border.
