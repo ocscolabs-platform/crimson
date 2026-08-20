@@ -20,6 +20,12 @@ Preview/Staging and Production must eventually use separate environment configur
 
 The repository intentionally does not contain account IDs, deployment URLs, domains, credentials, or environment values. Human owners will need to supply those values through GitHub/Vercel/Supabase configuration when the integrations are approved.
 
+## CMS publication boundary
+
+The staging CMS and the Production public website use separate Supabase projects. Git promotion moves code only; it does not move CMS rows, Auth users, Storage objects, or database IDs. The one-time Production CMS boundary is defined in [`CMS-PROMOTION.md`](./CMS-PROMOTION.md) and [`20260821000000_create_production_cms_boundary.sql`](../supabase/migrations/20260821000000_create_production_cms_boundary.sql).
+
+Approved content is promoted through the protected GitHub `production-cms` environment using `scripts/cms-promote.mjs`. The workflow is dry-run by default and requires an explicit apply input. Production service-role credentials must remain GitHub Environment Secrets and must never be placed in the browser, Vercel public variables, or the repository.
+
 ## Remaining owner configuration
 
 - Configure GitHub branch protection for `feature/*`, `staging`, and `main`.
@@ -46,6 +52,8 @@ Do not add these values to the repository. Production uses separate values from 
 The Production `/contact` form uses the selected clean Production Supabase project and the verified `send.ocsco.io` Resend sending domain. The six required variables are configured in Vercel under Production only, and the owner has confirmed database storage and email delivery.
 
 ## Staging CMS authentication
+
+Editorial editing, publishing, and draft access remain in staging. Production receives approved public content through the guarded promotion workflow in [`CMS-PROMOTION.md`](./CMS-PROMOTION.md); Production admin access is not required for this publication boundary.
 
 The staging branch includes a protected CMS dashboard at `/admin`. It uses the existing Preview Supabase URL and publishable key through cookie-based Supabase SSR sessions. No new secret variable is required and `SUPABASE_SECRET_KEY` is not used by the dashboard.
 

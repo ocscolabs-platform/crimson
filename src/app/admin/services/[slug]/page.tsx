@@ -89,7 +89,7 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
-    redirect(`/admin/services/${slug}?error=Only the staging owner can restore service snapshots.`);
+    redirect(`/admin/services/${slug}?error=Only the owner can restore service snapshots.`);
   }
 
   const { data: currentService, error: currentServiceError } = await supabase
@@ -176,7 +176,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
     auditEntries = audit.entries;
     auditTotal = audit.total;
   } catch {
-    auditError = "Audit history is not available yet. Apply the staging audit migration before using this editor.";
+    auditError = "Audit history is not available yet. Apply the audit migration before using this editor.";
   }
 
   const canEdit = canEditServices(membership.role);
@@ -190,7 +190,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
         <header className="admin-header">
           <div>
             <Link className="admin-brand" href="/admin">OCSCO</Link>
-            <p className="admin-kicker">Staging CMS / Service editor</p>
+            <p className="admin-kicker">CMS / Service editor</p>
           </div>
           <AdminAccountActions email={user.email} role={membership.role} />
         </header>
@@ -209,8 +209,8 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
 
         {query.saved ? (
           <>
-            <p className="admin-success" role="status">Service saved successfully in staging.</p>
-            <AdminToast tone="success" message="Service saved successfully in staging." />
+            <p className="admin-success" role="status">Service saved successfully.</p>
+            <AdminToast tone="success" message="Service saved successfully." />
           </>
         ) : null}
         {query.restored ? (
@@ -232,7 +232,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
               <p className="admin-kicker">Controlled editor</p>
               <h2>{canEdit ? "Prepare this capability for review." : "Review this capability."}</h2>
             </div>
-            <p className="admin-section-note">{canEdit ? "Owners can publish. Editors can prepare draft and review content. Every change is limited by the staging RLS policies." : "Your role can review published content, but cannot change this record."}</p>
+            <p className="admin-section-note">{canEdit ? "Owners can publish. Editors can prepare draft and review content. Every change is limited by the configured RLS policies." : "Your role can review published content, but cannot change this record."}</p>
           </div>
 
           {service.status === "published" && canEdit ? (
@@ -300,7 +300,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
           ) : null}
           <AdminPagination page={auditPage} pageSize={5} total={auditTotal} />
         </section>
-        <footer className="admin-footer">Staging only · Services are the first controlled editor slice.</footer>
+        <footer className="admin-footer">Services are the first controlled editor slice.</footer>
       </div>
     </main>
   );

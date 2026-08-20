@@ -39,10 +39,10 @@ export default function AdminLoginPage() {
   return (
     <main className="admin-page admin-login-page">
       <div className="admin-login-card">
-        <p className="admin-kicker">OCSCO / Staging CMS</p>
-        <h1>Sign in to review staging content.</h1>
+        <p className="admin-kicker">OCSCO / CMS</p>
+        <h1>Sign in to manage content.</h1>
         <p className="admin-intro">
-          Services editing is available to approved staging members according to their role. Publishing and broader CMS controls remain restricted.
+          Content editing is available to approved CMS members according to their role. Publishing and broader controls remain restricted.
         </p>
         <form className="admin-form" onSubmit={handleSubmit}>
           <label>

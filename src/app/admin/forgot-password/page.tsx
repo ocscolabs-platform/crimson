@@ -39,9 +39,9 @@ export default function AdminForgotPasswordPage() {
   return (
     <main className="admin-page admin-login-page">
       <div className="admin-login-card">
-        <p className="admin-kicker">OCSCO / Staging CMS</p>
+        <p className="admin-kicker">OCSCO / CMS</p>
         <h1>Reset your password.</h1>
-        <p className="admin-intro">Enter your staging CMS email and we will send a secure password reset link.</p>
+        <p className="admin-intro">Enter your CMS email and we will send a secure password reset link.</p>
         <form className="admin-form" onSubmit={handleSubmit}>
           <label>
             Email

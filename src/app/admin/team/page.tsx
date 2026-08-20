@@ -94,7 +94,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
         <header className="admin-header">
           <div>
             <Link className="admin-brand" href="/">OCSCO</Link>
-            <p className="admin-kicker">Staging CMS / Team &amp; access</p>
+            <p className="admin-kicker">CMS / Team &amp; access</p>
           </div>
           <AdminAccountActions email={user.email} role="owner" backHref="/admin" />
         </header>
@@ -106,7 +106,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
             <p className="admin-kicker admin-kicker-green">Owner controls</p>
             <h1>Manage CMS access.</h1>
           </div>
-          <p className="admin-intro">Invite approved team members and assign the smallest role they need. These controls affect staging access only.</p>
+          <p className="admin-intro">Invite approved team members and assign the smallest role they need. These controls affect CMS access only.</p>
         </section>
 
         {saved === "invited" ? <AdminToast tone="success" message="Invitation created and CMS role assigned." /> : null}
@@ -123,7 +123,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
             <section className="admin-team-card">
               <p className="admin-kicker">Add member</p>
               <h2>Invite a teammate.</h2>
-              <p className="admin-team-note">The invitation is sent through the staging Supabase Auth project. The selected role is applied after the invitation is created.</p>
+              <p className="admin-team-note">The invitation is sent through the configured Supabase Auth project. The selected role is applied after the invitation is created.</p>
               <form className="admin-form" action={inviteMember}>
                 <label>
                   Email address
@@ -145,7 +145,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
                   <p className="admin-kicker">Current access</p>
                   <h2>{members.length} member{members.length === 1 ? "" : "s"}</h2>
                 </div>
-                <span>Staging only</span>
+                <span>Role-controlled</span>
               </div>
               <ul className="admin-member-list">
                 {members.map((member) => (
@@ -169,7 +169,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
           </div>
         )}
 
-        <footer className="admin-footer">Staging only · Membership changes are owner-controlled.</footer>
+        <footer className="admin-footer">Membership changes are owner-controlled.</footer>
       </div>
     </main>
   );

@@ -9,7 +9,7 @@ type AdminSubmitButtonProps = {
 };
 
 export default function AdminSubmitButton({
-  label = "Save staging record",
+  label = "Save record",
   pendingLabel = "Saving…",
   variant = "primary",
 }: AdminSubmitButtonProps) {
