@@ -324,22 +324,22 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-audit-restore:hover { border-color: var(--green); color: var(--green); }
 .admin-footer { border-top: 1px solid rgb(255 255 255 / 16%); color: #777; font-size: .72rem; letter-spacing: .08em; padding-top: 20px; text-transform: uppercase; }
 .admin-review-section { padding-bottom: 48px; }
-.admin-review-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.admin-review-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
 .admin-review-check { display: grid; gap: 12px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 10px; background: #141414; padding: 18px; }
 .admin-review-check > span, .admin-review-dl dt, .admin-review-copy-block > span { color: #858585; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .admin-review-state { font-size: .9rem; }
 .admin-review-state-ready { color: var(--green); }
 .admin-review-state-pending { color: #e0bd8a; }
-.admin-review-content-grid { margin-top: 16px; }
-.admin-review-card { border: 1px solid rgb(255 255 255 / 14%); border-radius: 12px; background: #141414; padding: 28px; }
-.admin-review-dl { display: grid; gap: 0; margin: 22px 0 26px; }
+.admin-review-content-grid { display: grid; gap: 16px; margin-top: 16px; }
+.admin-review-card { align-self: start; border: 1px solid rgb(255 255 255 / 14%); border-radius: 12px; background: #141414; padding: 24px; }
+.admin-review-dl { display: grid; gap: 0; margin: 16px 0 18px; }
 .admin-review-dl div { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid rgb(255 255 255 / 10%); padding: 13px 0; }
 .admin-review-dl dd { margin: 0; color: #ddd; font-size: .84rem; text-align: right; }
 .admin-review-list { display: grid; gap: 0; margin: 22px 0 0; padding: 0; list-style: none; }
 .admin-review-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; border-top: 1px solid rgb(255 255 255 / 10%); padding: 14px 0; }
 .admin-review-list li strong { color: #eee; font-size: .86rem; }
 .admin-review-list li span { color: #999; font-size: .78rem; line-height: 1.5; }
-.admin-review-copy-block { display: grid; gap: 10px; margin-top: 24px; }
+.admin-review-copy-block { display: grid; gap: 8px; margin-top: 16px; }
 .admin-review-copy-block p { margin: 0; color: #c5c5c5; font-size: .88rem; line-height: 1.7; }
 .admin-review-copy-block .admin-review-list { margin-top: 0; }
 .admin-review-muted { margin: 20px 0 0; color: #858585; font-size: .82rem; line-height: 1.6; }
