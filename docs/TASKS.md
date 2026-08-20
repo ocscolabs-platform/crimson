@@ -192,6 +192,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Jump navigation uses deliberate spacing and clear grouping between the label and destinations.
 - Select controls use a consistent CSS-drawn caret that remains aligned at desktop, tablet, and mobile widths.
 - Global-content rows switch to a stacked field layout before tablet widths can cause control collisions.
+- Media replacement actions use the secondary treatment while upload and approval actions retain the primary treatment.
 - Service and case-study audit histories use server-side pagination with an explicit visible range.
 - Sign-in includes a password recovery path and clear loading/error feedback.
 - No Remember me control is added until a deliberate session-duration policy is approved.

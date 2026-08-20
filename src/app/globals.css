@@ -335,8 +335,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-pagination a:hover, .admin-pagination a:focus-visible { border-color: var(--green); color: var(--green); }
 .admin-pagination-actions span[aria-disabled="true"] { color: #555; }
 .admin-pagination strong { color: #aaa; font-weight: 600; white-space: nowrap; }
-.admin-content-jump-nav { position: sticky; top: 16px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; width: fit-content; max-width: 100%; border: 1px solid rgb(255 255 255 / 14%); border-radius: 999px; background: rgb(20 20 20 / 94%); box-shadow: 0 12px 30px rgb(0 0 0 / 18%); backdrop-filter: blur(16px); color: #858585; font-size: .72rem; padding: 6px; }
-.admin-content-jump-nav span { padding: 0 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.admin-content-jump-nav { position: sticky; top: 16px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; width: fit-content; max-width: 100%; margin-bottom: 8px; border: 1px solid rgb(255 255 255 / 14%); border-radius: 12px; background: rgb(20 20 20 / 94%); box-shadow: 0 12px 30px rgb(0 0 0 / 18%); backdrop-filter: blur(16px); color: #858585; font-size: .72rem; padding: 8px; }
+.admin-content-jump-nav span { border-right: 1px solid rgb(255 255 255 / 14%); padding: 0 14px 0 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .admin-content-jump-nav a { display: inline-flex; min-height: 36px; align-items: center; border-radius: 999px; color: #d0d0d0; padding: 8px 13px; }
 .admin-content-jump-nav a:hover, .admin-content-jump-nav a:focus-visible { background: rgb(255 255 255 / 9%); color: var(--white); }
 .admin-audit-panel { border-top: 1px solid rgb(255 255 255 / 16%); margin-top: 56px; padding-top: 38px; }

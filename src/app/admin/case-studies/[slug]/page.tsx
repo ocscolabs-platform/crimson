@@ -651,7 +651,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
                         <>
                           <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>Recommended: 1600 × 1200 (4:3). PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
                           <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the supporting visual" defaultValue={item?.alt || ""} required /></label>
-                          <AdminSubmitButton label={item ? "Replace supporting media" : "Upload supporting media"} pendingLabel="Uploading…" />
+                          <AdminSubmitButton label={item ? "Replace supporting media" : "Upload supporting media"} pendingLabel="Uploading…" variant={item ? "secondary" : "primary"} />
                         </>
                       ) : <p className="admin-editor-note">Upload supporting visual 1 before adding visual 2.</p>}
                     </form>

@@ -320,3 +320,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Keep admin select controls on one shared component with a CSS-drawn caret, give jump navigation deliberate internal spacing, and move global-content rows to a stacked field layout before tablet widths make four controls compete for space.
 - **Reason:** A literal text glyph is inconsistent across fonts and can look like a stray character or misaligned chevron. The previous breakpoint allowed four fields to remain compressed at intermediate widths, creating the perception of overlap and making the editor harder to scan.
 - **Consequence:** The follow-up is presentation-only. It changes no form names, server actions, role checks, RLS policies, content values, or production routes.
+
+## ADR-047 - Reserve primary media actions for additions and approval
+
+- **Status:** Accepted for staging
+- **Decision:** Use the primary green treatment for new media uploads and media-package approval. Use the neutral secondary treatment for replacing an existing supporting visual.
+- **Reason:** Replacement is a maintenance action, not a new editorial milestone. Giving it the same visual weight as approval makes the action hierarchy ambiguous and increases the chance of an accidental destructive-looking operation.
+- **Consequence:** The media workflow remains functionally unchanged; only the visual treatment of the supporting-media replacement action changes.

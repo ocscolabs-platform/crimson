@@ -40,6 +40,7 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Completed the first Admin UX hardening slice: shared spacing/navigation treatment, visible select cues, server-side audit pagination, password recovery screens, accessible authentication feedback, and responsive case-study detail layout.
 - Implemented Admin UX hardening v2 locally: responsive global-content rows, corrected select spacing, primary/secondary action hierarchy, accessible disclosure groups, and sticky global-content section navigation. Staging QA is pending.
 - Applied the Admin UX follow-up locally: replaced the literal select caret with a CSS control, widened the jump navigation rhythm, increased disclosure and row spacing, and moved global-content rows to a two-column field layout earlier at tablet widths to prevent collisions. Staging QA is pending.
+- Applied the action hierarchy follow-up locally: media replacement actions now use the neutral secondary treatment while upload and approval actions remain primary. Staging QA is pending.
 
 ## In Progress
 
