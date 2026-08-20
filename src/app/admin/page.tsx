@@ -50,7 +50,13 @@ export default async function AdminDashboardPage() {
           </div>
         </header>
 
-        <section className="admin-hero">
+        <nav className="admin-nav" aria-label="CMS sections">
+          <Link href="#overview">Overview</Link>
+          <Link href="#services-records">Services</Link>
+          <Link href="#work-records">Work library</Link>
+        </nav>
+
+        <section className="admin-hero" id="overview">
           <div>
             <p className="admin-kicker admin-kicker-green">Content control room</p>
             <h1>Staging content, in one place.</h1>
@@ -93,7 +99,7 @@ export default async function AdminDashboardPage() {
             </section>
 
             <section className="admin-section admin-record-grid">
-              <div className="admin-record-panel">
+              <div className="admin-record-panel" id="services-records">
                 <div className="admin-panel-heading">
                   <div>
                     <p className="admin-kicker">Services</p>
@@ -112,7 +118,7 @@ export default async function AdminDashboardPage() {
                   ))}
                 </ul>
               </div>
-              <div className="admin-record-panel">
+              <div className="admin-record-panel" id="work-records">
                 <div className="admin-panel-heading">
                   <div>
                     <p className="admin-kicker">Work library</p>

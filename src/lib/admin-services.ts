@@ -41,19 +41,33 @@ export async function getAdminService(slug: string): Promise<AdminServiceRecord 
   return data as AdminServiceRecord | null;
 }
 
-export async function getAdminServiceAudit(serviceId: string): Promise<AdminServiceAuditEntry[]> {
+export type AdminServiceAuditPage = {
+  entries: AdminServiceAuditEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export async function getAdminServiceAudit(serviceId: string, page = 1, pageSize = 5): Promise<AdminServiceAuditPage> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const safePage = Math.max(1, page);
+  const from = (safePage - 1) * pageSize;
+  const { data, error, count } = await supabase
     .from("cms_audit_log")
-    .select("id, actor_user_id, action, from_status, to_status, created_at")
+    .select("id, actor_user_id, action, from_status, to_status, created_at", { count: "exact" })
     .eq("entity_type", "service")
     .eq("entity_id", serviceId)
     .order("created_at", { ascending: false })
-    .limit(20);
+    .range(from, from + pageSize - 1);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return (data ?? []) as AdminServiceAuditEntry[];
+  return {
+    entries: (data ?? []) as AdminServiceAuditEntry[],
+    total: count ?? 0,
+    page: safePage,
+    pageSize,
+  };
 }

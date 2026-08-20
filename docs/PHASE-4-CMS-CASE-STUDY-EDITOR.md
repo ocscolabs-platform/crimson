@@ -37,6 +37,7 @@ The editor displays but does not mutate featured placement, media paths, media a
 - Success and error results are shown in a fixed, dismissible toast near the bottom of the viewport, in addition to the persistent inline message near the form heading.
 - Success feedback explains whether the record can appear publicly or remains anonymized because client visibility is still hidden.
 - Success toasts dismiss automatically after six seconds; error toasts remain until dismissed.
+- Audit history is paginated at five entries per page with an explicit range and previous/next controls; the audit log remains immutable.
 
 ## Staging rollout
 

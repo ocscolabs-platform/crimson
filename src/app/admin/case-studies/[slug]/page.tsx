@@ -4,12 +4,15 @@ import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canApproveCaseStudyVisibility, canEditCaseStudies, getAdminCaseStudyReview } from "@/lib/admin-case-studies";
 import { createClient } from "@/lib/supabase/server";
+import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
+import AdminPagination from "@/app/admin/AdminPagination";
+import AdminSelect from "@/app/admin/AdminSelect";
 import AdminToast from "@/app/admin/AdminToast";
 import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 
 type AdminCaseStudyPageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ error?: string; saved?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; audit_page?: string }>;
 };
 
 function listItems(value: unknown): string[] {
@@ -124,6 +127,8 @@ export const dynamic = "force-dynamic";
 export default async function AdminCaseStudyPage({ params, searchParams }: AdminCaseStudyPageProps) {
   const { slug } = await params;
   const query = await searchParams;
+  const requestedAuditPage = Number.parseInt(query.audit_page ?? "1", 10);
+  const auditPage = Number.isFinite(requestedAuditPage) ? Math.max(1, requestedAuditPage) : 1;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -133,7 +138,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
 
   const [membership, review] = await Promise.all([
     getCmsMembership(user.id),
-    getAdminCaseStudyReview(slug),
+    getAdminCaseStudyReview(slug, auditPage),
   ]);
 
   if (!review) {
@@ -202,7 +207,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
 
         <section className="admin-editor-heading">
           <div>
-            <Link className="admin-back-link" href="/admin">← Back to dashboard</Link>
+            <AdminBreadcrumbs section="Work library" record={review.project_name} />
             <p className="admin-kicker admin-kicker-green">Work library record</p>
             <h1>{review.project_name}</h1>
           </div>
@@ -281,9 +286,9 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             </label>
             <label>
               Project type
-              <select className="admin-input admin-select" name="project_type" defaultValue={review.project_type} disabled={!canEdit}>
-                {["case-study", "prototype", "upcoming"].map((type) => <option key={type} value={type}>{type}</option>)}
-              </select>
+                <AdminSelect name="project_type" defaultValue={review.project_type} disabled={!canEdit}>
+                  {["case-study", "prototype", "upcoming"].map((type) => <option key={type} value={type}>{type}</option>)}
+                </AdminSelect>
             </label>
             <label>
               Project category
@@ -316,19 +321,19 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             <label>
               Client visibility
               {isOwner ? (
-                <select className="admin-input admin-select" name="client_visibility" defaultValue={review.client_visibility} disabled={!canEdit}>
+                <AdminSelect name="client_visibility" defaultValue={review.client_visibility} disabled={!canEdit}>
                   <option value="hidden">Hidden / anonymized</option>
                   <option value="approved">Approved identity</option>
-                </select>
+                </AdminSelect>
               ) : (
                 <span className="admin-readonly-field">{review.client_visibility === "approved" ? "Approved identity" : "Hidden / anonymized"}</span>
               )}
             </label>
             <label>
               Editorial status
-              <select className="admin-input admin-select" name="status" defaultValue={review.status} disabled={!canEdit}>
+              <AdminSelect name="status" defaultValue={review.status} disabled={!canEdit}>
                 {statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
-              </select>
+              </AdminSelect>
             </label>
             <div className="admin-editor-note admin-field-wide">
               Media is governed by the approved media contract. Uploads, featured placement, supporting relationships, and delete actions are not available in this editor.
@@ -398,6 +403,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
               ))}
             </ol>
           ) : <p className="admin-empty-state">No case-study changes have been recorded yet.</p>}
+          <AdminPagination page={review.auditPage} pageSize={review.auditPageSize} total={review.auditTotal} />
         </section>
 
         <footer className="admin-footer">Staging only · Case-study content editing is controlled by role.</footer>

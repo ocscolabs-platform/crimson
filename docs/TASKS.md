@@ -174,3 +174,18 @@ This queue records approved next-step work before implementation. Tasks in this 
 - The form does not mutate media, featured placement, supporting relationships, or delete records.
 - All admin write feedback uses a shared disabled loading state plus accessible success/error toasts that remain visible near the viewport edge.
 - The first workflow test uses a non-featured staging record and no private client facts.
+
+## PH4-010 - Harden the Admin UX
+
+- **Status:** Implemented locally; staging QA pending
+- **Goal:** Make the staging CMS understandable to first-time users before adding broader write capabilities.
+
+### Acceptance criteria
+
+- Admin editor spacing uses a consistent token scale across panels, forms, alerts, and actions.
+- Editor pages expose clear Dashboard → section → record breadcrumbs and the dashboard exposes section navigation.
+- Native selects have visible, consistent caret indicators and keyboard focus states.
+- Service and case-study audit histories use server-side pagination with an explicit visible range.
+- Sign-in includes a password recovery path and clear loading/error feedback.
+- No Remember me control is added until a deliberate session-duration policy is approved.
+- The staging Supabase Auth redirect URL is documented and configured before password reset is tested.

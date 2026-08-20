@@ -38,6 +38,9 @@ export type AdminCaseStudyReview = {
   updated_at: string;
   services: Array<{ name: string; slug: string; status: string }>;
   audit: AdminCaseStudyAuditEntry[];
+  auditTotal: number;
+  auditPage: number;
+  auditPageSize: number;
 };
 
 export function canEditCaseStudies(role: CmsRole | null) {
@@ -48,7 +51,7 @@ export function canApproveCaseStudyVisibility(role: CmsRole | null) {
   return role === "owner";
 }
 
-export async function getAdminCaseStudyReview(slug: string): Promise<AdminCaseStudyReview | null> {
+export async function getAdminCaseStudyReview(slug: string, auditPage = 1, auditPageSize = 5): Promise<AdminCaseStudyReview | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("case_studies")
@@ -64,6 +67,8 @@ export async function getAdminCaseStudyReview(slug: string): Promise<AdminCaseSt
     return null;
   }
 
+  const safeAuditPage = Math.max(1, auditPage);
+  const auditFrom = (safeAuditPage - 1) * auditPageSize;
   const [relationships, audit] = await Promise.all([
     supabase
       .from("case_study_services")
@@ -71,11 +76,11 @@ export async function getAdminCaseStudyReview(slug: string): Promise<AdminCaseSt
       .eq("case_study_id", data.id),
     supabase
       .from("cms_audit_log")
-      .select("id, entity_type, action, from_status, to_status, before_data, after_data, created_at")
+      .select("id, entity_type, action, from_status, to_status, before_data, after_data, created_at", { count: "exact" })
       .eq("entity_id", data.id)
       .in("entity_type", ["case_study", "case_study_service"])
       .order("created_at", { ascending: false })
-      .limit(50),
+      .range(auditFrom, auditFrom + auditPageSize - 1),
   ]);
 
   if (relationships.error) {
@@ -107,5 +112,8 @@ export async function getAdminCaseStudyReview(slug: string): Promise<AdminCaseSt
     ...data,
     services,
     audit: (audit.data ?? []) as AdminCaseStudyAuditEntry[],
+    auditTotal: audit.count ?? 0,
+    auditPage: safeAuditPage,
+    auditPageSize,
   } as AdminCaseStudyReview;
 }

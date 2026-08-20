@@ -10,6 +10,7 @@ Included:
 
 - Cookie-based Supabase SSR sessions using `@supabase/ssr`.
 - Email/password sign-in at `/admin/login`.
+- Password recovery at `/admin/forgot-password` and `/admin/reset-password`.
 - Server-side user verification with `supabase.auth.getUser()`.
 - A staging-only dashboard showing published settings, navigation, pages, services, and case studies.
 - Sign-out and protected-route redirects.
@@ -34,6 +35,7 @@ The proposed role model is documented in [`PHASE-4-CMS-ROLES.md`](./PHASE-4-CMS-
 
 1. In the `crimson-staging` Supabase project, open **Authentication → Users** and create the owner/staff user that should review the CMS. Do not commit the password or share it in repository files.
 2. In **Authentication → URL Configuration**, add the current staging deployment URL to the allowed redirect URLs. Keep the production domain out of this staging-only configuration.
+   - Include the exact password-reset callback URL: `<staging-deployment-url>/admin/reset-password`.
 3. Confirm the existing Vercel Preview variables point to the staging Supabase project:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`

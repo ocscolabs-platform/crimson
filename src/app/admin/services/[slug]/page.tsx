@@ -4,13 +4,16 @@ import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canEditServices, getAdminService, getAdminServiceAudit, type AdminServiceAuditEntry } from "@/lib/admin-services";
 import { createClient } from "@/lib/supabase/server";
+import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
+import AdminPagination from "@/app/admin/AdminPagination";
+import AdminSelect from "@/app/admin/AdminSelect";
 import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 import AdminToast from "@/app/admin/AdminToast";
 import RestoreButton from "@/app/admin/services/RestoreButton";
 
 type AdminServicePageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ error?: string; restored?: string; saved?: string }>;
+  searchParams: Promise<{ error?: string; restored?: string; saved?: string; audit_page?: string }>;
 };
 
 async function saveService(slug: string, formData: FormData) {
@@ -150,6 +153,8 @@ export const dynamic = "force-dynamic";
 export default async function AdminServicePage({ params, searchParams }: AdminServicePageProps) {
   const { slug } = await params;
   const query = await searchParams;
+  const requestedAuditPage = Number.parseInt(query.audit_page ?? "1", 10);
+  const auditPage = Number.isFinite(requestedAuditPage) ? Math.max(1, requestedAuditPage) : 1;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -163,9 +168,12 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
   if (!service) notFound();
 
   let auditEntries: AdminServiceAuditEntry[] = [];
+  let auditTotal = 0;
   let auditError = "";
   try {
-    auditEntries = await getAdminServiceAudit(service.id);
+    const audit = await getAdminServiceAudit(service.id, auditPage);
+    auditEntries = audit.entries;
+    auditTotal = audit.total;
   } catch {
     auditError = "Audit history is not available yet. Apply the staging audit migration before using this editor.";
   }
@@ -193,7 +201,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
 
         <section className="admin-editor-heading">
           <div>
-            <Link className="admin-back-link" href="/admin">← Back to dashboard</Link>
+            <AdminBreadcrumbs section="Services" record={service.name} />
             <p className="admin-kicker admin-kicker-green">Capability record</p>
             <h1>{service.name}</h1>
           </div>
@@ -260,9 +268,9 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
             </label>
             <label>
               Editorial status
-              <select className="admin-input admin-select" name="status" defaultValue={service.status} disabled={!canEdit}>
+              <AdminSelect name="status" defaultValue={service.status} disabled={!canEdit}>
                 {statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
-              </select>
+              </AdminSelect>
             </label>
             {canEdit ? <AdminSubmitButton /> : null}
           </form>
@@ -294,6 +302,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
               ))}
             </ol>
           ) : null}
+          <AdminPagination page={auditPage} pageSize={5} total={auditTotal} />
         </section>
         <footer className="admin-footer">Staging only · Services are the first controlled editor slice.</footer>
       </div>
