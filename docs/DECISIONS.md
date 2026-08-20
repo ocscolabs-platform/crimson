@@ -231,3 +231,9 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Rationale:** Role assignment should not require routine access to Supabase administration, but it is itself a privileged operation. Keeping it owner-only and server-side reduces accidental privilege escalation while preserving the existing environment boundary. Account deletion, production access, and CRM permissions remain separate decisions.
 - **Status:** Accepted for staging implementation
 - **Date:** 2026-08-20
+## ADR-034 - Keep the first global content editor update-only
+
+- **Status:** Accepted for staging
+- **Decision:** Expose existing site settings, navigation items, and page metadata through one protected `/admin/content` route. Do not add record creation/deletion, media uploads, or freeform page-section editing in this slice.
+- **Reason:** These records affect the public site globally. A constrained update surface with role-aware publication safeguards gives the owner useful control without turning the first CMS milestone into an unbounded page builder.
+- **Consequence:** Page body sections and section visibility/order remain an application-level contract. A separate migration and review is required before adding them.

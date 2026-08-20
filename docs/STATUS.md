@@ -41,9 +41,9 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 ## In Progress
 
-- Add the owner-only Team & Access slice in staging for invitations and CMS role assignment.
+- Add the controlled Global Content editor slice in staging for site settings, navigation, and page metadata.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
-- Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
+- Apply the global-content editor migration in `crimson-staging`, then complete live QA of settings, navigation, page metadata, Work, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
 ## Blocked / Requires Owner Action
@@ -57,4 +57,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Complete staging QA for `/admin/team`, then continue with controlled editors for Site Settings, Navigation, Page Metadata, and approved page-section visibility/order. No database migration is required for Team & Access. Do not promote CMS administration or staging content changes to Production.
+Apply `supabase/migrations/20260820100000_add_staging_global_content_editor.sql` in `crimson-staging`, then QA `/admin/content`. Approved page-section visibility/order remains the next separate design gate. Do not promote CMS administration or staging content changes to Production.

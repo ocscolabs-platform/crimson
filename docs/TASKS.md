@@ -192,7 +192,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-011 - Add owner-only Team & Access
 
-- **Status:** Implementation in progress on `staging`
+- **Status:** Implemented and authenticated staging QA completed
 - **Goal:** Let the staging owner invite approved CMS users and assign the smallest required role without opening Supabase administration to the team.
 - **Reference:** `docs/PHASE-4-CMS-ROLES.md`
 
@@ -204,3 +204,19 @@ This queue records approved next-step work before implementation. Tasks in this 
 - The last owner cannot be downgraded.
 - The Supabase secret key remains server-only and is never exposed to browser code.
 - Membership changes are limited to staging; account deletion, production access, and CRM permissions remain out of scope.
+
+## PH4-012 - Add the controlled global content editor
+
+- **Status:** Implementation in progress on `staging`
+- **Goal:** Give approved staging members a clear, update-only surface for global settings, navigation, and page metadata.
+- **Reference:** `docs/PHASE-4-CMS-GLOBAL-CONTENT.md`
+
+### Acceptance criteria
+
+- `/admin/content` is protected by CMS membership and linked from the admin dashboard.
+- Owners and editors can update the default site settings record; reviewers remain read-only.
+- Existing navigation items can be updated; only owners can change visibility or navigation group.
+- Owners can publish/archive pages; editors can update only draft/review page metadata; reviewers remain read-only.
+- Published page metadata must move through Review before content changes.
+- Global content updates are recorded in an immutable, staging-only audit table.
+- No create, delete, upload, freeform section-builder, CRM, or Production control is introduced.

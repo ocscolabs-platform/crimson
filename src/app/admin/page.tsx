@@ -52,6 +52,7 @@ export default async function AdminDashboardPage() {
 
         <nav className="admin-nav" aria-label="CMS sections">
           <Link href="#overview">Overview</Link>
+          {membership.role ? <Link href="/admin/content">Global content</Link> : null}
           <Link href="#services-records">Services</Link>
           <Link href="#work-records">Work library</Link>
           {membership.role === "owner" ? <Link href="/admin/team">Team &amp; access</Link> : null}
@@ -63,7 +64,7 @@ export default async function AdminDashboardPage() {
             <h1>Staging content, in one place.</h1>
           </div>
           <p className="admin-intro">
-            A safe staging view of the content currently exposed by the public website. Approved members can edit Services according to role; publishing and broader CMS controls remain restricted.
+            A safe staging view of the content currently exposed by the public website. Approved members can edit controlled content according to role; publishing and broader CMS controls remain restricted.
           </p>
         </section>
 
