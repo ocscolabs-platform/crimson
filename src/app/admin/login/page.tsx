@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import AdminToast from "@/app/admin/AdminToast";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -53,9 +54,18 @@ export default function AdminLoginPage() {
             <input className="admin-input" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
           {error ? <p className="admin-error" role="alert">{error}</p> : null}
+          {error ? <AdminToast tone="error" message={`Sign-in failed: ${error}`} /> : null}
           <button className="button button-primary admin-submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Signing in…" : "Sign in"}
-            <span aria-hidden="true">↗</span>
+            {isSubmitting ? (
+              <>
+                <span className="admin-button-spinner" aria-hidden="true" />
+                Signing in…
+              </>
+            ) : (
+              <>
+                Sign in <span aria-hidden="true">↗</span>
+              </>
+            )}
           </button>
         </form>
         <Link className="admin-back-link" href="/">Return to OCSCO ↗</Link>

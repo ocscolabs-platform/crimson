@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canEditServices, getAdminService, getAdminServiceAudit, type AdminServiceAuditEntry } from "@/lib/admin-services";
 import { createClient } from "@/lib/supabase/server";
+import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
+import AdminToast from "@/app/admin/AdminToast";
 import RestoreButton from "@/app/admin/services/RestoreButton";
 
 type AdminServicePageProps = {
@@ -201,9 +203,24 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
           </div>
         </section>
 
-        {query.saved ? <p className="admin-success" role="status">Service saved successfully in staging.</p> : null}
-        {query.restored ? <p className="admin-success" role="status">Snapshot restored as Review. Publish it separately after review.</p> : null}
-        {query.error ? <p className="admin-error" role="alert">{query.error}</p> : null}
+        {query.saved ? (
+          <>
+            <p className="admin-success" role="status">Service saved successfully in staging.</p>
+            <AdminToast tone="success" message="Service saved successfully in staging." />
+          </>
+        ) : null}
+        {query.restored ? (
+          <>
+            <p className="admin-success" role="status">Snapshot restored as Review. Publish it separately after review.</p>
+            <AdminToast tone="success" message="Snapshot restored as Review. Publish it separately after review." />
+          </>
+        ) : null}
+        {query.error ? (
+          <>
+            <p className="admin-error" role="alert">{query.error}</p>
+            <AdminToast tone="error" message={`Admin action failed: ${query.error}`} />
+          </>
+        ) : null}
 
         <section className="admin-editor-panel">
           <div className="admin-section-heading">
@@ -247,7 +264,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
                 {statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
               </select>
             </label>
-            {canEdit ? <button className="button button-primary admin-submit" type="submit">Save staging record <span aria-hidden="true">↗</span></button> : null}
+            {canEdit ? <AdminSubmitButton /> : null}
           </form>
         </section>
 

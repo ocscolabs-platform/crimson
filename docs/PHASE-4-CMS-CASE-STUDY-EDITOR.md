@@ -1,6 +1,6 @@
 # Phase 4 - Controlled case-study editor
 
-**Status:** Implemented locally; staging migration and workflow QA pending
+**Status:** Implemented locally; staging migration and core workflow QA complete; feedback UX pending staging deployment
 
 ## Scope
 
@@ -30,12 +30,20 @@ The editor displays but does not mutate featured placement, media paths, media a
 - Existing audit triggers record every successful update.
 - The media trigger and featured-project unique index remain active.
 
+## Save feedback behavior
+
+- All admin write actions use the shared submission feedback pattern; the save action disables immediately while the request is in flight.
+- The button shows a spinner and `Saving…` label so the action has visible progress feedback.
+- Success and error results are shown in a fixed, dismissible toast near the bottom of the viewport, in addition to the persistent inline message near the form heading.
+- Success feedback explains whether the record can appear publicly or remains anonymized because client visibility is still hidden.
+- Success toasts dismiss automatically after six seconds; error toasts remain until dismissed.
+
 ## Staging rollout
 
 1. Apply supabase/migrations/20260820090000_add_staging_case_study_editor_policies.sql in crimson-staging only, after the audit and media-contract migrations.
 2. Push the staging branch and wait for Vercel.
 3. Sign in as the staging owner and open /admin/case-studies/membership-portal for the first non-featured workflow test.
-4. Move the record to review, change one non-sensitive field, and save. Confirm the success message, the public record is no longer published, and a case-study audit entry appears.
+4. Move the record to review, change one non-sensitive field, and save. Confirm the loading state, success toast, persistent success message, public record behavior, and case-study audit entry.
 5. Publish the reviewed record again as the owner. Confirm published_at is restored and the public record returns.
 6. Do not test with client facts, private media, or the Production environment.
 

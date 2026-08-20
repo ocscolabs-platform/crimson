@@ -161,7 +161,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-009 - Add the controlled case-study editor
 
-- **Status:** Implementation complete locally; staging migration and workflow QA pending
+- **Status:** Editor and save-feedback UX complete locally; staging migration and core workflow QA complete; latest feedback UI pending staging deployment
 - **Goal:** Let approved staging owners and editors prepare existing case-study records without opening media, relationship, deletion, or Production controls.
 - **Reference:** docs/PHASE-4-CMS-CASE-STUDY-EDITOR.md
 
@@ -172,4 +172,5 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Only owners can approve client visibility.
 - Successful updates appear in immutable case-study audit history.
 - The form does not mutate media, featured placement, supporting relationships, or delete records.
+- All admin write feedback uses a shared disabled loading state plus accessible success/error toasts that remain visible near the viewport edge.
 - The first workflow test uses a non-featured staging record and no private client facts.

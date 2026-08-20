@@ -36,11 +36,11 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Added the staging-only case-study and relationship audit migration locally; Supabase application and verification remain pending.
 - Added a protected read-only case-study review panel; authenticated staging preview QA completed.
 - Added the staging-only case-study media contract and single published featured-project migration locally; staging application and verification remain pending.
-- Added the update-only staging case-study editor and role-aware publication safeguards locally; staging migration and workflow QA remain pending.
+- Added and verified the update-only staging case-study editor and role-aware publication safeguards in `crimson-staging`; the core review/publish workflow passed, and the latest save-feedback UX is ready for staging deployment.
 
 ## In Progress
 
-- Apply and verify the controlled case-study editor migration in `crimson-staging`, then run the non-featured review/publish workflow.
+- Push and QA the save-feedback UX in the staging deployment: loading button state, success/error toast, visibility-specific messaging, and the existing review/publish workflow.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Complete live QA of CMS-backed Services, Work, navigation, footer settings, page metadata, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
@@ -56,4 +56,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Apply and verify `20260820090000_add_staging_case_study_editor_policies.sql` in `crimson-staging`, then run the non-featured review/publish workflow described in PHASE-4-CMS-CASE-STUDY-EDITOR.md. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.
+Push the latest save-feedback UX to `staging` and run the review/publish workflow described in PHASE-4-CMS-CASE-STUDY-EDITOR.md. No database migration is required for this UI-only change. Do not promote case-study mutations or any staging content change to Production. Future guide changes must be versioned as v1.1 or v2.0 and approved before production promotion.

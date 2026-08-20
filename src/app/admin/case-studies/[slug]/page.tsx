@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canApproveCaseStudyVisibility, canEditCaseStudies, getAdminCaseStudyReview } from "@/lib/admin-case-studies";
 import { createClient } from "@/lib/supabase/server";
+import AdminToast from "@/app/admin/AdminToast";
+import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 
 type AdminCaseStudyPageProps = {
   params: Promise<{ slug: string }>;
@@ -216,8 +218,23 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             : "Read-only review panel. This role cannot change the record, and media uploads, relationship changes, and deletion remain disabled."}
         </p>
 
-        {query.saved ? <p className="admin-success" role="status">Case study saved successfully in staging.</p> : null}
-        {query.error ? <p className="admin-error" role="alert">{query.error}</p> : null}
+        {query.saved ? (
+          <>
+            <p className="admin-success" role="status">Case study saved successfully in staging.</p>
+            <AdminToast
+              tone="success"
+              message={review.client_visibility === "approved"
+                ? "Saved successfully. Approved identity can appear on the public Work page."
+                : "Saved successfully. Public Work remains anonymized because visibility is Hidden."}
+            />
+          </>
+        ) : null}
+        {query.error ? (
+          <>
+            <p className="admin-error" role="alert">{query.error}</p>
+            <AdminToast tone="error" message={"Save failed: " + query.error} />
+          </>
+        ) : null}
 
         <section className="admin-editor-panel admin-review-section">
           <div className="admin-section-heading">
@@ -316,7 +333,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             <div className="admin-editor-note admin-field-wide">
               Media is governed by the approved media contract. Uploads, featured placement, supporting relationships, and delete actions are not available in this editor.
             </div>
-            {canEdit ? <button className="button button-primary admin-submit" type="submit">Save staging record <span aria-hidden="true">↗</span></button> : null}
+            {canEdit ? <AdminSubmitButton /> : null}
           </form>
         </section>
 

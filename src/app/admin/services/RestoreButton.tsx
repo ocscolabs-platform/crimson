@@ -1,5 +1,7 @@
 "use client";
 
+import { useFormStatus } from "react-dom";
+
 type RestoreButtonProps = {
   action: (formData: FormData) => void | Promise<void>;
 };
@@ -11,7 +13,22 @@ export default function RestoreButton({ action }: RestoreButtonProps) {
         event.preventDefault();
       }
     }}>
-      <button className="admin-audit-restore" type="submit">Restore as review</button>
+      <RestoreSubmitButton />
     </form>
+  );
+}
+
+function RestoreSubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button className="admin-audit-restore" type="submit" disabled={pending}>
+      {pending ? (
+        <>
+          <span className="admin-button-spinner" aria-hidden="true" />
+          Restoring…
+        </>
+      ) : "Restore as review"}
+    </button>
   );
 }
