@@ -10,7 +10,7 @@ export default function AdminSelect({ children, className = "", ...props }: Admi
       <select className={`admin-input admin-select ${className}`.trim()} {...props}>
         {children}
       </select>
-      <span className="admin-select-caret" aria-hidden="true">⌄</span>
+      <span className="admin-select-caret" aria-hidden="true" />
     </span>
   );
 }

@@ -39,13 +39,14 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Added and verified the update-only staging case-study editor and role-aware publication safeguards in `crimson-staging`; the core review/publish workflow passed, and the latest save-feedback UX is ready for staging deployment.
 - Completed the first Admin UX hardening slice: shared spacing/navigation treatment, visible select cues, server-side audit pagination, password recovery screens, accessible authentication feedback, and responsive case-study detail layout.
 - Implemented Admin UX hardening v2 locally: responsive global-content rows, corrected select spacing, primary/secondary action hierarchy, accessible disclosure groups, and sticky global-content section navigation. Staging QA is pending.
+- Applied the Admin UX follow-up locally: replaced the literal select caret with a CSS control, widened the jump navigation rhythm, increased disclosure and row spacing, and moved global-content rows to a two-column field layout earlier at tablet widths to prevent collisions. Staging QA is pending.
 
 ## In Progress
 
 - Complete staging migration and upload QA for the controlled case-study media workflow.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Keep case-study relationships, creation/deletion, and Production administration separate until the media workflow is approved.
-- Deploy and QA the Admin UX hardening v2 on staging across desktop, tablet, and mobile viewports.
+- Deploy and QA the Admin UX hardening v2 follow-up on staging across desktop, tablet, and mobile viewports.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
 ## Blocked / Requires Owner Action
@@ -59,4 +60,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Push the Admin UX hardening v2 to `staging`, then run a desktop/tablet/mobile QA pass on `/admin/content`, `/admin/team`, and a case-study editor. Confirm navigation fields no longer collide, disclosure controls are keyboard accessible, and primary/secondary actions are visually distinct. Do not promote CMS administration, media storage, or staging content changes to Production.
+Push the Admin UX hardening v2 follow-up to `staging`, then run a desktop/tablet/mobile QA pass on `/admin/content`, `/admin/team`, and a case-study editor. Confirm navigation fields no longer collide, disclosure controls are keyboard accessible, the select cue is clean, and primary/secondary actions are visually distinct. Do not promote CMS administration, media storage, or staging content changes to Production.

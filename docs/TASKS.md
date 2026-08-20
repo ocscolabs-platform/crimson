@@ -177,7 +177,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-010 - Harden the Admin UX
 
-- **Status:** Admin UX hardening v2 implemented locally; staging QA pending
+- **Status:** Admin UX hardening v2 follow-up implemented locally; staging QA pending
 - **Goal:** Make the staging CMS understandable to first-time users before adding broader write capabilities.
 
 ### Acceptance criteria
@@ -189,6 +189,9 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Repeated row-level saves use a secondary action treatment while publish/commit actions retain the primary treatment.
 - Global content sections and page metadata records can be collapsed with keyboard-accessible disclosure controls.
 - Long global-content pages expose a sticky section jump navigation.
+- Jump navigation uses deliberate spacing and clear grouping between the label and destinations.
+- Select controls use a consistent CSS-drawn caret that remains aligned at desktop, tablet, and mobile widths.
+- Global-content rows switch to a stacked field layout before tablet widths can cause control collisions.
 - Service and case-study audit histories use server-side pagination with an explicit visible range.
 - Sign-in includes a password recovery path and clear loading/error feedback.
 - No Remember me control is added until a deliberate session-duration policy is approved.

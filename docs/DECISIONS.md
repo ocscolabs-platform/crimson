@@ -313,3 +313,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Structure long admin editing surfaces around native, keyboard-accessible disclosure groups. Use a responsive two-level layout for navigation rows, reserve the green primary treatment for commit/publish actions, and use a neutral secondary treatment for repeated row-level updates.
 - **Reason:** The first global-content editor was functionally safe but visually dense: navigation fields were compressed into a fragile five-column grid, repeated green buttons weakened action hierarchy, and page metadata created unnecessary scroll. Native disclosure controls reduce cognitive load without introducing a page-builder abstraction, while contextual action colors make the consequence of each action easier to understand.
 - **Consequence:** `/admin/content` gains collapsible global sections, collapsed page metadata records, a sticky section jump bar, and clearer responsive field grouping. The change is presentation-only and does not change CMS roles, RLS, server actions, or the production boundary.
+
+## ADR-046 - Use shared responsive controls for admin editing surfaces
+
+- **Status:** Accepted for staging
+- **Decision:** Keep admin select controls on one shared component with a CSS-drawn caret, give jump navigation deliberate internal spacing, and move global-content rows to a stacked field layout before tablet widths make four controls compete for space.
+- **Reason:** A literal text glyph is inconsistent across fonts and can look like a stray character or misaligned chevron. The previous breakpoint allowed four fields to remain compressed at intermediate widths, creating the perception of overlap and making the editor harder to scan.
+- **Consequence:** The follow-up is presentation-only. It changes no form names, server actions, role checks, RLS policies, content values, or production routes.
