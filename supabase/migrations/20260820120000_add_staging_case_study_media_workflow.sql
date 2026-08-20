@@ -17,6 +17,14 @@ set public = false,
     file_size_limit = 2097152,
     allowed_mime_types = excluded.allowed_mime_types;
 
+-- The SQL Editor may have committed the bucket before a later statement failed.
+-- Drop only these project-owned policies so this script is safe to retry.
+drop policy if exists "cms members can view case study media" on storage.objects;
+drop policy if exists "owners can upload case study media" on storage.objects;
+drop policy if exists "owners can update case study media" on storage.objects;
+drop policy if exists "owners can remove case study media" on storage.objects;
+drop policy if exists "published approved case study media is public" on storage.objects;
+
 create policy "cms members can view case study media"
   on storage.objects for select
   to authenticated
@@ -76,6 +84,3 @@ create policy "published approved case study media is public"
         )
     )
   );
-
-comment on table storage.objects is
-  'Case-study media is private by default; only approved media attached to published case studies is publicly readable.';
