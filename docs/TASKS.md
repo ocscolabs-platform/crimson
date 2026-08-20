@@ -283,7 +283,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-016 - Complete owner content, consent, and release review
 
-- **Status:** Current staging content package approved; live mobile viewport review remains
+- **Status:** Complete; staging package approved and promotion authorized
 - **Goal:** Close the remaining content, permission, privacy, and accessibility decisions before any staging content or CMS administration is promoted to `main`.
 - **Reference:** `docs/OWNER-CONTENT-REVIEW.md` and `docs/LAUNCH-READINESS.md`
 
@@ -298,5 +298,5 @@ This queue records approved next-step work before implementation. Tasks in this 
 ### Approval record
 
 - Current staging content package approved by the owner on 2026-08-21.
-- No promotion or Production CMS change was performed as part of this approval.
-- Live tablet/mobile viewport review remains an explicit follow-up because the current QA environment does not provide a resizable mobile viewport.
+- Desktop, tablet/mobile, keyboard, focus, and assistive-technology review marked complete by the owner.
+- Promotion to `main` explicitly authorized by the owner on 2026-08-21; merge and deployment have not yet been executed.
