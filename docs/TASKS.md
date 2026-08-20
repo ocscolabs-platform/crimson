@@ -280,3 +280,17 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Published case-study detail pages render linked capabilities as accessible links to the corresponding public service pages; unlinked records render no empty section.
 - An empty selection is supported and clearly communicates that no capabilities are linked.
 - No case-study creation/deletion, service creation/deletion, bulk editor, Production relationship policy, or CRM control is introduced.
+
+## PH4-016 - Complete owner content, consent, and release review
+
+- **Status:** Ready for owner input; staging remains the review environment
+- **Goal:** Close the remaining content, permission, privacy, and accessibility decisions before any staging content or CMS administration is promoted to `main`.
+- **Reference:** `docs/OWNER-CONTENT-REVIEW.md` and `docs/LAUNCH-READINESS.md`
+
+### Acceptance criteria
+
+- Owner approves the public route copy, service detail copy, footer language, metadata, and placeholder treatment.
+- Each published case study has an explicit identity, media, claims, testimonial, external-link, and related-capability decision.
+- Contact form field language, privacy/consent copy, response-time expectation, inquiry owner, and retention expectation are approved.
+- Desktop, tablet/mobile, keyboard, focus, and screen-reader review is completed or exceptions are documented and accepted.
+- The owner explicitly authorizes promotion to `main`; without that authorization, staging content and CMS administration remain separate from Production.
