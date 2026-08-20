@@ -65,7 +65,7 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
                       <strong>{capability.cardName}</strong>
                       <small>{capability.name}</small>
                     </span>
-                    <span aria-hidden="true">â†—</span>
+                    <span aria-hidden="true">↗</span>
                   </Link>
                 ))}
               </div>
