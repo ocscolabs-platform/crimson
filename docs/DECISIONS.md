@@ -250,3 +250,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Store case-study images in a private staging bucket. Owners may upload existing-record media with required alternative text and explicitly approve the media package. Public storage reads are allowed only when the attached case study is published and its media package is approved.
 - **Reason:** Portfolio imagery is public proof and may contain private client information. A private-by-default bucket prevents an uploaded draft asset from becoming public merely because its path is known, while keeping the upload workflow useful for staging review.
 - **Consequence:** Uploads are owner-only, replacements do not automatically delete old objects, and case-study creation, relationships, transformations, and Production media remain separate decisions.
+
+## ADR-037 - Normalize case-study uploads to WebP
+
+- **Status:** Accepted for staging
+- **Decision:** Accept AVIF, JPEG, PNG, and WebP source files up to 2 MB, then rotate, constrain the longest edge to 2400px, and convert them to WebP quality 82 before storage. Enforce a 2 MB limit on the final object as well.
+- **Reason:** A single storage format makes public delivery predictable and reduces the risk of large unoptimized portfolio assets. The final limit protects staging storage and page performance without requiring the user to prepare every image manually.
+- **Consequence:** Original files are not retained by the upload workflow; replacing an image creates a new normalized WebP object, while previous stored objects remain available for later owner-reviewed cleanup.

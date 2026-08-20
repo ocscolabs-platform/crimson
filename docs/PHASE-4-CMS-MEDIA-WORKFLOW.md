@@ -18,9 +18,10 @@ The storage bucket is private by default. A public image URL is available only w
 
 ## Upload rules
 
-- Images only: AVIF, JPEG, PNG, or WebP.
-- Maximum file size: 10 MB per upload.
-- Objects are stored under `case-studies/{slug}/` with a generated filename.
+- Images only: AVIF, JPEG, PNG, or WebP as source files.
+- Maximum source file size: 2 MB per upload.
+- The server rotates, resizes to a maximum 2400px edge, and converts each source file to WebP quality 82 before storage.
+- Maximum final WebP size: 2 MB. Objects are stored under `case-studies/{slug}/` with a generated `.webp` filename.
 - Featured media requires meaningful alternative text.
 - Supporting media requires meaningful alternative text and is initially marked `pending`.
 - Replacing a file creates a new object; automatic deletion is not performed.

@@ -1,19 +1,20 @@
 -- OCSCO Project Crimson controlled case-study media workflow.
 -- Apply to crimson-staging only. This creates a private storage bucket and
 -- owner-only object policies; public reads are limited to approved media for
--- published case studies.
+-- published case studies. The application converts supported source images to
+-- WebP before upload.
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'case-study-media',
   'case-study-media',
   false,
-  10485760,
-  array['image/avif', 'image/jpeg', 'image/png', 'image/webp']::text[]
+  2097152,
+  array['image/webp']::text[]
 )
 on conflict (id) do update
 set public = false,
-    file_size_limit = 10485760,
+    file_size_limit = 2097152,
     allowed_mime_types = excluded.allowed_mime_types;
 
 create policy "cms members can view case study media"

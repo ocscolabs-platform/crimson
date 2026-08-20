@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
+import sharp from "sharp";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canApproveCaseStudyVisibility, canEditCaseStudies, getAdminCaseStudyReview, type AdminCaseStudyMediaItem } from "@/lib/admin-case-studies";
 import { createClient } from "@/lib/supabase/server";
@@ -18,13 +19,9 @@ type AdminCaseStudyPageProps = {
 };
 
 const MEDIA_BUCKET = "case-study-media";
-const MEDIA_SIZE_LIMIT = 10 * 1024 * 1024;
-const MEDIA_TYPES: Record<string, string> = {
-  "image/avif": "avif",
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
+const MEDIA_SOURCE_SIZE_LIMIT = 2 * 1024 * 1024;
+const MEDIA_OUTPUT_SIZE_LIMIT = 2 * 1024 * 1024;
+const MEDIA_TYPES = new Set(["image/avif", "image/jpeg", "image/png", "image/webp"]);
 
 function listItems(value: unknown): string[] {
   if (!Array.isArray(value)) {
@@ -109,22 +106,39 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
     mediaError(slug, "Choose an image before uploading.");
   }
 
-  if (!MEDIA_TYPES[file.type]) {
-    mediaError(slug, "Use an AVIF, JPEG, PNG, or WebP image.");
+  if (!MEDIA_TYPES.has(file.type)) {
+    mediaError(slug, "Use an AVIF, JPEG, PNG, or WebP image. It will be stored as WebP.");
   }
 
-  if (file.size > MEDIA_SIZE_LIMIT) {
-    mediaError(slug, "Images must be 10 MB or smaller.");
+  if (file.size > MEDIA_SOURCE_SIZE_LIMIT) {
+    mediaError(slug, "Source images must be 2 MB or smaller.");
   }
 
   if (alt.length < 8) {
     mediaError(slug, "Alternative text must be at least 8 characters and describe the image.");
   }
 
-  const objectPath = `case-studies/${slug}/${randomUUID()}.${MEDIA_TYPES[file.type]}`;
-  const { error: uploadError } = await supabase.storage.from(MEDIA_BUCKET).upload(objectPath, file, {
-    cacheControl: "3600",
-    contentType: file.type,
+  let convertedImage: Buffer;
+  try {
+    convertedImage = await sharp(Buffer.from(await file.arrayBuffer()))
+      .rotate()
+      .resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 82, effort: 4 })
+      .toBuffer();
+  } catch {
+    mediaError(slug, "The image could not be converted. Please try another PNG, JPEG, WebP, or AVIF file.");
+  }
+
+  if (convertedImage.length > MEDIA_OUTPUT_SIZE_LIMIT) {
+    mediaError(slug, "The converted WebP image is still larger than 2 MB. Please choose a smaller image.");
+  }
+
+  const objectPath = `case-studies/${slug}/${randomUUID()}.webp`;
+  const webpArrayBuffer = new ArrayBuffer(convertedImage.byteLength);
+  new Uint8Array(webpArrayBuffer).set(convertedImage);
+  const { error: uploadError } = await supabase.storage.from(MEDIA_BUCKET).upload(objectPath, new Blob([webpArrayBuffer], { type: "image/webp" }), {
+    cacheControl: "31536000",
+    contentType: "image/webp",
     upsert: false,
   });
 
@@ -461,13 +475,13 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
               <div className="admin-media-forms">
                 <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "featured")}>
                   <strong>Upload featured image</strong>
-                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /></label>
+                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
                   <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the project visual" required /></label>
                   <AdminSubmitButton label="Upload featured media" pendingLabel="Uploading…" />
                 </form>
                 <form className="admin-media-form" action={uploadCaseStudyMedia.bind(null, slug, "supporting")}>
                   <strong>Upload supporting image</strong>
-                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /></label>
+                  <label>Image file<input className="admin-input" name="media_file" type="file" accept="image/avif,image/jpeg,image/png,image/webp" required /><small>PNG and JPEG files are converted to WebP. Source limit: 2 MB.</small></label>
                   <label>Alternative text<input className="admin-input" name="media_alt" placeholder="Describe the supporting visual" required /></label>
                   <AdminSubmitButton label="Upload supporting media" pendingLabel="Uploading…" />
                 </form>

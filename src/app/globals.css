@@ -378,6 +378,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-media-form > strong { color: #eee; font-size: .9rem; }
 .admin-media-form label { display: grid; gap: 8px; color: #c7c7c7; font-size: .76rem; font-weight: 700; }
 .admin-media-form input[type="file"] { min-height: 48px; padding: 10px; }
+.admin-media-form label small { color: #858585; font-size: .68rem; font-weight: 500; line-height: 1.5; }
 .admin-media-form .admin-submit { margin-top: 2px; }
 .admin-login-page { display: grid; min-height: 100vh; place-items: center; padding: 32px; background: radial-gradient(circle at 76% 18%, rgb(0 200 83 / 10%), transparent 34%), var(--ink); }
 .admin-login-card { width: min(100%, 520px); border: 1px solid rgb(255 255 255 / 16%); border-radius: 16px; background: #111; padding: clamp(28px, 6vw, 56px); box-shadow: 0 24px 80px rgb(0 0 0 / 26%); }

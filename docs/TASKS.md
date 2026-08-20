@@ -244,7 +244,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ### Acceptance criteria
 
-- The staging media bucket is private by default and limited to approved image MIME types and a 10 MB file size.
+- The staging media bucket is private by default and stores WebP output with a 2 MB final file size limit; supported PNG/JPEG/AVIF/WebP source files are converted server-side.
 - Only owners can upload, replace, remove, or approve case-study media; editors and reviewers remain read-only.
 - Featured and supporting media stay under a case-study-scoped path and require meaningful alternative text.
 - A published public route can read media only after the case study is published and its media package is approved.
