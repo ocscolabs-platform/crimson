@@ -369,3 +369,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Redirect `/admin` requests on the Vercel Production environment to the public site. The CMS editor remains available only on Preview/Staging deployments connected to the staging Supabase project.
 - **Reason:** Production Auth users and editor policies are not provisioned, so a Production login would create a confusing failure and invite unsafe credential duplication. Publishing approved content does not require Production editing.
 - **Consequence:** The public Production site can consume promoted CMS records while editorial work stays in staging. A future Production editor requires a separately approved Auth, role, audit, and rollback design.
+
+## ADR-054 - Replace row-copy promotion with revision-based CMS publishing
+
+- **Status:** Proposed reset; implementation must precede removal of the current promotion bridge
+- **Decision:** Keep `feature/* → staging → main` for application code, but move CMS publication to an explicit revision workflow. Draft and review revisions remain private; an owner-only atomic publish operation makes a reviewed revision public. The canonical authenticated CMS entry point is `https://ocsco.io/admin`; Preview `/admin` remains a QA surface. The current staging-to-Production row-copy runner is temporary migration infrastructure, not the permanent editorial workflow.
+- **Rationale:** Git merges do not move Supabase rows or Storage objects. The previous design made the owner perform two unrelated release operations and edited live-shaped records in place. A revision boundary gives the CMS a coherent source of truth, preserves the public version while work is being prepared, and makes the user-visible action match its actual effect.
+- **Consequence:** A revision schema, publish/restore functions, Production Auth/RLS coverage, and updated admin reads/writes are required. The existing `production-cms` workflow and service-role secrets must remain until the new path is verified, then be removed as obsolete infrastructure.

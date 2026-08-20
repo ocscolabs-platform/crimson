@@ -47,13 +47,13 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Verified the controlled case-study media workflow in staging: three normalized media slots are rendered with fixed public frames, the approved package is private until publication rules allow signed delivery, and the public Cairnstack route exposes the approved featured/supporting visuals.
 - Verified the controlled case-study relationship workflow in staging: the Cairnstack record has one linked published capability, the audit surface is present, and the public route renders the relationship as an accessible service link.
 - Corrected the shared admin presentation copy after Production review: login, recovery, dashboard, content, service, team, and case-study surfaces now use deployment-neutral CMS language instead of incorrectly labeling Production as staging.
-- Added the guarded staging-to-Production CMS promotion boundary: a Production public-read migration, an owner-triggered dry-run/apply runner, and a protected GitHub workflow that promotes published content and approved WebP media without copying users, inquiries, audit history, or credentials.
+- Added the guarded staging-to-Production CMS promotion boundary as a temporary migration bridge. It is not the target editorial workflow and is now scheduled for removal after revision-based publishing is verified.
 
 ## In Progress
 
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Keep case-study creation/deletion and Production administration separate until the content and consent review is complete.
-- Apply the Production CMS boundary migration once, configure the protected GitHub `production-cms` environment secrets, run a dry-run, then promote the owner-approved staging package. Keep editorial work in staging after the first release.
+- Do not delete the current promotion bridge or change cloud environment variables yet. First implement and verify the revision-based CMS publishing model in [`RELEASE-ARCHITECTURE.md`](./RELEASE-ARCHITECTURE.md).
 
 ## Blocked / Requires Owner Action
 
@@ -66,4 +66,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-The staging CMS media and relationship workflows are verified on the Cairnstack record, the Admin UX hardening follow-up passed review, and a guarded staging-to-Production promotion path is now implemented. The owner must apply the one-time Production boundary migration and add the four protected GitHub Environment Secrets before running the dry-run and apply workflow.
+The staging CMS media and relationship workflows are verified on the Cairnstack record, the Admin UX hardening follow-up passed review, and the current guarded promotion bridge has successfully released the initial Production package. The next milestone is the release-model reset: revision-based drafts, review, publish, and restore, followed by removal of the manual row-copy workflow.
