@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, a privacy-safe Work renderer, controlled global content and page-section composition, the case-study media contract, and an update-only case-study editor. The controlled case-study media workflow is implemented locally and awaiting staging migration/upload QA. Controlled case-study relationships are implemented locally and awaiting staging migration/workflow QA. Case-study creation/deletion, general version management, and production admin access remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, a privacy-safe Work renderer, controlled global content and page-section composition, the case-study media contract, an update-only case-study editor, and verified staging media and relationship workflows. Case-study creation/deletion, general version management, and production admin access remain unimplemented.
 
 ## Completed
 
@@ -44,12 +44,13 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Fixed the confirmed global-content grid collision by constraining shared admin inputs and select wrappers to their grid tracks; staging QA completed successfully at desktop width with no horizontal overflow.
 - Admin UX refinement is implemented locally: shared account controls, full-shell audit rows and pagination, inline page-status accordions, reduced admin hero density, a consistent select icon, and a separated media approval action row. Staging desktop QA passed with aligned right edges, 40px pagination-to-footer spacing, and no control overflow.
 - Completed the staging accessibility/privacy QA pass: admin labels and disclosure controls are associated correctly, select icons are hidden from assistive technology, auth forms have named controls, `/admin` remains session-gated, and unapproved case-study media is absent from public routes.
+- Verified the controlled case-study media workflow in staging: three normalized media slots are rendered with fixed public frames, the approved package is private until publication rules allow signed delivery, and the public Cairnstack route exposes the approved featured/supporting visuals.
+- Verified the controlled case-study relationship workflow in staging: the Cairnstack record has one linked published capability, the audit surface is present, and the public route renders the relationship as an accessible service link.
 
 ## In Progress
 
-- Complete staging migration and upload QA for the controlled case-study media workflow.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
-- Keep case-study relationships, creation/deletion, and Production administration separate until the media workflow is approved.
+- Keep case-study creation/deletion and Production administration separate until the content and consent review is complete.
 - Complete the tablet/mobile live QA pass for the Admin UX hardening v2 follow-up; desktop accessibility and privacy QA is complete.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
@@ -64,4 +65,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-The Admin UX hardening v2 follow-up is pushed to `staging` and passed live desktop QA on `/admin/content` and a case-study editor: navigation fields no longer collide, disclosure statuses are inline, the select cue is clean, pagination is contained, primary/secondary actions are visually distinct, and the accessibility/privacy pass is clean. Complete the live tablet/mobile pass next. Do not promote CMS administration, media storage, or staging content changes to Production.
+The staging CMS media and relationship workflows are now verified on the Cairnstack record, and the Admin UX hardening v2 follow-up passed desktop accessibility/privacy QA. The next product step is owner content and consent review while the Work library remains read-only; complete live tablet/mobile review when a mobile viewport is available. Do not promote CMS administration, media storage, or staging content changes to Production.
