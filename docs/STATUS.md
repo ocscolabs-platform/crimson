@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, a privacy-safe Work renderer, controlled global content and page-section composition, the case-study media contract, and an update-only case-study editor. The controlled case-study media workflow is implemented locally and awaiting staging migration/upload QA. Case-study creation/deletion, relationships, general version management, and production admin access remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, a privacy-safe Work renderer, controlled global content and page-section composition, the case-study media contract, and an update-only case-study editor. The controlled case-study media workflow is implemented locally and awaiting staging migration/upload QA. Controlled case-study relationships are implemented locally and awaiting staging migration/workflow QA. Case-study creation/deletion, general version management, and production admin access remain unimplemented.
 
 ## Completed
 

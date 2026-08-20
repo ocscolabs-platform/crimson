@@ -375,6 +375,15 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-media-summary strong { color: #e0bd8a; font-size: .9rem; }
 .admin-media-summary .admin-review-muted { margin: 10px 0 0; }
 .admin-media-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.admin-relationship-form { display: grid; gap: 24px; }
+.admin-relationship-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.admin-relationship-option { display: flex; align-items: flex-start; gap: 12px; min-height: 74px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 10px; background: rgb(255 255 255 / 3%); padding: 16px; cursor: pointer; }
+.admin-relationship-option:has(input:checked) { border-color: rgb(0 200 83 / 58%); background: rgb(0 200 83 / 8%); }
+.admin-relationship-option:has(input:disabled) { cursor: default; opacity: .72; }
+.admin-relationship-option input { width: 18px; height: 18px; accent-color: var(--green); margin: 1px 0 0; }
+.admin-relationship-option span { display: grid; gap: 5px; }
+.admin-relationship-option strong { color: #ededed; font-size: .86rem; }
+.admin-relationship-option small { color: #858585; font-size: .72rem; }
 .admin-media-item { display: grid; gap: 12px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 10px; background: #141414; padding: 12px; }
 .admin-media-item-preview > img, .admin-media-item-empty { display: grid; width: 100%; aspect-ratio: 4 / 3; place-items: center; border-radius: 7px; background: #0d0d0d; color: #858585; font-size: .7rem; object-fit: contain; }
 .admin-media-remove { position: absolute; top: 10px; right: 10px; display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid rgb(255 255 255 / 24%); border-radius: 50%; background: rgb(10 10 10 / 84%); color: #fff; cursor: pointer; }
@@ -474,6 +483,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-hero { grid-template-columns: 1fr; gap: 32px; padding: 72px 0 64px; }
   .admin-section-heading { grid-template-columns: 1fr; gap: 20px; }
   .admin-stat-grid { grid-template-columns: repeat(3, 1fr); }
+  .admin-relationship-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-content-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-content-row .admin-content-row-heading, .admin-content-row .admin-submit { grid-column: 1 / -1; }
   .admin-page-section-row { grid-template-columns: 1fr; }
@@ -515,6 +525,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-review-dl div { align-items: start; flex-direction: column; gap: 5px; }
   .admin-review-dl dd { text-align: left; }
   .admin-media-summary, .admin-media-forms { grid-template-columns: 1fr; }
+  .admin-relationship-options { grid-template-columns: 1fr; }
   .admin-media-list { grid-template-columns: 1fr 1fr; }
   .admin-team-layout { grid-template-columns: 1fr; }
   .admin-member-row { align-items: start; grid-template-columns: 1fr; gap: 12px; }

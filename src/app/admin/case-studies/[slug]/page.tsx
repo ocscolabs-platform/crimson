@@ -310,6 +310,50 @@ async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting
   redirect(`/admin/case-studies/${slug}?saved=media-removed`);
 }
 
+async function saveCaseStudyRelationships(slug: string, formData: FormData) {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/admin/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (!canEditCaseStudies(membership.role)) {
+    mediaError(slug, "This account does not have case-study relationship editing access.");
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from("case_studies")
+    .select("id, status")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (existingError || !existing) {
+    mediaError(slug, "The case study could not be found.");
+  }
+
+  if (existing.status === "published") {
+    mediaError(slug, "Move the case study to Review before changing its relationships.");
+  }
+
+  const serviceIds = [...new Set(formData.getAll("service_ids")
+    .map((value) => String(value).trim())
+    .filter((value) => /^[0-9a-f-]{36}$/i.test(value)))];
+  const { error: relationshipError } = await supabase.rpc("cms_replace_case_study_services", {
+    p_case_study_id: existing.id,
+    p_service_ids: serviceIds,
+  });
+
+  if (relationshipError) {
+    mediaError(slug, relationshipError.message);
+  }
+
+  revalidatePath("/admin/case-studies/" + slug);
+  revalidatePath("/work");
+  revalidatePath("/work/" + slug);
+  redirect(`/admin/case-studies/${slug}?saved=relationships`);
+}
+
 async function saveCaseStudy(slug: string, formData: FormData) {
   "use server";
 
@@ -418,7 +462,17 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
   const supportingMedia = review.supporting_media;
   const isOwner = membership.role === "owner";
   const canEdit = canEditCaseStudies(membership.role) && (review.status !== "published" || isOwner);
+  const canEditRelationships = canEditCaseStudies(membership.role) && review.status !== "published";
   const statusOptions = isOwner ? ["draft", "review", "published", "archived"] : ["draft", "review"];
+  const availableServicesResult = await supabase
+    .from("services")
+    .select("id, name, slug, status")
+    .eq("status", "published")
+    .not("published_at", "is", null)
+    .lte("published_at", new Date().toISOString())
+    .order("name", { ascending: true });
+  const availableServices = availableServicesResult.data ?? [];
+  const linkedServiceIds = new Set(review.services.map((service) => service.id));
   const readiness = [
     {
       label: "Client visibility",
@@ -486,15 +540,17 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
         </section>
 
         <p className="admin-editor-warning" role="note">
-          {canEdit
-            ? "Controlled staging editor. Relationship changes and deletion remain disabled."
+          {canEditRelationships
+            ? "Controlled staging editor. Relationship changes are available in the dedicated panel; case-study deletion remains disabled."
+            : canEdit
+              ? "Controlled staging editor. Move this record to Review before changing relationships; case-study deletion remains disabled."
             : "Read-only review panel. This role cannot change the record, and media uploads, relationship changes, and deletion remain disabled."}
         </p>
 
         {query.saved ? (
           <>
             <p className="admin-success" role="status">
-              {query.saved === "media-approved" ? "Media package approved successfully in staging." : query.saved === "media" ? "Case-study media saved successfully in staging." : "Case study saved successfully in staging."}
+              {query.saved === "media-approved" ? "Media package approved successfully in staging." : query.saved === "media" ? "Case-study media saved successfully in staging." : query.saved === "relationships" ? "Related capabilities saved successfully in staging." : "Case study saved successfully in staging."}
             </p>
             <AdminToast
               tone="success"
@@ -502,6 +558,8 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
                 ? "Media approved. It can appear publicly only after the case study is published."
                 : query.saved === "media"
                   ? "Media saved as pending review."
+                  : query.saved === "relationships"
+                    ? "The case study now reflects the selected published capabilities."
                   : review.client_visibility === "approved"
                     ? "Saved successfully. Approved identity can appear on the public Work page."
                     : "Saved successfully. Public Work remains anonymized because visibility is Hidden."}
@@ -607,6 +665,32 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
           ) : <p className="admin-editor-note">Your role can review the media package, but only the staging owner can upload or approve visuals.</p>}
         </section>
 
+        <section className="admin-editor-panel admin-relationship-panel">
+          <div className="admin-section-heading">
+            <div>
+              <p className="admin-kicker">Related capabilities</p>
+              <h2>Connect this project to published services.</h2>
+            </div>
+            <p className="admin-section-note">Only published capabilities are available. Relationship changes are audited and stay private until the case study itself is published.</p>
+          </div>
+          {availableServices.length ? (
+            <form className="admin-relationship-form" action={saveCaseStudyRelationships.bind(null, slug)}>
+              <div className="admin-relationship-options">
+                {availableServices.map((service) => (
+                  <label className="admin-relationship-option" key={service.id}>
+                    <input type="checkbox" name="service_ids" value={service.id} defaultChecked={linkedServiceIds.has(service.id)} disabled={!canEditRelationships} />
+                    <span>
+                      <strong>{service.name}</strong>
+                      <small>{service.slug}</small>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {canEditRelationships ? <AdminSubmitButton label="Save related capabilities" pendingLabel="Saving relationships…" /> : <p className="admin-editor-note">Move a published case study to Review before changing its relationships. Reviewers can inspect links but cannot change them.</p>}
+            </form>
+          ) : <p className="admin-editor-note">No published capabilities are available to link yet.</p>}
+        </section>
+
         <section className="admin-editor-panel admin-review-section">
           <div className="admin-section-heading">
             <div>
@@ -640,7 +724,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             </div>
             <p className="admin-section-note">
               {canEdit
-                ? "Owners can publish. Editors can prepare draft and review content. Media and relationships stay outside this first write slice."
+                ? "Owners can publish. Editors can prepare draft and review content. Relationships have a separate controlled save boundary."
                 : "Your role can inspect this record, but cannot change it."}
             </p>
           </div>
@@ -702,7 +786,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
               </AdminSelect>
             </label>
             <div className="admin-editor-note admin-field-wide">
-              Media is governed by the approved media contract. Featured and supporting media can be managed by the owner; case-study deletion and relationship editing remain unavailable in this editor.
+              Media is governed by the approved media contract. Featured and supporting media can be managed by the owner; case-study deletion remains unavailable in this editor.
             </div>
             {canEdit ? <AdminSubmitButton /> : null}
           </form>

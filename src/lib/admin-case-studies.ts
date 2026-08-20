@@ -45,7 +45,7 @@ export type AdminCaseStudyReview = {
   published_at: string | null;
   last_reviewed_at: string | null;
   updated_at: string;
-  services: Array<{ name: string; slug: string; status: string }>;
+  services: Array<{ id: string; name: string; slug: string; status: string }>;
   audit: AdminCaseStudyAuditEntry[];
   auditTotal: number;
   auditPage: number;
@@ -136,7 +136,7 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
   if (serviceIds.length) {
     const serviceResult = await supabase
       .from("services")
-      .select("name, slug, status")
+      .select("id, name, slug, status")
       .in("id", serviceIds)
       .order("name", { ascending: true });
 
