@@ -41,9 +41,9 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 ## In Progress
 
-- Add the controlled Global Content editor slice in staging for site settings, navigation, and page metadata.
+- Add approved page-section visibility and order controls in staging after the Global Content editor.
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
-- Apply the global-content editor migration in `crimson-staging`, then complete live QA of settings, navigation, page metadata, Work, and protected auth routing before broader CMS work.
+- Apply the page-section migration in `crimson-staging`, then complete live QA of section controls, public ordering, settings, navigation, page metadata, Work, and protected auth routing before broader CMS work.
 - Complete owner content, accessibility, and privacy/consent follow-up from the technical release.
 
 ## Blocked / Requires Owner Action
@@ -57,4 +57,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Apply `supabase/migrations/20260820100000_add_staging_global_content_editor.sql` in `crimson-staging`, then QA `/admin/content`. Approved page-section visibility/order remains the next separate design gate. Do not promote CMS administration or staging content changes to Production.
+Apply `supabase/migrations/20260820110000_add_staging_page_sections.sql` in `crimson-staging`, then QA the section controls at `/admin/content` and confirm one public route follows the saved setting. Service-detail composition, case-study layouts, media, CRM, and Production administration remain separate gates. Do not promote CMS administration or staging content changes to Production.

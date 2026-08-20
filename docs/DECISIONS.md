@@ -237,3 +237,9 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Expose existing site settings, navigation items, and page metadata through one protected `/admin/content` route. Do not add record creation/deletion, media uploads, or freeform page-section editing in this slice.
 - **Reason:** These records affect the public site globally. A constrained update surface with role-aware publication safeguards gives the owner useful control without turning the first CMS milestone into an unbounded page builder.
 - **Consequence:** Page body sections and section visibility/order remain an application-level contract. A separate migration and review is required before adding them.
+## ADR-035 - Use a fixed page-section registry instead of a freeform builder
+
+- **Status:** Accepted for staging
+- **Decision:** Model approved top-level page sections as fixed database rows with owner-controlled visibility and order. Keep section types, markup, and content contracts in the application until each is deliberately approved.
+- **Reason:** Section toggles are useful for staging composition, but a freeform builder would introduce layout, accessibility, SEO, and content-governance risk before the reusable contracts are mature.
+- **Consequence:** The CMS can compose the existing public system but cannot create arbitrary sections, service-detail sections, case-study layouts, or media blocks in this milestone.

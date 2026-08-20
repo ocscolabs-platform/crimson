@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ImageOff } from "lucide-react";
+import { OrderedPageSections } from "@/components/ordered-page-sections";
 import { RouteShell } from "@/components/route-shell";
 import { getPublishedPage, getPublishedWorkProjects } from "@/lib/cms-content";
+import { getPublishedPageSections } from "@/lib/page-sections";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +14,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function WorkPage() {
-  const workProjects = await getPublishedWorkProjects();
+  const [workProjects, pageSections] = await Promise.all([
+    getPublishedWorkProjects(),
+    getPublishedPageSections("work"),
+  ]);
   const featuredProject = workProjects.find((project) => project.featured) ?? workProjects[0];
   const supportingProjects = workProjects.filter((project) => project.slug !== featuredProject.slug);
 
@@ -23,8 +28,12 @@ export default async function WorkPage() {
       title="The work deserves the space to speak for itself."
       intro="A preview of live prototypes and upcoming projects. Full case studies will be added as facts, outcomes, media, and publication permissions are approved."
     >
-      <section className="section-light route-section">
-        <div className="shell work-library">
+      <OrderedPageSections
+        sections={pageSections}
+        blocks={{
+          work_library: (
+            <section className="section-light route-section">
+              <div className="shell work-library">
           <article className="work-featured">
             <div className="media-placeholder work-featured-media" role="img" aria-label={`${featuredProject.name} project visual placeholder`}>
               <ImageOff aria-hidden="true" size={34} strokeWidth={1.4} />
@@ -96,8 +105,11 @@ export default async function WorkPage() {
             <p className="route-copy">No client names, metrics, testimonials, or project claims are published here until they are reviewed and approved.</p>
             <Link className="button button-dark" href="/contact">Discuss a project <span aria-hidden="true">↗</span></Link>
           </div>
-        </div>
-      </section>
+              </div>
+            </section>
+          ),
+        }}
+      />
     </RouteShell>
   );
 }

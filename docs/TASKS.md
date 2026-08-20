@@ -220,3 +220,18 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Published page metadata must move through Review before content changes.
 - Global content updates are recorded in an immutable, staging-only audit table.
 - No create, delete, upload, freeform section-builder, CRM, or Production control is introduced.
+
+## PH4-013 - Add approved page-section controls
+
+- **Status:** Implementation in progress on `staging`
+- **Goal:** Let the staging owner enable, disable, and reorder approved top-level page sections without introducing a freeform page builder.
+- **Reference:** `docs/PHASE-4-CMS-PAGE-SECTIONS.md`
+
+### Acceptance criteria
+
+- Existing top-level page sections are seeded into a fixed registry.
+- Only owners can change section visibility or order; editors and reviewers remain read-only for structure.
+- Public routes honor the published section visibility and order settings with safe local fallbacks.
+- The database prevents hiding the last visible section on a page.
+- Section changes are recorded in the global audit history.
+- No arbitrary section creation, deletion, media upload, service-detail builder, case-study layout builder, CRM, or Production control is introduced.

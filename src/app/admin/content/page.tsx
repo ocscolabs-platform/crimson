@@ -170,6 +170,32 @@ async function savePageMetadata(pageId: string, formData: FormData) {
   redirect("/admin/content?saved=page");
 }
 
+async function savePageSection(sectionId: string, formData: FormData) {
+  "use server";
+
+  const { supabase, membership } = await requireMember();
+  if (membership.role !== "owner") redirectWithError("Only the staging owner can change page section visibility or order.");
+
+  const sortOrder = Number.parseInt(String(formData.get("sort_order") || "0"), 10);
+  const isVisible = formData.get("is_visible") === "true";
+  if (!Number.isFinite(sortOrder) || sortOrder < 0) redirectWithError("Enter a non-negative numeric section order.");
+
+  const { error } = await supabase
+    .from("page_sections")
+    .update({ sort_order: sortOrder, is_visible: isVisible })
+    .eq("id", sectionId);
+
+  if (error) redirectWithError(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/about");
+  revalidatePath("/services");
+  revalidatePath("/work");
+  revalidatePath("/contact");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?saved=section");
+}
+
 const pageStatusOptions: AdminPageMetadata["status"][] = ["draft", "review", "published", "archived"];
 
 function formatDate(value: string | null) {
@@ -213,7 +239,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
           <p className="admin-intro">Update the global settings, navigation labels, and page metadata that support the public site. Body sections and media remain intentionally controlled in code until their contracts are approved.</p>
         </section>
 
-        {saved ? <AdminToast tone="success" message={saved === "settings" ? "Site settings saved successfully in staging." : saved === "navigation" ? "Navigation item saved successfully in staging." : "Page metadata saved successfully in staging."} /> : null}
+        {saved ? <AdminToast tone="success" message={saved === "settings" ? "Site settings saved successfully in staging." : saved === "navigation" ? "Navigation item saved successfully in staging." : saved === "section" ? "Page section saved successfully in staging." : "Page metadata saved successfully in staging."} /> : null}
         {error ? <AdminToast tone="error" message={error} /> : null}
 
         {loadError ? (
@@ -285,14 +311,15 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                   const publishedLocked = page.status === "published" && !isOwner;
                   const pageCanEdit = canEdit && !publishedLocked;
                   const statusOptions = isOwner ? pageStatusOptions : ["draft", "review"] as AdminPageMetadata["status"][];
+                  const pageSections = content.sections[page.id] ?? [];
                   return (
-                    <form className="admin-page-metadata-card" key={page.id} action={savePageMetadata.bind(null, page.id)}>
+                    <div className="admin-page-metadata-card" key={page.id}>
                       <div className="admin-content-row-heading">
                         <div><strong>{page.title}</strong><small>/{page.slug} · {formatDate(page.published_at)}</small></div>
                         <span className={page.status === "published" ? "admin-status-ready" : "admin-status-pending"}>{page.status}</span>
                       </div>
                       {publishedLocked ? <p className="admin-editor-warning">Published metadata is protected for editors. An owner must move this page to Review before changes can be made.</p> : null}
-                      <div className="admin-editor-form admin-page-metadata-form">
+                      <form className="admin-editor-form admin-page-metadata-form" action={savePageMetadata.bind(null, page.id)}>
                         <label>Page title<input className="admin-input" name="title" defaultValue={page.title} disabled={!pageCanEdit} required /></label>
                         <label>Page purpose<input className="admin-input" name="page_purpose" defaultValue={page.page_purpose ?? ""} disabled={!pageCanEdit} /></label>
                         <label>Audience<input className="admin-input" name="audience" defaultValue={page.audience ?? ""} disabled={!pageCanEdit} /></label>
@@ -303,8 +330,24 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                         <label>CTA destination<input className="admin-input" name="cta_href" defaultValue={page.cta_href ?? ""} disabled={!pageCanEdit} /></label>
                         <label>Editorial status<AdminSelect name="status" defaultValue={page.status} disabled={!pageCanEdit}>{statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}</AdminSelect></label>
                         {pageCanEdit ? <AdminSubmitButton label="Save page metadata" pendingLabel="Saving page…" /> : null}
+                      </form>
+                      <div className="admin-page-section-controls">
+                        <div className="admin-content-row-heading">
+                          <div><strong>Approved sections</strong><small>Fixed application sections; owner-controlled visibility and order.</small></div>
+                          <span className="admin-status-muted">{pageSections.length} configured</span>
+                        </div>
+                        {pageSections.map((section) => (
+                          <div className="admin-page-section-row" key={section.id}>
+                            <div><strong>{section.label}</strong><small>{section.section_key}</small></div>
+                            <form action={savePageSection.bind(null, section.id)}>
+                              <label>Order<input className="admin-input" name="sort_order" type="number" min="0" defaultValue={section.sort_order} disabled={!isOwner} /></label>
+                              <label>Visibility<AdminSelect name="is_visible" defaultValue={String(section.is_visible)} disabled={!isOwner} aria-label={`Section visibility for ${section.label}`}><option value="true">Visible</option><option value="false">Hidden</option></AdminSelect></label>
+                              {isOwner ? <AdminSubmitButton label="Save section" pendingLabel="Saving…" /> : null}
+                            </form>
+                          </div>
+                        ))}
                       </div>
-                    </form>
+                    </div>
                   );
                 })}
               </div>
