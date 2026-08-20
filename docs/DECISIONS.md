@@ -355,3 +355,17 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Use neutral CMS language in the shared admin interface instead of hard-coding “staging” into visible headings, feedback, and navigation copy. Environment-specific deployment, authentication, and data-boundary rules remain documented and configured outside the presentation copy.
 - **Reason:** The same application build can be reviewed through Preview and deployed to Production. Staging-only wording on the Production login and dashboard is misleading and makes a correct deployment look like the wrong environment.
 - **Consequence:** Admin copy describes the CMS and role-controlled access consistently in every environment; environment separation remains enforced by deployment configuration, Supabase projects, RLS, and release process rather than by labels alone.
+
+## ADR-052 - Promote approved CMS content through a guarded server-side release runner
+
+- **Status:** Accepted for the Production publication boundary
+- **Decision:** Keep editorial mutation in the staging CMS and promote only the owner-approved published content package to Production through the guarded `scripts/cms-promote.mjs` runner. Run it through the protected GitHub `production-cms` environment; use dry-run as the default and require an explicit apply confirmation.
+- **Reason:** A Git merge cannot move Supabase rows, Storage objects, or environment-specific IDs. Putting a Production service key in the staging browser would violate the security boundary. A server-side release runner keeps credentials separate, makes the package reviewable, and avoids manual record copying.
+- **Consequence:** Production receives public CMS data and approved media without receiving staging users, inquiries, audit history, or credentials. Production CMS administration remains a separate future milestone; the current operator workflow is staging edit → owner approval → guarded promotion.
+
+## ADR-053 - Keep Production CMS editing explicitly staging-only
+
+- **Status:** Accepted for the first Production publication boundary
+- **Decision:** Redirect `/admin` requests on the Vercel Production environment to the public site. The CMS editor remains available only on Preview/Staging deployments connected to the staging Supabase project.
+- **Reason:** Production Auth users and editor policies are not provisioned, so a Production login would create a confusing failure and invite unsafe credential duplication. Publishing approved content does not require Production editing.
+- **Consequence:** The public Production site can consume promoted CMS records while editorial work stays in staging. A future Production editor requires a separately approved Auth, role, audit, and rollback design.
