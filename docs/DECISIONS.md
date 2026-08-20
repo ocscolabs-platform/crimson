@@ -341,3 +341,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Standardize the signed-in account cluster across CMS routes, use compact bordered pagination controls, keep accordion status and chevrons on one horizontal line, and place media approval in a separated action row.
 - **Reason:** The admin UI is an operational tool, so hierarchy and scanability matter more than oversized presentation. Repeated account controls, audit navigation, disclosure states, and high-impact media approval actions need predictable placement and spacing across screens.
 - **Consequence:** This is a presentation and navigation refinement only. It adds no new permissions, data fields, storage behavior, or public-route changes.
+
+## ADR-050 - Align admin audit surfaces to the shell width
+
+- **Status:** Accepted for staging
+- **Decision:** Let audit rows and pagination span the full admin shell width, and reserve a deliberate spacing band before the admin footer.
+- **Reason:** A narrower audit column beside a full-width footer creates an arbitrary visual stop. Consistent left and right edges, followed by clear footer separation, improve scanability and make the page feel intentionally composed.
+- **Consequence:** This is a layout-only refinement. Audit data, pagination behavior, permissions, and production routes remain unchanged.
