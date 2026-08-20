@@ -161,7 +161,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-009 - Add the controlled case-study editor
 
-- **Status:** Editor and save-feedback UX complete locally; staging migration and core workflow QA complete; latest feedback UI pending staging deployment
+- **Status:** Complete for the verified staging update-only workflow
 - **Goal:** Let approved staging owners and editors prepare existing case-study records without opening media, relationship, deletion, or Production controls.
 - **Reference:** docs/PHASE-4-CMS-CASE-STUDY-EDITOR.md
 
@@ -177,7 +177,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-010 - Harden the Admin UX
 
-- **Status:** Admin UX hardening v2 follow-up implemented locally; staging QA pending
+- **Status:** Desktop accessibility/privacy QA complete on staging; live mobile viewport review remains
 - **Goal:** Make the staging CMS understandable to first-time users before adding broader write capabilities.
 
 ### Acceptance criteria
@@ -217,7 +217,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-012 - Add the controlled global content editor
 
-- **Status:** Implementation in progress on `staging`
+- **Status:** Implemented and verified on `staging`
 - **Goal:** Give approved staging members a clear, update-only surface for global settings, navigation, and page metadata.
 - **Reference:** `docs/PHASE-4-CMS-GLOBAL-CONTENT.md`
 
@@ -248,7 +248,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-014 - Add controlled case-study media workflow
 
-- **Status:** Implementation complete locally; staging migration and upload QA pending
+- **Status:** Implemented and verified on `staging` with the Cairnstack media package
 - **Goal:** Let the staging owner upload and approve approved project visuals without opening case-study creation, relationship editing, or Production controls.
 - **Reference:** `docs/PHASE-4-CMS-MEDIA-WORKFLOW.md`
 
@@ -266,7 +266,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ## PH4-015 - Add controlled case-study relationships
 
-- **Status:** Relationship editor and public read path implemented locally; staging migration and workflow QA pending
+- **Status:** Implemented and verified on `staging` with the Cairnstack relationship path
 - **Goal:** Let staging owners and editors connect existing case studies to published capabilities through a clear, atomic, audited workflow.
 - **Reference:** `docs/PHASE-4-CMS-CASE-STUDY-RELATIONSHIPS.md`
 
