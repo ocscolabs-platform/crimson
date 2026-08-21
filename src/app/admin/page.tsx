@@ -12,7 +12,7 @@ export default async function AdminDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/admin/login");
+    redirect("/crimson-admin-control/login");
   }
 
   const membership = await getCmsMembership(user.id);
@@ -38,10 +38,10 @@ export default async function AdminDashboardPage() {
 
         <nav className="admin-nav" aria-label="CMS sections">
           <Link href="#overview">Overview</Link>
-          {membership.role ? <Link href="/admin/content">Global content</Link> : null}
+          {membership.role ? <Link href="/crimson-admin-control/content">Global content</Link> : null}
           <Link href="#services-records">Services</Link>
           <Link href="#work-records">Work library</Link>
-          {membership.role === "owner" ? <Link href="/admin/team">Team &amp; access</Link> : null}
+          {membership.role === "owner" ? <Link href="/crimson-admin-control/team">Team &amp; access</Link> : null}
         </nav>
 
         <section className="admin-hero" id="overview">
@@ -95,14 +95,14 @@ export default async function AdminDashboardPage() {
                   </div>
                   <div className="admin-panel-heading-actions">
                     <span>{content.services.length} records</span>
-                    <Link className="admin-panel-link" href={`/admin/services/${content.services[0]?.slug ?? "branding"}`}>
+                    <Link className="admin-panel-link" href={`/crimson-admin-control/services/${content.services[0]?.slug ?? "branding"}`}>
                       {membership.role === "owner" || membership.role === "editor" ? "Open editor" : "Review"} ↗
                     </Link>
                   </div>
                 </div>
                 <ul className="admin-record-list">
                   {content.services.map((service) => (
-                    <li key={service.slug}><Link href={`/admin/services/${service.slug}`}>{service.name}</Link><small>{service.slug}</small></li>
+                    <li key={service.slug}><Link href={`/crimson-admin-control/services/${service.slug}`}>{service.name}</Link><small>{service.slug}</small></li>
                   ))}
                 </ul>
               </div>
@@ -115,13 +115,13 @@ export default async function AdminDashboardPage() {
                   <div className="admin-panel-heading-actions">
                     <span>{content.caseStudies.length} published</span>
                     {content.caseStudies[0] ? (
-                      <Link className="admin-panel-link" href={`/admin/case-studies/${content.caseStudies[0].slug}`}>Open review panel ↗</Link>
+                      <Link className="admin-panel-link" href={`/crimson-admin-control/case-studies/${content.caseStudies[0].slug}`}>Open review panel ↗</Link>
                     ) : null}
                   </div>
                 </div>
                 <ul className="admin-record-list">
                   {content.caseStudies.map((caseStudy) => (
-                    <li key={caseStudy.slug}><Link href={`/admin/case-studies/${caseStudy.slug}`}>{caseStudy.project_name}</Link><small>{caseStudy.status} · {caseStudy.slug}</small></li>
+                    <li key={caseStudy.slug}><Link href={`/crimson-admin-control/case-studies/${caseStudy.slug}`}>{caseStudy.project_name}</Link><small>{caseStudy.status} · {caseStudy.slug}</small></li>
                   ))}
                 </ul>
               </div>

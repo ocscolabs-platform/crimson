@@ -11,10 +11,16 @@ const nextConfig: NextConfig = {
     root: process.cwd(),
   },
   async rewrites() {
-    return [{
-      source: "/design-style-guide",
-      destination: "/style-guide/index.html",
-    }];
+    return [
+      {
+        source: "/design-style-guide",
+        destination: "/style-guide/index.html",
+      },
+      {
+        source: "/crimson-admin-control/:path*",
+        destination: "/admin/:path*",
+      },
+    ];
   },
 };
 

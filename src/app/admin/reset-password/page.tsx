@@ -36,7 +36,7 @@ export default function AdminResetPasswordPage() {
         return;
       }
 
-      router.replace("/admin");
+      router.replace("/crimson-admin-control");
       router.refresh();
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Unable to update the password.");
@@ -66,7 +66,7 @@ export default function AdminResetPasswordPage() {
             {isSubmitting ? <><span className="admin-button-spinner" aria-hidden="true" /> Updating…</> : <>Update password <span aria-hidden="true">↗</span></>}
           </button>
         </form>
-        <Link className="admin-back-link" href="/admin/login">Back to sign in</Link>
+        <Link className="admin-back-link" href="/crimson-admin-control/login">Back to sign in</Link>
       </div>
     </main>
   );

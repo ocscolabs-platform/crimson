@@ -73,7 +73,7 @@ function mediaItems(value: unknown): AdminCaseStudyMediaItem[] {
 }
 
 function mediaError(slug: string, message: string): never {
-  redirect(`/admin/case-studies/${slug}?error=${encodeURIComponent(message)}`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?error=${encodeURIComponent(message)}`);
 }
 
 async function getEditableCaseStudy(
@@ -119,7 +119,7 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
@@ -213,7 +213,7 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
   revalidatePath("/admin/case-studies/" + slug);
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
-  redirect(`/admin/case-studies/${slug}?saved=media`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=media`);
 }
 
 async function approveCaseStudyMedia(slug: string) {
@@ -221,7 +221,7 @@ async function approveCaseStudyMedia(slug: string) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
@@ -258,7 +258,7 @@ async function approveCaseStudyMedia(slug: string) {
   revalidatePath("/admin/case-studies/" + slug);
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
-  redirect(`/admin/case-studies/${slug}?saved=media-approved`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=media-approved`);
 }
 
 async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting", slot: number | null) {
@@ -266,7 +266,7 @@ async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
@@ -323,9 +323,9 @@ async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
   if (storageError) {
-    redirect(`/admin/case-studies/${slug}?saved=media-removed&warning=${encodeURIComponent("The media was removed from the case study, but its old storage object needs cleanup.")}`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=media-removed&warning=${encodeURIComponent("The media was removed from the case study, but its old storage object needs cleanup.")}`);
   }
-  redirect(`/admin/case-studies/${slug}?saved=media-removed`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=media-removed`);
 }
 
 async function saveCaseStudyRelationships(slug: string, formData: FormData) {
@@ -333,7 +333,7 @@ async function saveCaseStudyRelationships(slug: string, formData: FormData) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (!canEditCaseStudies(membership.role)) {
@@ -359,7 +359,7 @@ async function saveCaseStudyRelationships(slug: string, formData: FormData) {
   revalidatePath("/admin/case-studies/" + slug);
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
-  redirect(`/admin/case-studies/${slug}?saved=relationships`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=relationships`);
 }
 
 async function saveCaseStudy(slug: string, formData: FormData) {
@@ -367,11 +367,11 @@ async function saveCaseStudy(slug: string, formData: FormData) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (!canEditCaseStudies(membership.role)) {
-    redirect("/admin/case-studies/" + slug + "?error=This account does not have case-study editing access.");
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=This account does not have case-study editing access.");
   }
 
   const { current } = await getEditableCaseStudy(supabase, slug);
@@ -388,11 +388,11 @@ async function saveCaseStudy(slug: string, formData: FormData) {
   const allowedStatuses = ["draft", "review"];
 
   if (!projectName || !allowedTypes.includes(projectType) || !allowedStatuses.includes(requestedStatus)) {
-    redirect("/admin/case-studies/" + slug + "?error=Please provide a project name, valid type, and permitted status.");
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=Please provide a project name, valid type, and permitted status.");
   }
 
   if (externalUrl && !/^https:\/\//i.test(externalUrl)) {
-    redirect("/admin/case-studies/" + slug + "?error=External project links must use HTTPS.");
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=External project links must use HTTPS.");
   }
 
   const clientVisibility = canApproveCaseStudyVisibility(membership.role)
@@ -400,7 +400,7 @@ async function saveCaseStudy(slug: string, formData: FormData) {
     : current.client_visibility;
 
   if (!["hidden", "approved"].includes(clientVisibility)) {
-    redirect("/admin/case-studies/" + slug + "?error=Client visibility must be Hidden or Approved.");
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=Client visibility must be Hidden or Approved.");
   }
 
   const { error } = await supabase.rpc("cms_save_revision", {
@@ -423,14 +423,14 @@ async function saveCaseStudy(slug: string, formData: FormData) {
   });
 
   if (error) {
-    redirect("/admin/case-studies/" + slug + "?error=" + encodeURIComponent(error.message));
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=" + encodeURIComponent(error.message));
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/case-studies/" + slug);
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
-  redirect("/admin/case-studies/" + slug + "?saved=1");
+  redirect("/crimson-admin-control/case-studies/" + slug + "?saved=1");
 }
 
 async function publishCaseStudy(slug: string) {
@@ -438,11 +438,11 @@ async function publishCaseStudy(slug: string) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
-    redirect(`/admin/case-studies/${slug}?error=Only the owner can publish a case-study revision.`);
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=Only the owner can publish a case-study revision.`);
   }
 
   const { data: caseStudy, error: caseStudyError } = await supabase
@@ -451,7 +451,7 @@ async function publishCaseStudy(slug: string) {
     .eq("slug", slug)
     .maybeSingle();
   if (caseStudyError || !caseStudy) {
-    redirect(`/admin/case-studies/${slug}?error=The case study could not be found.`);
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=The case study could not be found.`);
   }
 
   const { data: revision, error: revisionError } = await supabase
@@ -462,19 +462,19 @@ async function publishCaseStudy(slug: string) {
     .eq("status", "review")
     .maybeSingle();
   if (revisionError || !revision) {
-    redirect(`/admin/case-studies/${slug}?error=${encodeURIComponent(revisionError?.message || "Save a Review revision before publishing.")}`);
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=${encodeURIComponent(revisionError?.message || "Save a Review revision before publishing.")}`);
   }
 
   const { error: publishError } = await supabase.rpc("cms_publish_revision", { p_revision_id: revision.id });
   if (publishError) {
-    redirect(`/admin/case-studies/${slug}?error=${encodeURIComponent(publishError.message)}`);
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=${encodeURIComponent(publishError.message)}`);
   }
 
   revalidatePath("/admin");
   revalidatePath(`/admin/case-studies/${slug}`);
   revalidatePath("/work");
   revalidatePath(`/work/${slug}`);
-  redirect(`/admin/case-studies/${slug}?saved=published`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=published`);
 }
 
 export const dynamic = "force-dynamic";
@@ -488,7 +488,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/admin/login");
+    redirect("/crimson-admin-control/login");
   }
 
   const [membership, review] = await Promise.all([
@@ -560,7 +560,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
       <div className="admin-shell admin-editor-shell">
         <header className="admin-header">
           <div>
-            <Link className="admin-brand" href="/admin">OCSCO</Link>
+            <Link className="admin-brand" href="/crimson-admin-control">OCSCO</Link>
             <p className="admin-kicker">CMS / Case-study review</p>
           </div>
           <AdminAccountActions email={user.email} role={membership.role} />

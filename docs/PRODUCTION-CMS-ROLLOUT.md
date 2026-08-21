@@ -1,10 +1,10 @@
 # Production CMS rollout
 
-This is the one-time setup for the canonical `https://ocsco.io/admin` boundary. It is intentionally separate from Git merges: Git deploys code, while Supabase owns CMS data, Auth, Storage, and RLS.
+This is the one-time setup for the canonical `https://ocsco.io/crimson-admin-control` boundary. It is intentionally separate from Git merges: Git deploys code, while Supabase owns CMS data, Auth, Storage, and RLS.
 
 ## Owner steps
 
-1. Deploy the code branch containing the canonical `/admin` route to staging and verify the public site still renders normally.
+1. Deploy the code branch containing the canonical `/crimson-admin-control` route to staging and verify the public site still renders normally.
 2. In the Production Supabase project, open **SQL Editor** and run [`supabase/migrations/20260821010000_enable_production_cms_admin.sql`](../supabase/migrations/20260821010000_enable_production_cms_admin.sql).
 3. In Production Supabase **Authentication → Users**, create or confirm the owner account. Do not reuse a staging password in a repository or share it in chat.
 4. Copy that user's UUID. In the Production SQL Editor, run this after replacing the placeholder:
@@ -20,11 +20,11 @@ set role = excluded.role;
 
 ```text
 Site URL: https://ocsco.io
-Redirect URL: https://ocsco.io/admin/reset-password
+Redirect URL: https://ocsco.io/crimson-admin-control/reset-password
 ```
 
 6. Confirm Production Vercel has the Production Supabase URL, publishable key, and server secret already configured. Do not copy Preview values into Production.
-7. Open `https://ocsco.io/admin`. Anonymous visitors should see the login screen; the owner should reach the CMS dashboard.
+7. Open `https://ocsco.io/crimson-admin-control`. Anonymous visitors should see the login screen; the owner should reach the CMS dashboard. The legacy `/admin` path redirects to the canonical CMS path.
 
 ## Important transition rule
 

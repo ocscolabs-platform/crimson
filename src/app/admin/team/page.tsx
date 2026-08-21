@@ -20,10 +20,10 @@ async function requireOwner() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
-  if (membership.role !== "owner") redirect("/admin");
+  if (membership.role !== "owner") redirect("/crimson-admin-control");
 
   return user;
 }
@@ -36,19 +36,19 @@ async function inviteMember(formData: FormData) {
   const role = String(formData.get("role") || "");
 
   if (!email || !email.includes("@") || !isCmsRole(role)) {
-    redirect("/admin/team?error=Enter a valid email and approved role.");
+    redirect("/crimson-admin-control/team?error=Enter a valid email and approved role.");
   }
 
   try {
     await inviteCmsMember(email, role);
   } catch (error) {
     const message = error instanceof Error ? error.message : "The invitation could not be created.";
-    redirect(`/admin/team?error=${encodeURIComponent(message)}`);
+    redirect(`/crimson-admin-control/team?error=${encodeURIComponent(message)}`);
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/team");
-  redirect("/admin/team?saved=invited");
+  redirect("/crimson-admin-control/team?saved=invited");
 }
 
 async function updateMemberRole(formData: FormData) {
@@ -58,18 +58,18 @@ async function updateMemberRole(formData: FormData) {
   const userId = String(formData.get("user_id") || "");
   const role = String(formData.get("role") || "");
 
-  if (!userId || !isCmsRole(role)) redirect("/admin/team?error=Choose an approved role.");
+  if (!userId || !isCmsRole(role)) redirect("/crimson-admin-control/team?error=Choose an approved role.");
 
   try {
     await updateCmsMemberRole(userId, role);
   } catch (error) {
     const message = error instanceof Error ? error.message : "The role could not be updated.";
-    redirect(`/admin/team?error=${encodeURIComponent(message)}`);
+    redirect(`/crimson-admin-control/team?error=${encodeURIComponent(message)}`);
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/team");
-  redirect("/admin/team?saved=role");
+  redirect("/crimson-admin-control/team?saved=role");
 }
 
 function formatDate(value: string) {
@@ -96,7 +96,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
             <Link className="admin-brand" href="/">OCSCO</Link>
             <p className="admin-kicker">CMS / Team &amp; access</p>
           </div>
-          <AdminAccountActions email={user.email} role="owner" backHref="/admin" />
+          <AdminAccountActions email={user.email} role="owner" backHref="/crimson-admin-control" />
         </header>
 
         <AdminBreadcrumbs section="Team & access" record="Membership" />

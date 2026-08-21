@@ -376,3 +376,10 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Keep `feature/* → staging → main` for application code, but move CMS publication to an explicit revision workflow. Draft and review revisions remain private; an owner-only atomic publish operation makes a reviewed revision public. The canonical authenticated CMS entry point is `https://ocsco.io/admin`; Preview `/admin` remains a QA surface. The current staging-to-Production row-copy runner is temporary migration infrastructure, not the permanent editorial workflow.
 - **Rationale:** Git merges do not move Supabase rows or Storage objects. The previous design made the owner perform two unrelated release operations and edited live-shaped records in place. A revision boundary gives the CMS a coherent source of truth, preserves the public version while work is being prepared, and makes the user-visible action match its actual effect.
 - **Consequence:** A revision schema, publish/restore functions, Production Auth/RLS coverage, and updated admin reads/writes are required. The existing `production-cms` workflow and service-role secrets must remain until the new path is verified, then be removed as obsolete infrastructure.
+
+## ADR-055 - Use a non-obvious canonical CMS path
+
+- **Status:** Accepted for Production and staging
+- **Decision:** Use `/crimson-admin-control` as the canonical authenticated CMS path. Keep `/admin` only as a compatibility redirect to the canonical path so existing bookmarks do not break. Route protection, Supabase Auth, CMS membership, and RLS remain the actual security controls.
+- **Reason:** A less obvious path reduces casual discovery and avoids presenting the CMS as a generic `/admin` endpoint, while the compatibility redirect provides a controlled migration path. The path is not treated as a security boundary.
+- **Consequence:** Vercel/Supabase Auth reset URLs must use `/crimson-admin-control/reset-password`. Internal route rewrites continue to use the existing App Router implementation, and no data, role, or credential changes are introduced.
