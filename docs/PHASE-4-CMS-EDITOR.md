@@ -4,7 +4,7 @@
 
 ## Scope
 
-The first write-enabled CMS slice is limited to service records. It provides a protected route at `/admin/services/[slug]` and uses Supabase RLS as the final authorization boundary.
+The first write-enabled CMS slice is limited to service records. It provides the protected canonical CMS route at `/crimson-admin-control/services/[slug]` and uses Supabase RLS as the final authorization boundary. The internal implementation namespace is not a public route.
 
 | Role | Read service records | Create/update | Publish/archive |
 | --- | --- | --- | --- |
@@ -35,7 +35,7 @@ Published → Archived (owner only)
 1. Apply `supabase/migrations/20260820050000_add_staging_service_editor_policies.sql` in `crimson-staging` after the membership migration.
 2. Apply `supabase/migrations/20260820060000_add_staging_cms_audit.sql` after the service editor policy migration.
 3. Push the staging branch and wait for Vercel to deploy it.
-4. Sign in at `/admin`, open a service, and review the controlled form and change history.
+4. Sign in at `/crimson-admin-control`, open a service, and review the controlled form and change history.
 5. As the staging owner, follow the review-before-publish workflow with one non-sensitive service field. Confirm the success state and audit entries.
 6. Do not run either migration in Production and do not promote the editor to `main` until the workflow is reviewed.
 

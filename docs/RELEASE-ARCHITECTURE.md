@@ -26,10 +26,10 @@ feature/* ──> staging ──> main       = application code
                          │
                          └─ public site reads published CMS revisions
 
-CMS editor (Preview/admin) ──> draft/review revision ──owner publish──> published revision
+CMS editor (Preview/canonical CMS route) ──> draft/review revision ──owner publish──> published revision
 ```
 
-The owner edits through the authenticated CMS at `https://ocsco.io/crimson-admin-control`. Preview `/crimson-admin-control` remains available for QA against the same application contract, but it is not the canonical operating URL. The legacy `/admin` path redirects to the canonical path. Draft and review changes remain invisible to the public website. Publishing is an explicit CMS action that atomically makes one reviewed revision live. Git merges continue to control code releases; they do not pretend to release database content.
+The owner edits through the authenticated CMS at `https://ocsco.io/crimson-admin-control`. Preview `/crimson-admin-control` remains available for QA against the same application contract, but it is not the canonical operating URL. Direct `/admin` requests return `404`. Draft and review changes remain invisible to the public website. Publishing is an explicit CMS action that atomically makes one reviewed revision live. Git merges continue to control code releases; they do not pretend to release database content.
 
 Production public routes remain separate from the staging editor. The authenticated CMS path and its Supabase Auth/RLS boundary are currently verified in staging; exposing that editor on Production is a later, separately approved rollout. Public routes read published revisions only, so the public site does not expose drafts or editorial controls.
 

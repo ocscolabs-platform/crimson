@@ -12,7 +12,7 @@ The staging branch is not merge-ready until the database boundary, authenticatio
 - `staging` is the integration and QA branch.
 - `main` is Production.
 - Git merges move application code only. They do not move Supabase rows, Auth users, Storage objects, RLS policies, or environment variables.
-- The canonical CMS path is `/crimson-admin-control`. `/admin` is a compatibility redirect, not a security boundary.
+- The canonical CMS path is `/crimson-admin-control`. Direct `/admin` and `/admin/*` requests return `404`; the uncommon path is not treated as a security boundary.
 - CMS content follows `Draft -> Review -> Published` through revision records.
 - Only an owner can publish or restore a revision.
 - Public routes read the published boundary only.

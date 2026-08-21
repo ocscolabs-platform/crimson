@@ -55,7 +55,7 @@ The Production `/contact` form uses the selected clean Production Supabase proje
 
 ## Staging CMS authentication
 
-Editorial editing, publishing, and draft access are tested in staging before the Production CMS boundary is enabled. The canonical authenticated path is `/crimson-admin-control`; legacy `/admin` requests redirect there. Production CMS access must use the Production Supabase project and the same revision contract after the Production migration is verified.
+Editorial editing, publishing, and draft access are tested in staging before the Production CMS boundary is enabled. The canonical authenticated path is `/crimson-admin-control`; direct `/admin` and `/admin/*` requests return `404`. Production CMS access must use the Production Supabase project and the same revision contract after the Production migration is verified.
 
 The application uses the environment-specific Supabase URL and publishable key through cookie-based Supabase SSR sessions. Password reset emails must use the canonical `/crimson-admin-control/auth/callback` route, and each Supabase project must allow its own callback URL. No service-role key is used by browser code.
 
