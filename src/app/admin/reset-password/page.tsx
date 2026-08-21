@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AdminToast from "@/app/admin/AdminToast";
@@ -12,6 +12,60 @@ export default function AdminResetPasswordPage() {
   const [confirmation, setConfirmation] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [hasRecoverySession, setHasRecoverySession] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let isMounted = true;
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+
+      if (event === "PASSWORD_RECOVERY" || session) {
+        setHasRecoverySession(true);
+        setIsCheckingSession(false);
+      }
+    });
+
+    async function establishRecoverySession() {
+      const code = new URLSearchParams(window.location.search).get("code");
+
+      if (code) {
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (exchangeError) {
+          if (isMounted) {
+            setError("This password reset link is invalid or has expired. Request a new link and try again.");
+            setIsCheckingSession(false);
+          }
+          return;
+        }
+
+        if (data.session && isMounted) {
+          setHasRecoverySession(true);
+          setIsCheckingSession(false);
+          return;
+        }
+      }
+
+      const { data } = await supabase.auth.getSession();
+      if (!isMounted) return;
+
+      setHasRecoverySession(Boolean(data.session));
+      setIsCheckingSession(false);
+      if (!data.session) {
+        setError("Auth session missing. Request a new password reset link and open it in this browser.");
+      }
+    }
+
+    establishRecoverySession();
+
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -60,9 +114,10 @@ export default function AdminResetPasswordPage() {
             Confirm password
             <input className="admin-input" type="password" autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} required />
           </label>
+          {isCheckingSession ? <p className="admin-intro" role="status">Verifying your password reset link…</p> : null}
           {error ? <p className="admin-error" role="alert">{error}</p> : null}
           {error ? <AdminToast tone="error" message={`Password update failed: ${error}`} /> : null}
-          <button className="button button-primary admin-submit" type="submit" disabled={isSubmitting}>
+          <button className="button button-primary admin-submit" type="submit" disabled={isSubmitting || isCheckingSession || !hasRecoverySession}>
             {isSubmitting ? <><span className="admin-button-spinner" aria-hidden="true" /> Updating…</> : <>Update password <span aria-hidden="true">↗</span></>}
           </button>
         </form>
