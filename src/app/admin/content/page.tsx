@@ -31,6 +31,33 @@ function redirectWithError(message: string): never {
   redirect(`/admin/content?error=${encodeURIComponent(message)}`);
 }
 
+async function saveRevision(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  entityType: "site_settings" | "navigation_item" | "page" | "page_section",
+  entityKey: string,
+  payload: Record<string, unknown>,
+  publish: boolean,
+  revisionStatus: "draft" | "review" = "review",
+) {
+  const { data: revisionId, error: revisionError } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: entityType,
+    p_entity_key: entityKey,
+    p_status: revisionStatus,
+    p_payload: payload,
+  });
+
+  if (revisionError || !revisionId) {
+    redirectWithError(revisionError?.message || "The content revision could not be saved.");
+  }
+
+  if (publish) {
+    const { error: publishError } = await supabase.rpc("cms_publish_revision", {
+      p_revision_id: revisionId,
+    });
+    if (publishError) redirectWithError(publishError.message);
+  }
+}
+
 async function saveSiteSettings(formData: FormData) {
   "use server";
 
@@ -48,19 +75,14 @@ async function saveSiteSettings(formData: FormData) {
     redirectWithError("Enter a site name and a primary contact path beginning with /.");
   }
 
-  const { error } = await supabase
-    .from("site_settings")
-    .update({
-      site_name: siteName,
-      positioning_statement: positioningStatement || null,
-      default_seo_title: defaultSeoTitle || null,
-      default_seo_description: defaultSeoDescription || null,
-      default_og_image_path: defaultOgImagePath || null,
-      primary_contact_path: primaryContactPath,
-    })
-    .eq("id", "default");
-
-  if (error) redirectWithError(error.message);
+  await saveRevision(supabase, "site_settings", "default", {
+    site_name: siteName,
+    positioning_statement: positioningStatement || null,
+    default_seo_title: defaultSeoTitle || null,
+    default_seo_description: defaultSeoDescription || null,
+    default_og_image_path: defaultOgImagePath || null,
+    primary_contact_path: primaryContactPath,
+  }, membership.role === "owner");
 
   revalidatePath("/");
   revalidatePath("/about");
@@ -86,12 +108,12 @@ async function saveNavigationItem(itemId: string, formData: FormData) {
     redirectWithError("Enter a label, destination, and numeric sort order.");
   }
 
-  const { error } = await supabase
-    .from("navigation_items")
-    .update({ label, href, sort_order: sortOrder, is_visible: isVisible })
-    .eq("id", itemId);
-
-  if (error) redirectWithError(error.message);
+  await saveRevision(supabase, "navigation_item", itemId, {
+    label,
+    href,
+    sort_order: sortOrder,
+    is_visible: isVisible,
+  }, membership.role === "owner");
 
   revalidatePath("/");
   revalidatePath("/services");
@@ -117,7 +139,7 @@ async function savePageMetadata(pageId: string, formData: FormData) {
   const ctaLabel = String(formData.get("cta_label") || "").trim();
   const ctaHref = String(formData.get("cta_href") || "").trim();
   const status = String(formData.get("status") || "draft") as AdminPageMetadata["status"];
-  const allowedStatuses = canPublishPages(membership.role) ? ["draft", "review", "published", "archived"] : ["draft", "review"];
+  const allowedStatuses = canPublishPages(membership.role) ? ["draft", "review", "published"] : ["draft", "review"];
 
   if (!title || !allowedStatuses.includes(status)) {
     redirectWithError("Enter a page title and choose a status allowed for this role.");
@@ -131,35 +153,17 @@ async function savePageMetadata(pageId: string, formData: FormData) {
 
   if (existingError || !existing) redirectWithError("The page could not be found.");
 
-  const contentChanged = existing.title !== title
-    || (existing.page_purpose || "") !== pagePurpose
-    || (existing.audience || "") !== audience
-    || (existing.seo_title || "") !== seoTitle
-    || (existing.seo_description || "") !== seoDescription
-    || (existing.og_image_path || "") !== ogImagePath
-    || (existing.cta_label || "") !== ctaLabel
-    || (existing.cta_href || "") !== ctaHref;
-
-  if (existing.status === "published" && status === "published" && contentChanged) {
-    redirectWithError("Move this page to Review before changing published metadata.");
-  }
-
-  const { error } = await supabase
-    .from("pages")
-    .update({
-      title,
-      page_purpose: pagePurpose || null,
-      audience: audience || null,
-      seo_title: seoTitle || null,
-      seo_description: seoDescription || null,
-      og_image_path: ogImagePath || null,
-      cta_label: ctaLabel || null,
-      cta_href: ctaHref || null,
-      status,
-    })
-    .eq("id", pageId);
-
-  if (error) redirectWithError(error.message);
+  await saveRevision(supabase, "page", pageId, {
+    title,
+    page_purpose: pagePurpose || null,
+    audience: audience || null,
+    seo_title: seoTitle || null,
+    seo_description: seoDescription || null,
+    og_image_path: ogImagePath || null,
+    cta_label: ctaLabel || null,
+    cta_href: ctaHref || null,
+    status,
+  }, status === "published" && membership.role === "owner", status === "draft" ? "draft" : "review");
 
   revalidatePath("/");
   revalidatePath("/about");
@@ -181,12 +185,10 @@ async function savePageSection(sectionId: string, formData: FormData) {
   const isVisible = formData.get("is_visible") === "true";
   if (!Number.isFinite(sortOrder) || sortOrder < 0) redirectWithError("Enter a non-negative numeric section order.");
 
-  const { error } = await supabase
-    .from("page_sections")
-    .update({ sort_order: sortOrder, is_visible: isVisible })
-    .eq("id", sectionId);
-
-  if (error) redirectWithError(error.message);
+  await saveRevision(supabase, "page_section", sectionId, {
+    sort_order: sortOrder,
+    is_visible: isVisible,
+  }, true);
 
   revalidatePath("/");
   revalidatePath("/about");
@@ -197,7 +199,7 @@ async function savePageSection(sectionId: string, formData: FormData) {
   redirect("/admin/content?saved=section");
 }
 
-const pageStatusOptions: AdminPageMetadata["status"][] = ["draft", "review", "published", "archived"];
+const pageStatusOptions: AdminPageMetadata["status"][] = ["draft", "review", "published"];
 
 function formatDate(value: string | null) {
   if (!value) return "Not published";

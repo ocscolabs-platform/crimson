@@ -35,7 +35,7 @@ async function saveService(slug: string, formData: FormData) {
   const outcome = String(formData.get("outcome") || "").trim();
   const requestedStatus = String(formData.get("status") || "draft");
   const allowedStatuses = membership.role === "owner"
-    ? ["draft", "review", "published", "archived"]
+    ? ["draft", "review", "published"]
     : ["draft", "review"];
 
   if (!name || !allowedStatuses.includes(requestedStatus)) {
@@ -44,7 +44,7 @@ async function saveService(slug: string, formData: FormData) {
 
   const { data: existing, error: existingError } = await supabase
     .from("services")
-    .select("published_at")
+    .select("id")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -52,24 +52,35 @@ async function saveService(slug: string, formData: FormData) {
     redirect(`/admin/services/${slug}?error=The service could not be found.`);
   }
 
-  const publishedAt = requestedStatus === "published"
-    ? existing.published_at || new Date().toISOString()
-    : null;
-
-  const { error } = await supabase
-    .from("services")
-    .update({
+  const revisionStatus = requestedStatus === "published" ? "review" : requestedStatus;
+  const { data: revisionId, error: revisionError } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: "service",
+    p_entity_key: existing.id,
+    p_status: revisionStatus,
+    p_payload: {
       name,
       short_description: shortDescription || null,
       audience: audience || null,
       outcome: outcome || null,
-      status: requestedStatus,
-      published_at: publishedAt,
-    })
-    .eq("slug", slug);
+    },
+  });
 
-  if (error) {
-    redirect(`/admin/services/${slug}?error=${encodeURIComponent(error.message)}`);
+  if (revisionError || !revisionId) {
+    redirect(`/admin/services/${slug}?error=${encodeURIComponent(revisionError?.message || "The service revision could not be saved.")}`);
+  }
+
+  if (requestedStatus === "published") {
+    if (membership.role !== "owner") {
+      redirect(`/admin/services/${slug}?error=Only the owner can publish a service revision.`);
+    }
+
+    const { error: publishError } = await supabase.rpc("cms_publish_revision", {
+      p_revision_id: revisionId,
+    });
+
+    if (publishError) {
+      redirect(`/admin/services/${slug}?error=${encodeURIComponent(publishError.message)}`);
+    }
   }
 
   revalidatePath("/admin");
@@ -121,9 +132,12 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
   }
 
   const textValue = (key: string) => typeof snapshot[key] === "string" ? snapshot[key] : null;
-  const { error: restoreError } = await supabase
-    .from("services")
-    .update({
+  const { error: restoreError } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: "service",
+    p_entity_key: currentService.id,
+    p_status: "review",
+    p_payload: {
+      ...snapshot,
       name: restoredName,
       short_description: textValue("short_description"),
       detailed_description: textValue("detailed_description"),
@@ -132,11 +146,8 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
       process_summary: textValue("process_summary"),
       cta_label: textValue("cta_label"),
       cta_href: textValue("cta_href"),
-      status: "review",
-      published_at: null,
-      last_reviewed_at: null,
-    })
-    .eq("id", currentService.id);
+    },
+  });
 
   if (restoreError) {
     redirect(`/admin/services/${slug}?error=${encodeURIComponent(restoreError.message)}`);
@@ -181,7 +192,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
 
   const canEdit = canEditServices(membership.role);
   const statusOptions = membership.role === "owner"
-    ? ["draft", "review", "published", "archived"]
+    ? ["draft", "review", "published"]
     : ["draft", "review"];
 
   return (
@@ -235,9 +246,14 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
             <p className="admin-section-note">{canEdit ? "Owners can publish. Editors can prepare draft and review content. Every change is limited by the configured RLS policies." : "Your role can review published content, but cannot change this record."}</p>
           </div>
 
-          {service.status === "published" && canEdit ? (
+          {service.status === "published" && !service.revision_id && canEdit ? (
             <p className="admin-editor-warning" role="note">
-              Published content is protected. Move this record to Review before changing it, then publish it again as an owner.
+              Published content is protected. Save a new Draft or Review revision before changing it. The public site stays unchanged until an owner publishes it.
+            </p>
+          ) : null}
+          {service.revision_id ? (
+            <p className="admin-editor-warning" role="note">
+              Unsaved-to-public revision: this {service.revision_status} revision is private until an owner publishes it.
             </p>
           ) : null}
 

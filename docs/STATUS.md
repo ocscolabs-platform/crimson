@@ -48,12 +48,14 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Verified the controlled case-study relationship workflow in staging: the Cairnstack record has one linked published capability, the audit surface is present, and the public route renders the relationship as an accessible service link.
 - Corrected the shared admin presentation copy after Production review: login, recovery, dashboard, content, service, team, and case-study surfaces now use deployment-neutral CMS language instead of incorrectly labeling Production as staging.
 - Added the guarded staging-to-Production CMS promotion boundary as a temporary migration bridge. It is not the target editorial workflow and is now scheduled for removal after revision-based publishing is verified.
+- Added the additive revision ledger and protected publish/restore RPCs for the core content types. The global-content and Services admin reads/writes now use private Draft/Review revisions when the migration is present; the public site remains on published base records. The migration is intentionally not applied to Production yet because case-study/media writes and the final owner publish surface still need to move to the same boundary.
 
 ## In Progress
 
 - Keep the Work library read-only while the owner reviews the case-study workflow and publication checklist.
 - Keep case-study creation/deletion and Production administration separate until the content and consent review is complete.
 - Do not delete the current promotion bridge or change cloud environment variables yet. First implement and verify the revision-based CMS publishing model in [`RELEASE-ARCHITECTURE.md`](./RELEASE-ARCHITECTURE.md).
+- Do not run `20260821020000_add_cms_revisions.sql` in Production yet. It is the first additive revision slice; run it in staging only after the remaining case-study/media editor slice is included and the full QA checklist is ready.
 
 ## Blocked / Requires Owner Action
 

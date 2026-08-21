@@ -89,17 +89,58 @@ export async function getAdminGlobalContent(): Promise<AdminGlobalContent> {
     throw new Error(firstError.message);
   }
 
+  const { data: revisions, error: revisionsError } = await supabase
+    .from("cms_revisions")
+    .select("entity_type, entity_key, status, payload")
+    .in("status", ["draft", "review"]);
+
+  // Keep the legacy editor readable until the revision migration is applied
+  // in the current environment. Once present, active revisions become the
+  // editor view while the public site continues reading the base tables.
+  if (revisionsError && !revisionsError.message.toLowerCase().includes("does not exist")) {
+    throw new Error(revisionsError.message);
+  }
+
+  const revisionMap = new Map(
+    (revisions ?? []).map((revision) => [
+      `${revision.entity_type}:${revision.entity_key}`,
+      revision.payload && typeof revision.payload === "object" && !Array.isArray(revision.payload)
+        ? revision.payload as Record<string, unknown>
+        : {},
+    ]),
+  );
+
+  const settingsPayload = revisionMap.get("site_settings:default");
+  const settingsRecord = settings.data as AdminSiteSettings | null;
+  const resolvedSettings = settingsRecord && settingsPayload
+    ? { ...settingsRecord, ...settingsPayload, id: settingsRecord.id }
+    : settingsRecord;
+
+  const resolvedNavigation = (navigation.data ?? []).map((item) => {
+    const payload = revisionMap.get(`navigation_item:${item.id}`);
+    return payload ? { ...item, ...payload, id: item.id } : item;
+  }) as AdminNavigationItem[];
+
+  const resolvedPages = (pages.data ?? []).map((page) => {
+    const payload = revisionMap.get(`page:${page.id}`);
+    return payload ? { ...page, ...payload, id: page.id, slug: page.slug } : page;
+  }) as AdminPageMetadata[];
+
   const sectionMap: Record<string, AdminPageSection[]> = {};
   for (const section of (sections.data ?? []) as AdminPageSection[]) {
+    const payload = revisionMap.get(`page_section:${section.id}`);
+    const resolvedSection = payload
+      ? { ...section, ...payload, id: section.id, page_id: section.page_id }
+      : section;
     const pageSections = sectionMap[section.page_id] ?? [];
-    pageSections.push(section);
+    pageSections.push(resolvedSection as AdminPageSection);
     sectionMap[section.page_id] = pageSections;
   }
 
   return {
-    settings: settings.data as AdminSiteSettings | null,
-    navigation: (navigation.data ?? []) as AdminNavigationItem[],
-    pages: (pages.data ?? []) as AdminPageMetadata[],
+    settings: resolvedSettings,
+    navigation: resolvedNavigation,
+    pages: resolvedPages,
     sections: sectionMap,
   };
 }
