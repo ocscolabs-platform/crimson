@@ -2,9 +2,13 @@
 
 ## Current Phase
 
-**Phase 4 — Custom CMS Foundation**
+**Phase 4C — Post-Merge Release Verification and Baseline Stabilization**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 contains the CMS schema, published-only public read boundary, role authorization, revision-based publishing, media workflow, relationships, audit history, and canonical `/crimson-admin-control` route. The current release audit has paused further feature work until the staging and Production database boundaries, password recovery, environment configuration, and release protections are verified.
+The canonical roadmap is [`MASTER-PLAN.md`](./MASTER-PLAN.md). This file records the current implementation state; older detailed phase documents and early task entries are historical implementation records where their statuses conflict with later verified slices.
+
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4A and 4B are implemented for the approved CMS slices: schema, published-only public read boundary, role authorization, revision-based publishing, media workflow, relationships, audit history, and canonical `/crimson-admin-control` route. The staging-to-main code merge has already occurred; the current release audit verifies the resulting Production deployment/data boundary and establishes a clean synchronized baseline before Phase 5.
+
+The current CMS is not yet a complete body-content editor for Home, About, Services, and Contact. It currently manages global metadata/settings, navigation, fixed approved section visibility/order, services, case-study editorial data, media, relationships, and revisions. Full page-body editing is Phase 5. Blog / Insights is approved for Phase 6 and has not been implemented. CRM remains Phase 7 and is not implemented beyond inquiry intake.
 
 ## Completed
 
@@ -47,16 +51,17 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Verified the controlled case-study media workflow in staging: three normalized media slots are rendered with fixed public frames, the approved package is private until publication rules allow signed delivery, and the public Cairnstack route exposes the approved featured/supporting visuals.
 - Verified the controlled case-study relationship workflow in staging: the Cairnstack record has one linked published capability, the audit surface is present, and the public route renders the relationship as an accessible service link.
 - Corrected the shared admin presentation copy after Production review: login, recovery, dashboard, content, service, team, and case-study surfaces now use deployment-neutral CMS language instead of incorrectly labeling Production as staging.
-- Added the guarded staging-to-Production CMS promotion boundary as a temporary migration bridge. It is not the target editorial workflow and is now scheduled for removal after revision-based publishing is verified.
-- Added the additive revision ledger and protected publish/restore RPCs for the core content types. Global content, Services, and case-study metadata, relationships, and media editor actions now save private Draft/Review revisions; owner-only publish controls are separate from Save, and the public site remains on published base records. The migration is intentionally not applied to Production yet because the full staging QA and direct-write lockdown still need to be completed.
+- Added the guarded staging-to-Production CMS promotion boundary as a temporary migration bridge. It is not the target editorial workflow and remains only until the Production revision path is verified and the bridge can be retired safely.
+- Added the additive revision ledger and protected publish/restore RPCs for the core content types. Global content, Services, and case-study metadata, relationships, and media editor actions now save private Draft/Review revisions; owner-only publish controls are separate from Save, and the public site remains on published base records. Production verification is still required; a Git merge does not apply migrations or promote Supabase data/configuration.
+- Verified the live remote Git state on 2026-08-22: `origin/main` (`0b58c03`) contains the staging merge (`e196ff6`), `origin/staging` (`72ebcaf`) is three commits behind, and no staging-only commits remain.
 
 ## In Progress
 
-- Verify the exact staging migration state and run the full revision, permission, media, relationship, audit, and public-visibility QA matrix.
-- Verify the Production migration state and environment mapping before enabling Production CMS editing.
-- Complete and test the canonical password recovery callback in each environment.
-- Configure branch protection and required approval for the Production release environment.
-- Retire the row-copy promotion bridge only after the revision workflow is proven in Production.
+- Verify the Production deployment, migration/RLS/function/grant/trigger/Storage boundary, and environment mapping.
+- Complete and test the canonical password recovery, invitation, session, and route protections in Production.
+- Verify revision save/review/publish/restore, public published-only reads, media, relationships, audit, and inquiry behavior in Production.
+- Resolve or retire the temporary row-copy promotion bridge after the revision workflow is proven.
+- Synchronize `staging` to the approved `main` baseline and record the post-merge release sign-off.
 
 ## Blocked / Requires Owner Action
 
@@ -69,4 +74,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Follow [`docs/RELEASE-READINESS.md`](./RELEASE-READINESS.md) in order. No staging-to-main merge should be recommended until every critical gate passes.
+Execute the post-merge Phase 4C checklist in [`docs/MASTER-PLAN.md`](./MASTER-PLAN.md) and [`docs/RELEASE-READINESS.md`](./RELEASE-READINESS.md) in order. Do not begin Phase 5 or Phase 6 until the Production baseline is verified and `staging` is synchronized to the approved `main` commit.

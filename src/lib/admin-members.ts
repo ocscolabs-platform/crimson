@@ -41,9 +41,9 @@ export async function getAdminMembers(): Promise<AdminMember[]> {
     }));
 }
 
-export async function inviteCmsMember(email: string, role: CmsRole) {
+export async function inviteCmsMember(email: string, role: CmsRole, redirectTo: string) {
   const supabase = createAdminClient();
-  const { data, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email);
+  const { data, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, { redirectTo });
 
   if (inviteError || !data.user) {
     throw new Error(inviteError?.message || "The invitation could not be created.");

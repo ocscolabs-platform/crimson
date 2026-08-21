@@ -2,6 +2,74 @@
 
 This queue records approved next-step work before implementation. Tasks in this file are not production changes until they are implemented, reviewed in staging, and explicitly promoted to `main`.
 
+## Current roadmap overlay — 2026-08-22
+
+`docs/MASTER-PLAN.md` is now the canonical source of truth for phase order and release readiness. The detailed `PH4-001` through `PH4-016` entries below preserve the implementation history and acceptance criteria of the original CMS slices; some early entries retain their historical “pending” wording even though later entries document the verified staging implementation. Use the master plan and `STATUS.md` for the current state.
+
+The current gate is **PH4-017 — Post-merge release verification and baseline stabilization**. The staging-to-main code merge has already occurred; this task now verifies the Production boundary and synchronizes staging to the approved main baseline. No Blog implementation is authorized by this roadmap update. Full page-body editing is Phase 5, Blog / Insights is Phase 6, and CRM is Phase 7.
+
+## PH4-017 — Verify the post-merge CMS release boundary
+
+- **Status:** In progress / current post-merge release gate
+- **Goal:** Verify the merged Production code/data boundary, retire or explicitly retain temporary promotion infrastructure, and establish a clean synchronized baseline before adding new product features.
+- **Reference:** `docs/MASTER-PLAN.md` and `docs/RELEASE-READINESS.md`
+
+### Acceptance criteria
+
+- Staging and Production migrations, grants, RLS policies, triggers, RPCs, and Storage policies are inventoried and verified.
+- Auth Site URLs, redirect allow-lists, invitation links, password recovery callbacks, and canonical CMS routing pass in each intended environment.
+- The full CMS role and publication matrix passes: login/logout, save, review, publish, restore, media lifecycle, relationships, audit pagination, public published-only reads, and `/admin` 404 behavior.
+- Vercel environment variables are mapped correctly without committing secrets or local environment files.
+- `npm run lint`, `npm run build`, and explicit type validation pass with the intended Node runtime.
+- Branch protection and Production approval rules are active.
+- The temporary row-copy promotion bridge is either retained with an owner-approved runbook or retired only after revision publishing is verified in Production.
+- Production deployment, configuration, Auth, database, revision publishing, public reads, CMS protection, media, relationships, and inquiry behavior are verified.
+- `/crimson-admin-control` remains protected and `/admin` plus `/admin/*` return normal `404` responses.
+- The temporary promotion bridge is retired or retained with an explicit owner-approved runbook and rollback path.
+- Remote `staging` is synchronized to the approved `main` baseline.
+- Final owner sign-off, verified commit/configuration baseline, and rollback steps are recorded before Phase 5 begins.
+
+## PH5-001 — Complete the page-content editor
+
+- **Status:** Planned / not started
+- **Goal:** Make Home, About, Services, and Contact body content editable through approved structured CMS sections.
+- **Scope:** Copy, headings, supporting text, CTAs, approved section variants, SEO metadata, Open Graph image, preview, draft/review/published revisions, validation, responsive/public QA.
+- **Constraint:** Do not introduce a freeform page builder or arbitrary component creation.
+
+## PH6-001 — Add the Blog / Insights data model
+
+- **Status:** Planned / not started
+- **Goal:** Add articles, categories, tags, article-to-tag relationships, authors, publication state/dates, SEO metadata, and revision/media references using the existing CMS architecture.
+- **Acceptance criteria:** Stable slugs, unique category/tag relationships, author ownership rules, draft/review/published boundary, published-only public reads, and RLS/audit coverage.
+
+## PH6-002 — Add the Blog / Insights CMS editor
+
+- **Status:** Planned / not started
+- **Goal:** Let authorized users create/edit articles, save drafts, assign category/tags/author, manage featured/social media, edit content, manage SEO fields, preview, publish, and unpublish through the existing revision workflow.
+- **Constraint:** No separate third-party CMS without a new approved architecture decision.
+
+## PH6-003 — Add the public Insights index
+
+- **Status:** Planned / not started
+- **Goal:** Provide the `/insights` listing with published articles, optional featured article, categories, tags, search, filtering, pagination or load-more, responsive states, and empty/error states.
+- **Constraint:** Cairnstack is a structural reference only; do not copy its visual design or implementation.
+
+## PH6-004 — Add article detail and SEO output
+
+- **Status:** Planned / not started
+- **Goal:** Provide `/insights/[slug]` with title, excerpt, featured image, author, dates, category, tags, formatted content, SEO metadata, Open Graph image, related articles, accessible media, and draft privacy.
+
+## PH6-005 — Blog QA and release gate
+
+- **Status:** Planned / not started
+- **Goal:** Verify editor permissions, revisions, preview, slug conflicts, media constraints, public published-only behavior, search/filter/pagination, responsive/accessibility behavior, SEO output, and deployment configuration before publication.
+
+## PH7-001 — Define and build CRM foundation
+
+- **Status:** Planned / not started
+- **Goal:** Finalize and implement the approved CRM model for inquiries, contacts, companies, opportunities, activities, pipeline stages, ownership, audit, and notifications.
+- **Constraint:** The current inquiry intake is not a complete CRM. CMS and CRM roles/permissions must remain separate.
+
 ## STG-001 — Add a contact form workflow after capability exploration
 
 - **Status:** Complete; promoted to `main` and verified in Production
@@ -284,7 +352,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 ## PH4-016 - Complete owner content, consent, and release review
 
 - **Status:** Complete; staging package approved and promotion authorized
-- **Goal:** Close the remaining content, permission, privacy, and accessibility decisions before any staging content or CMS administration is promoted to `main`.
+- **Goal:** Close the remaining content, permission, privacy, and accessibility decisions for the release package. The staging-to-main code merge is now historical and is verified in the current roadmap overlay.
 - **Reference:** `docs/OWNER-CONTENT-REVIEW.md` and `docs/LAUNCH-READINESS.md`
 
 ### Acceptance criteria
@@ -293,10 +361,10 @@ This queue records approved next-step work before implementation. Tasks in this 
 - Each published case study has an explicit identity, media, claims, testimonial, external-link, and related-capability decision.
 - Contact form field language, privacy/consent copy, response-time expectation, inquiry owner, and retention expectation are approved.
 - Desktop, tablet/mobile, keyboard, focus, and screen-reader review is completed or exceptions are documented and accepted.
-- The owner explicitly authorizes promotion to `main`; without that authorization, staging content and CMS administration remain separate from Production.
+- The owner explicitly authorized promotion to `main` on 2026-08-21; the live remote refs now confirm that the code merge occurred. Supabase data/configuration promotion remains a separate verification boundary.
 
 ### Approval record
 
 - Current staging content package approved by the owner on 2026-08-21.
 - Desktop, tablet/mobile, keyboard, focus, and assistive-technology review marked complete by the owner.
-- Promotion to `main` explicitly authorized by the owner on 2026-08-21; merge and deployment have not yet been executed.
+- Promotion to `main` explicitly authorized by the owner on 2026-08-21; the staging-to-main code merge was subsequently completed and is recorded in the current roadmap overlay.
