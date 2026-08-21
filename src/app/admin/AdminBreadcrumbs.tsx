@@ -8,7 +8,7 @@ type AdminBreadcrumbsProps = {
 export default function AdminBreadcrumbs({ section, record }: AdminBreadcrumbsProps) {
   return (
     <nav className="admin-breadcrumbs" aria-label="Breadcrumb">
-      <Link href="/admin">Dashboard</Link>
+      <Link href="/crimson-admin-control">Dashboard</Link>
       <span aria-hidden="true">/</span>
       <span>{section}</span>
       <span aria-hidden="true">/</span>

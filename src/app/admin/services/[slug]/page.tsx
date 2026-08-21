@@ -22,11 +22,11 @@ async function saveService(slug: string, formData: FormData) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (!canEditServices(membership.role)) {
-    redirect(`/admin/services/${slug}?error=This account does not have service editing access.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=This account does not have service editing access.`);
   }
 
   const name = String(formData.get("name") || "").trim();
@@ -37,7 +37,7 @@ async function saveService(slug: string, formData: FormData) {
   const allowedStatuses = ["draft", "review"];
 
   if (!name || !allowedStatuses.includes(requestedStatus)) {
-    redirect(`/admin/services/${slug}?error=Please provide a service name and a permitted status.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=Please provide a service name and a permitted status.`);
   }
 
   const { data: existing, error: existingError } = await supabase
@@ -47,7 +47,7 @@ async function saveService(slug: string, formData: FormData) {
     .maybeSingle();
 
   if (existingError || !existing) {
-    redirect(`/admin/services/${slug}?error=The service could not be found.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=The service could not be found.`);
   }
 
   const { data: revisionId, error: revisionError } = await supabase.rpc("cms_save_revision", {
@@ -63,14 +63,14 @@ async function saveService(slug: string, formData: FormData) {
   });
 
   if (revisionError || !revisionId) {
-    redirect(`/admin/services/${slug}?error=${encodeURIComponent(revisionError?.message || "The service revision could not be saved.")}`);
+    redirect(`/crimson-admin-control/services/${slug}?error=${encodeURIComponent(revisionError?.message || "The service revision could not be saved.")}`);
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/services");
   revalidatePath("/services");
   revalidatePath(`/services/${slug}`);
-  redirect(`/admin/services/${slug}?saved=1`);
+  redirect(`/crimson-admin-control/services/${slug}?saved=1`);
 }
 
 async function publishService(slug: string) {
@@ -78,13 +78,13 @@ async function publishService(slug: string) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
-  if (membership.role !== "owner") redirect(`/admin/services/${slug}?error=Only the owner can publish a service revision.`);
+  if (membership.role !== "owner") redirect(`/crimson-admin-control/services/${slug}?error=Only the owner can publish a service revision.`);
 
   const { data: service, error: serviceError } = await supabase.from("services").select("id").eq("slug", slug).maybeSingle();
-  if (serviceError || !service) redirect(`/admin/services/${slug}?error=The service could not be found.`);
+  if (serviceError || !service) redirect(`/crimson-admin-control/services/${slug}?error=The service could not be found.`);
 
   const { data: revision, error: revisionError } = await supabase
     .from("cms_revisions")
@@ -93,16 +93,16 @@ async function publishService(slug: string) {
     .eq("entity_key", service.id)
     .eq("status", "review")
     .maybeSingle();
-  if (revisionError || !revision) redirect(`/admin/services/${slug}?error=${encodeURIComponent(revisionError?.message || "Save a Review revision before publishing.")}`);
+  if (revisionError || !revision) redirect(`/crimson-admin-control/services/${slug}?error=${encodeURIComponent(revisionError?.message || "Save a Review revision before publishing.")}`);
 
   const { error: publishError } = await supabase.rpc("cms_publish_revision", { p_revision_id: revision.id });
-  if (publishError) redirect(`/admin/services/${slug}?error=${encodeURIComponent(publishError.message)}`);
+  if (publishError) redirect(`/crimson-admin-control/services/${slug}?error=${encodeURIComponent(publishError.message)}`);
 
   revalidatePath("/admin");
   revalidatePath("/admin/services");
   revalidatePath("/services");
   revalidatePath(`/services/${slug}`);
-  redirect(`/admin/services/${slug}?saved=published`);
+  redirect(`/crimson-admin-control/services/${slug}?saved=published`);
 }
 
 async function restoreServiceFromAudit(slug: string, auditId: string, _formData: FormData) {
@@ -111,11 +111,11 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
-    redirect(`/admin/services/${slug}?error=Only the owner can restore service snapshots.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=Only the owner can restore service snapshots.`);
   }
 
   const { data: currentService, error: currentServiceError } = await supabase
@@ -125,7 +125,7 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
     .maybeSingle();
 
   if (currentServiceError || !currentService) {
-    redirect(`/admin/services/${slug}?error=The service could not be found.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=The service could not be found.`);
   }
 
   const { data: auditEntry, error: auditError } = await supabase
@@ -137,13 +137,13 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
     .maybeSingle();
 
   if (auditError || !auditEntry || !auditEntry.after_data || typeof auditEntry.after_data !== "object" || Array.isArray(auditEntry.after_data)) {
-    redirect(`/admin/services/${slug}?error=That service snapshot could not be restored.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=That service snapshot could not be restored.`);
   }
 
   const snapshot = auditEntry.after_data as Record<string, unknown>;
   const restoredName = typeof snapshot.name === "string" ? snapshot.name.trim() : "";
   if (!restoredName) {
-    redirect(`/admin/services/${slug}?error=That service snapshot does not contain a valid name.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=That service snapshot does not contain a valid name.`);
   }
 
   const textValue = (key: string) => typeof snapshot[key] === "string" ? snapshot[key] : null;
@@ -165,14 +165,14 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
   });
 
   if (restoreError) {
-    redirect(`/admin/services/${slug}?error=${encodeURIComponent(restoreError.message)}`);
+    redirect(`/crimson-admin-control/services/${slug}?error=${encodeURIComponent(restoreError.message)}`);
   }
 
   revalidatePath("/admin");
   revalidatePath(`/admin/services/${slug}`);
   revalidatePath("/services");
   revalidatePath(`/services/${slug}`);
-  redirect(`/admin/services/${slug}?restored=1`);
+  redirect(`/crimson-admin-control/services/${slug}?restored=1`);
 }
 
 export const dynamic = "force-dynamic";
@@ -185,7 +185,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const [membership, service] = await Promise.all([
     getCmsMembership(user.id),
@@ -214,7 +214,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
       <div className="admin-shell admin-editor-shell">
         <header className="admin-header">
           <div>
-            <Link className="admin-brand" href="/admin">OCSCO</Link>
+            <Link className="admin-brand" href="/crimson-admin-control">OCSCO</Link>
             <p className="admin-kicker">CMS / Service editor</p>
           </div>
           <AdminAccountActions email={user.email} role={membership.role} />

@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.replace("/admin");
+      router.replace("/crimson-admin-control");
       router.refresh();
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Unable to sign in.");
@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
             Password
             <input className="admin-input" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
-          <Link className="admin-forgot-link" href="/admin/forgot-password">Forgot password?</Link>
+          <Link className="admin-forgot-link" href="/crimson-admin-control/forgot-password">Forgot password?</Link>
           {error ? <p className="admin-error" role="alert">{error}</p> : null}
           {error ? <AdminToast tone="error" message={`Sign-in failed: ${error}`} /> : null}
           <button className="button button-primary admin-submit" type="submit" disabled={isSubmitting}>

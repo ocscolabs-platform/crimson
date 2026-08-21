@@ -29,15 +29,15 @@ feature/* ──> staging ──> main       = application code
 CMS editor (Preview/admin) ──> draft/review revision ──owner publish──> published revision
 ```
 
-The owner edits through the authenticated CMS at `https://ocsco.io/admin`. Preview `/admin` remains available for QA against the same application contract, but it is not the canonical operating URL. Draft and review changes remain invisible to the public website. Publishing is an explicit CMS action that atomically makes one reviewed revision live. Git merges continue to control code releases; they do not pretend to release database content.
+The owner edits through the authenticated CMS at `https://ocsco.io/crimson-admin-control`. Preview `/crimson-admin-control` remains available for QA against the same application contract, but it is not the canonical operating URL. The legacy `/admin` path redirects to the canonical path. Draft and review changes remain invisible to the public website. Publishing is an explicit CMS action that atomically makes one reviewed revision live. Git merges continue to control code releases; they do not pretend to release database content.
 
 The Production `/admin` route is protected by Supabase Auth and CMS roles. Unauthenticated visitors are sent to the login screen; authenticated users can only access the records and actions allowed by their role. Public routes read published revisions only, so making `/admin` available on the production domain does not expose drafts or editorial controls to public visitors.
 
-The first rollout step is to make the Production Supabase project the canonical CMS source and expose the authenticated `/admin` route on `ocsco.io`. Preview remains a code-QA deployment; its inquiry submissions are disabled by default so test traffic cannot enter the live lead stream. The current staging database and row-copy workflow stay available as a rollback bridge until the revision model has replaced direct editorial writes.
+The first rollout step is to make the Production Supabase project the canonical CMS source and expose the authenticated `/crimson-admin-control` route on `ocsco.io`. Preview remains a code-QA deployment; its inquiry submissions are disabled by default so test traffic cannot enter the live lead stream. The current staging database and row-copy workflow stay available as a rollback bridge until the revision model has replaced direct editorial writes.
 
 ## Migration sequence
 
-1. Apply the canonical Production CMS boundary migration and provision the owner account; this makes `/admin` a real authenticated route without exposing it to anonymous visitors.
+1. Apply the canonical Production CMS boundary migration and provision the owner account; this makes `/crimson-admin-control` a real authenticated route without exposing it to anonymous visitors.
 2. Add a revision model and atomic publish functions for site settings, navigation, pages, services, case studies, page sections, and media references.
 3. Update the admin reads and writes to work against revisions. Published records remain immutable from normal editing screens.
 4. Add a clear owner-only `Publish revision` action and audit event. Preview must show the exact draft/review payload before publication.
@@ -58,7 +58,7 @@ The implementation migrations are `supabase/migrations/20260821020000_add_cms_re
 
 The reset is complete only when an owner can:
 
-1. sign in at `/admin` on the production domain;
+1. sign in at `/crimson-admin-control` on the production domain;
 2. save and review a revision with an unmistakable status;
 3. publish once and see the approved change on Production;
 4. restore the previous published revision without copying rows manually; and

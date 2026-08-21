@@ -19,16 +19,16 @@ type ContentPageProps = {
 async function requireMember() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
-  if (!membership.role) redirect("/admin");
+  if (!membership.role) redirect("/crimson-admin-control");
 
   return { supabase, user, membership };
 }
 
 function redirectWithError(message: string): never {
-  redirect(`/admin/content?error=${encodeURIComponent(message)}`);
+  redirect(`/crimson-admin-control/content?error=${encodeURIComponent(message)}`);
 }
 
 async function saveRevision(
@@ -69,10 +69,10 @@ async function publishRevision(entityType: "site_settings" | "navigation_item" |
   const { error: publishError } = await supabase.rpc("cms_publish_revision", { p_revision_id: revision.id });
   if (publishError) redirectWithError(publishError.message);
 
-  for (const path of ["/", "/about", "/services", "/work", "/contact", "/admin", "/admin/content"]) {
+  for (const path of ["/", "/about", "/services", "/work", "/contact", "/crimson-admin-control", "/crimson-admin-control/content"]) {
     revalidatePath(path);
   }
-  redirect(`/admin/content?saved=published`);
+  redirect(`/crimson-admin-control/content?saved=published`);
 }
 
 async function saveSiteSettings(formData: FormData) {
@@ -107,7 +107,7 @@ async function saveSiteSettings(formData: FormData) {
   revalidatePath("/work");
   revalidatePath("/contact");
   revalidatePath("/admin");
-  redirect("/admin/content?saved=settings");
+  redirect("/crimson-admin-control/content?saved=settings");
 }
 
 async function saveNavigationItem(itemId: string, formData: FormData) {
@@ -138,7 +138,7 @@ async function saveNavigationItem(itemId: string, formData: FormData) {
   revalidatePath("/about");
   revalidatePath("/contact");
   revalidatePath("/admin/content");
-  redirect("/admin/content?saved=navigation");
+  redirect("/crimson-admin-control/content?saved=navigation");
 }
 
 async function savePageMetadata(pageId: string, formData: FormData) {
@@ -189,7 +189,7 @@ async function savePageMetadata(pageId: string, formData: FormData) {
   revalidatePath("/contact");
   revalidatePath("/admin");
   revalidatePath("/admin/content");
-  redirect("/admin/content?saved=page");
+  redirect("/crimson-admin-control/content?saved=page");
 }
 
 async function savePageSection(sectionId: string, formData: FormData) {
@@ -213,7 +213,7 @@ async function savePageSection(sectionId: string, formData: FormData) {
   revalidatePath("/work");
   revalidatePath("/contact");
   revalidatePath("/admin/content");
-  redirect("/admin/content?saved=section");
+  redirect("/crimson-admin-control/content?saved=section");
 }
 
 const pageStatusOptions: AdminPageMetadata["status"][] = ["draft", "review"];
@@ -243,10 +243,10 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
       <div className="admin-shell admin-editor-shell">
         <header className="admin-header">
           <div>
-            <Link className="admin-brand" href="/admin">OCSCO</Link>
+            <Link className="admin-brand" href="/crimson-admin-control">OCSCO</Link>
             <p className="admin-kicker">CMS / Global content</p>
           </div>
-          <AdminAccountActions email={user.email} role={membership.role} backHref="/admin" />
+          <AdminAccountActions email={user.email} role={membership.role} backHref="/crimson-admin-control" />
         </header>
 
         <AdminBreadcrumbs section="Content" record="Global content" />
