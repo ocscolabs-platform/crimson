@@ -11,6 +11,7 @@ Included:
 - Cookie-based Supabase SSR sessions using `@supabase/ssr`.
 - Email/password sign-in at `/admin/login`.
 - Password recovery at `/crimson-admin-control/forgot-password` and `/crimson-admin-control/reset-password`.
+- Password-reset links exchange the Supabase PKCE recovery code on the reset page before allowing a password update.
 - Server-side user verification with `supabase.auth.getUser()`.
 - A staging-only dashboard showing published settings, navigation, pages, services, and case studies.
 - Sign-out and protected-route redirects.
