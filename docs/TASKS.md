@@ -8,6 +8,14 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 The current gate is **PH4-017 — Post-merge release verification and baseline stabilization**. The staging-to-main code merge has already occurred; this task now verifies the Production boundary and synchronizes staging to the approved main baseline. No Blog implementation is authorized by this roadmap update. Full page-body editing is Phase 5, Blog / Insights is Phase 6, and CRM is Phase 7.
 
+## PH4-018 — Remediate the administrator invitation callback
+
+- **Status:** In progress / staging verification required
+- **Goal:** Make the owner-controlled Supabase administrator invitation flow establish a valid session and activate the assigned CMS membership without relying on public signup or the normal PKCE client.
+- **Scope:** `/crimson-admin-control/invite`, invitation callback/session exchange, membership activation, recoverable Auth-user cleanup, and invitation error handling only.
+- **Root cause:** `inviteUserByEmail` accepts the invitation in a different browser context and returns an implicit callback session in the URL fragment. The previous invite page used the normal PKCE browser client and rejected that fragment before a session could be established.
+- **Acceptance criteria:** A fresh staging invitation succeeds on its first click; the invite page establishes the callback session before account setup and never logs tokens; the assigned CMS membership is created with the requested role; membership failure is recoverable without an unintended usable CMS account; existing login, recovery, logout, role authorization, public-signup-disabled behavior, and `/admin` 404 behavior remain unchanged; no Production invitation is sent until staging passes and the owner approves the next controlled Production test.
+
 ## PH4-017 — Verify the post-merge CMS release boundary
 
 - **Status:** In progress / current post-merge release gate

@@ -42,6 +42,14 @@ The server callback exchanges the one-time Supabase PKCE code and establishes th
 
 Each Supabase project must allow its own canonical callback URL. A fresh reset email must be used for every test because Supabase recovery codes are one-time credentials.
 
+## Invitation contract
+
+CMS accounts are invite-only. Public/self-service signup is disabled; the owner creates members through the server-side Supabase administrator invitation API at `/crimson-admin-control/team`. The invitation email must redirect to `/crimson-admin-control/invite`.
+
+Administrator invitations are accepted in a different browser context from the one that created them, so the invite page uses a dedicated implicit-flow browser client to consume the `access_token` and `refresh_token` returned in the invitation URL fragment. It establishes the session before account setup, clears the fragment from browser history, never logs token values, and then assigns the requested CMS membership role. The normal CMS client remains PKCE-based for login and recovery.
+
+If Auth invitation creation succeeds but membership creation fails, the server performs a compensating Auth-user cleanup and returns a recoverable error. A retry must use a new invitation. A Production invitation test is not accepted until a fresh staging first-click test passes.
+
 ## Steady-state architecture
 
 ```text

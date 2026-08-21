@@ -14,7 +14,7 @@
 
 ## Project guardrails
 
-- Phase 0 foundation, Phase 1 information architecture, and Phase 2 design direction are complete. The current phase is Phase 3: public website implementation.
-- Phase 3 is being delivered in small reviewed slices. Do not build CMS, CRM, authentication, or production integrations without explicit approval.
+- Phase 0 foundation, Phase 1 information architecture, Phase 2 design direction, and Phase 3 public website implementation are complete. The current approved gate is Phase 4C post-merge release verification, including the invitation-flow remediation.
+- Do not begin Phase 5 page-content CMS work or Phase 6 Blog / Insights work without explicit approval.
 - Do not add production Supabase credentials, Vercel configuration values, domains, or account-specific identifiers to the repository.
 - Update the README and applicable documentation when the architecture or developer workflow changes.

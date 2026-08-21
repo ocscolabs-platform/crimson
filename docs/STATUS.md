@@ -10,6 +10,8 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 The current CMS is not yet a complete body-content editor for Home, About, Services, and Contact. It currently manages global metadata/settings, navigation, fixed approved section visibility/order, services, case-study editorial data, media, relationships, and revisions. Full page-body editing is Phase 5. Blog / Insights is approved for Phase 6 and has not been implemented. CRM remains Phase 7 and is not implemented beyond inquiry intake.
 
+The current Phase 4C work includes the invitation-flow remediation: Supabase administrator invitations must establish an implicit callback session at `/crimson-admin-control/invite` before the CMS membership is activated. Public signup remains disabled. Staging verification must pass before any Production invitation test or Phase 5 work.
+
 ## Completed
 
 - Connected the local project workspace to the empty GitHub repository `ocscolabs-platform/crimson`.

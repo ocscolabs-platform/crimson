@@ -1,6 +1,6 @@
 # Phase 4 — CMS Roles and Authorization
 
-**Status:** Role foundation implemented; owner-only Team & Access slice is being added in staging
+**Status:** Role foundation implemented; owner-only Team & Access slice is implemented, with invitation callback remediation under staging verification
 
 ## Proposed roles
 
@@ -15,6 +15,8 @@ The first implementation deliberately limits content mutation to the services ta
 ## Owner-only Team & Access slice
 
 The staging CMS includes an owner-only membership surface at `/crimson-admin-control/team`. It may invite a user through the server-side Supabase Auth admin API and assign one of the approved roles. Owners can also change an existing member's role. The browser never receives `SUPABASE_SECRET_KEY`, and the last owner cannot be downgraded.
+
+CMS signup is invite-only. Public signup is disabled. Administrator invitations redirect to `/crimson-admin-control/invite`, where a dedicated implicit-flow client consumes the invitation callback fragment and establishes the session before account setup. This is intentionally separate from the normal PKCE login/recovery client because the invitation is accepted in a different browser context.
 
 This slice does not add account deletion, bulk membership changes, production access, or CRM permissions. Those require separate review.
 
