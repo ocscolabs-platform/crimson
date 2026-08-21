@@ -61,7 +61,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ### Acceptance criteria
 
-- The editor is available only behind the protected `/admin` boundary.
+- The editor is available only behind the protected `/crimson-admin-control` boundary; direct `/admin` requests return `404`.
 - Owners can update service content and manage `draft`, `review`, `published`, and `archived` status values.
 - Editors can update service content only while keeping records in `draft` or `review`.
 - Reviewers can inspect the dashboard but cannot save service changes.
@@ -208,7 +208,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ### Acceptance criteria
 
-- Only a signed-in `owner` can access `/admin/team` or invoke its server actions.
+- Only a signed-in `owner` can access `/crimson-admin-control/team` or invoke its server actions.
 - Owners can invite a user through the server-side Supabase Auth admin API and assign `owner`, `editor`, or `reviewer`.
 - Owners can change an existing CMS member's role.
 - The last owner cannot be downgraded.
@@ -223,7 +223,7 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 ### Acceptance criteria
 
-- `/admin/content` is protected by CMS membership and linked from the admin dashboard.
+- `/crimson-admin-control/content` is protected by CMS membership and linked from the admin dashboard.
 - Owners and editors can update the default site settings record; reviewers remain read-only.
 - Existing navigation items can be updated; only owners can change visibility or navigation group.
 - Owners can publish/archive pages; editors can update only draft/review page metadata; reviewers remain read-only.

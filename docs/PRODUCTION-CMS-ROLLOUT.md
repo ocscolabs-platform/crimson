@@ -26,7 +26,7 @@ Redirect URL: https://ocsco.io/crimson-admin-control/auth/callback
 ```
 
 6. Confirm Production Vercel has the Production Supabase URL, publishable key, and server secret already configured. Do not copy Preview values into Production.
-7. Open `https://ocsco.io/crimson-admin-control`. Anonymous visitors should see the login screen; the owner should reach the CMS dashboard. The legacy `/admin` path redirects to the canonical CMS path.
+7. Open `https://ocsco.io/crimson-admin-control`. Anonymous visitors should see the login screen; the owner should reach the CMS dashboard. Direct `/admin` requests should return `404`.
 
 ## Important transition rule
 

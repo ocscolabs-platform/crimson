@@ -49,7 +49,7 @@ It never promotes CMS members, Auth users, inquiries, audit logs, unpublished re
 4. Run the workflow again with `apply` checked. The workflow requires the explicit internal confirmation string and writes the package to Production.
 5. Verify the Production public routes and the featured/supporting media. Do not use the Production `/admin` route as the editing surface; editorial work remains in staging until a separate Production CMS administration milestone is approved.
 
-Production `/admin` requests are intentionally redirected to the public site with a staging-only marker. This prevents a misleading login failure against a separate Production Auth project and keeps the editor boundary clear.
+Production `/admin` requests return `404` and are never redirected to the CMS. This keeps the generic namespace out of the public route surface; authentication, membership, and RLS remain the actual security controls.
 
 The local equivalent is dry-run by default:
 

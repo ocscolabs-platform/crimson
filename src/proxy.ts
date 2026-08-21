@@ -2,13 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
 export async function proxy(request: NextRequest) {
-  // Keep the old path as a compatibility redirect while making the less
-  // obvious path canonical. Authentication and role checks still happen in
-  // the protected server pages.
+  // The generic admin namespace is intentionally not discoverable. The
+  // canonical public entry point is exposed through the rewrite in
+  // next.config.ts, while direct /admin requests fail before that rewrite.
   if (request.nextUrl.pathname === "/admin" || request.nextUrl.pathname.startsWith("/admin/")) {
-    const canonicalUrl = request.nextUrl.clone();
-    canonicalUrl.pathname = `/crimson-admin-control${request.nextUrl.pathname.slice("/admin".length)}`;
-    return NextResponse.redirect(canonicalUrl);
+    return new NextResponse(null, { status: 404 });
   }
 
   return updateSession(request);
