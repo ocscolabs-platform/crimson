@@ -20,7 +20,7 @@ export default function AdminForgotPasswordPage() {
     try {
       const supabase = createClient();
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/admin/reset-password`,
+        redirectTo: `${window.location.origin}/crimson-admin-control/auth/callback?next=/crimson-admin-control/reset-password`,
       });
 
       if (resetError) {
@@ -59,7 +59,7 @@ export default function AdminForgotPasswordPage() {
             {isSubmitting ? <><span className="admin-button-spinner" aria-hidden="true" /> Sending…</> : <>Send reset link <span aria-hidden="true">↗</span></>}
           </button>
         </form>
-        <Link className="admin-back-link" href="/admin/login">Back to sign in</Link>
+        <Link className="admin-back-link" href="/crimson-admin-control/login">Back to sign in</Link>
       </div>
     </main>
   );

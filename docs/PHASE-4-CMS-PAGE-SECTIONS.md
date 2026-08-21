@@ -21,7 +21,7 @@ The database prevents an owner from hiding the last visible section on a page. E
 ## Staging rollout
 
 1. Apply `supabase/migrations/20260820110000_add_staging_page_sections.sql` in `crimson-staging` after the global-content editor migration.
-2. Open `/admin/content` as the staging owner and confirm each page shows its approved section list.
+2. Open `/crimson-admin-control/content` as the staging owner and confirm each page shows its approved section list.
 3. Change one non-sensitive section order or visibility setting and confirm the success toast and the public staging route.
 4. Confirm the public route follows the saved order and that hiding a section removes only that section.
 5. Do not apply this migration in Production or promote it to `main` until the staging workflow is reviewed.

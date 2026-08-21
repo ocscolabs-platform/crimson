@@ -4,7 +4,7 @@
 
 ## Scope
 
-The first global-content write slice is intentionally narrow and update-only. Authenticated CMS members can review existing records at `/admin/content`; owners and editors can update:
+The first global-content write slice is intentionally narrow and update-only. Authenticated CMS members can review existing records through `/crimson-admin-control/content`; owners and editors can update:
 
 - the default site settings record;
 - existing primary and footer navigation items; and
@@ -25,7 +25,7 @@ Published page metadata must move through Review before content changes. Databas
 ## Staging rollout
 
 1. Apply `supabase/migrations/20260820100000_add_staging_global_content_editor.sql` in `crimson-staging` after the membership migration.
-2. Sign in at the staging `/admin` route and open `Global content`.
+2. Sign in at the staging `/crimson-admin-control` route and open `Global content`.
 3. As the owner, update one non-sensitive positioning or page metadata field and confirm the success toast and public staging route.
 4. Confirm an editor can update draft/review metadata but cannot change navigation visibility or publish a page.
 5. Confirm a reviewer sees the content but no save controls.

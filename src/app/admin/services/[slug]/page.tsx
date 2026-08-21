@@ -22,11 +22,11 @@ async function saveService(slug: string, formData: FormData) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (!canEditServices(membership.role)) {
-    redirect(`/admin/services/${slug}?error=This account does not have service editing access.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=This account does not have service editing access.`);
   }
 
   const name = String(formData.get("name") || "").trim();
@@ -34,49 +34,75 @@ async function saveService(slug: string, formData: FormData) {
   const audience = String(formData.get("audience") || "").trim();
   const outcome = String(formData.get("outcome") || "").trim();
   const requestedStatus = String(formData.get("status") || "draft");
-  const allowedStatuses = membership.role === "owner"
-    ? ["draft", "review", "published", "archived"]
-    : ["draft", "review"];
+  const allowedStatuses = ["draft", "review"];
 
   if (!name || !allowedStatuses.includes(requestedStatus)) {
-    redirect(`/admin/services/${slug}?error=Please provide a service name and a permitted status.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=Please provide a service name and a permitted status.`);
   }
 
   const { data: existing, error: existingError } = await supabase
     .from("services")
-    .select("published_at")
+    .select("id")
     .eq("slug", slug)
     .maybeSingle();
 
   if (existingError || !existing) {
-    redirect(`/admin/services/${slug}?error=The service could not be found.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=The service could not be found.`);
   }
 
-  const publishedAt = requestedStatus === "published"
-    ? existing.published_at || new Date().toISOString()
-    : null;
-
-  const { error } = await supabase
-    .from("services")
-    .update({
+  const { data: revisionId, error: revisionError } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: "service",
+    p_entity_key: existing.id,
+    p_status: requestedStatus,
+    p_payload: {
       name,
       short_description: shortDescription || null,
       audience: audience || null,
       outcome: outcome || null,
-      status: requestedStatus,
-      published_at: publishedAt,
-    })
-    .eq("slug", slug);
+    },
+  });
 
-  if (error) {
-    redirect(`/admin/services/${slug}?error=${encodeURIComponent(error.message)}`);
+  if (revisionError || !revisionId) {
+    redirect(`/crimson-admin-control/services/${slug}?error=${encodeURIComponent(revisionError?.message || "The service revision could not be saved.")}`);
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/services");
   revalidatePath("/services");
   revalidatePath(`/services/${slug}`);
-  redirect(`/admin/services/${slug}?saved=1`);
+  redirect(`/crimson-admin-control/services/${slug}?saved=1`);
+}
+
+async function publishService(slug: string) {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/crimson-admin-control/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (membership.role !== "owner") redirect(`/crimson-admin-control/services/${slug}?error=Only the owner can publish a service revision.`);
+
+  const { data: service, error: serviceError } = await supabase.from("services").select("id").eq("slug", slug).maybeSingle();
+  if (serviceError || !service) redirect(`/crimson-admin-control/services/${slug}?error=The service could not be found.`);
+
+  const { data: revision, error: revisionError } = await supabase
+    .from("cms_revisions")
+    .select("id")
+    .eq("entity_type", "service")
+    .eq("entity_key", service.id)
+    .eq("status", "review")
+    .maybeSingle();
+  if (revisionError || !revision) redirect(`/crimson-admin-control/services/${slug}?error=${encodeURIComponent(revisionError?.message || "Save a Review revision before publishing.")}`);
+
+  const { error: publishError } = await supabase.rpc("cms_publish_revision", { p_revision_id: revision.id });
+  if (publishError) redirect(`/crimson-admin-control/services/${slug}?error=${encodeURIComponent(publishError.message)}`);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/services");
+  revalidatePath("/services");
+  revalidatePath(`/services/${slug}`);
+  redirect(`/crimson-admin-control/services/${slug}?saved=published`);
 }
 
 async function restoreServiceFromAudit(slug: string, auditId: string, _formData: FormData) {
@@ -85,11 +111,11 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
-    redirect(`/admin/services/${slug}?error=Only the owner can restore service snapshots.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=Only the owner can restore service snapshots.`);
   }
 
   const { data: currentService, error: currentServiceError } = await supabase
@@ -99,7 +125,7 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
     .maybeSingle();
 
   if (currentServiceError || !currentService) {
-    redirect(`/admin/services/${slug}?error=The service could not be found.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=The service could not be found.`);
   }
 
   const { data: auditEntry, error: auditError } = await supabase
@@ -111,19 +137,22 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
     .maybeSingle();
 
   if (auditError || !auditEntry || !auditEntry.after_data || typeof auditEntry.after_data !== "object" || Array.isArray(auditEntry.after_data)) {
-    redirect(`/admin/services/${slug}?error=That service snapshot could not be restored.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=That service snapshot could not be restored.`);
   }
 
   const snapshot = auditEntry.after_data as Record<string, unknown>;
   const restoredName = typeof snapshot.name === "string" ? snapshot.name.trim() : "";
   if (!restoredName) {
-    redirect(`/admin/services/${slug}?error=That service snapshot does not contain a valid name.`);
+    redirect(`/crimson-admin-control/services/${slug}?error=That service snapshot does not contain a valid name.`);
   }
 
   const textValue = (key: string) => typeof snapshot[key] === "string" ? snapshot[key] : null;
-  const { error: restoreError } = await supabase
-    .from("services")
-    .update({
+  const { error: restoreError } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: "service",
+    p_entity_key: currentService.id,
+    p_status: "review",
+    p_payload: {
+      ...snapshot,
       name: restoredName,
       short_description: textValue("short_description"),
       detailed_description: textValue("detailed_description"),
@@ -132,21 +161,18 @@ async function restoreServiceFromAudit(slug: string, auditId: string, _formData:
       process_summary: textValue("process_summary"),
       cta_label: textValue("cta_label"),
       cta_href: textValue("cta_href"),
-      status: "review",
-      published_at: null,
-      last_reviewed_at: null,
-    })
-    .eq("id", currentService.id);
+    },
+  });
 
   if (restoreError) {
-    redirect(`/admin/services/${slug}?error=${encodeURIComponent(restoreError.message)}`);
+    redirect(`/crimson-admin-control/services/${slug}?error=${encodeURIComponent(restoreError.message)}`);
   }
 
   revalidatePath("/admin");
   revalidatePath(`/admin/services/${slug}`);
   revalidatePath("/services");
   revalidatePath(`/services/${slug}`);
-  redirect(`/admin/services/${slug}?restored=1`);
+  redirect(`/crimson-admin-control/services/${slug}?restored=1`);
 }
 
 export const dynamic = "force-dynamic";
@@ -159,7 +185,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const [membership, service] = await Promise.all([
     getCmsMembership(user.id),
@@ -180,16 +206,15 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
   }
 
   const canEdit = canEditServices(membership.role);
-  const statusOptions = membership.role === "owner"
-    ? ["draft", "review", "published", "archived"]
-    : ["draft", "review"];
+  const statusOptions = ["draft", "review"];
+  const editorStatus = service.revision_status ?? (service.status === "published" ? "review" : service.status);
 
   return (
     <main className="admin-page">
       <div className="admin-shell admin-editor-shell">
         <header className="admin-header">
           <div>
-            <Link className="admin-brand" href="/admin">OCSCO</Link>
+            <Link className="admin-brand" href="/crimson-admin-control">OCSCO</Link>
             <p className="admin-kicker">CMS / Service editor</p>
           </div>
           <AdminAccountActions email={user.email} role={membership.role} />
@@ -209,8 +234,8 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
 
         {query.saved ? (
           <>
-            <p className="admin-success" role="status">Service saved successfully.</p>
-            <AdminToast tone="success" message="Service saved successfully." />
+            <p className="admin-success" role="status">{query.saved === "published" ? "Service published successfully." : "Service saved as a private revision."}</p>
+            <AdminToast tone="success" message={query.saved === "published" ? "Service published successfully." : "Service saved as a private revision."} />
           </>
         ) : null}
         {query.restored ? (
@@ -235,9 +260,14 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
             <p className="admin-section-note">{canEdit ? "Owners can publish. Editors can prepare draft and review content. Every change is limited by the configured RLS policies." : "Your role can review published content, but cannot change this record."}</p>
           </div>
 
-          {service.status === "published" && canEdit ? (
+          {service.status === "published" && !service.revision_id && canEdit ? (
             <p className="admin-editor-warning" role="note">
-              Published content is protected. Move this record to Review before changing it, then publish it again as an owner.
+              Published content is protected. Save a new Draft or Review revision before changing it. The public site stays unchanged until an owner publishes it.
+            </p>
+          ) : null}
+          {service.revision_id ? (
+            <p className="admin-editor-warning" role="note">
+              This {service.revision_status} revision is private until the owner publishes it. The public site remains on its last published version.
             </p>
           ) : null}
 
@@ -264,12 +294,13 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
             </label>
             <label>
               Editorial status
-              <AdminSelect name="status" defaultValue={service.status} disabled={!canEdit}>
+              <AdminSelect name="status" defaultValue={editorStatus} disabled={!canEdit}>
                 {statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
               </AdminSelect>
             </label>
             {canEdit ? <AdminSubmitButton /> : null}
           </form>
+          {membership.role === "owner" && service.revision_id && service.revision_status === "review" ? <form className="admin-publish-form" action={publishService.bind(null, slug)}><AdminSubmitButton label="Publish service" pendingLabel="Publishing…" /></form> : null}
         </section>
 
         <section className="admin-audit-panel">

@@ -42,6 +42,8 @@ export type AdminCaseStudyReview = {
   media_reviewed_at: string | null;
   featured_image_url: string | null;
   status: "draft" | "review" | "published" | "archived";
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
   published_at: string | null;
   last_reviewed_at: string | null;
   updated_at: string;
@@ -72,7 +74,7 @@ function isMediaItem(value: unknown): value is Omit<AdminCaseStudyMediaItem, "ur
 
 export async function getAdminCaseStudyReview(slug: string, auditPage = 1, auditPageSize = 5): Promise<AdminCaseStudyReview | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data: baseData, error } = await supabase
     .from("case_studies")
     .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status, media_reviewed_at, status, published_at, last_reviewed_at, updated_at")
     .eq("slug", slug)
@@ -82,9 +84,30 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
     throw new Error(error.message);
   }
 
-  if (!data) {
+  if (!baseData) {
     return null;
   }
+
+  const { data: activeRevision, error: revisionError } = await supabase
+    .from("cms_revisions")
+    .select("id, status, payload")
+    .eq("entity_type", "case_study")
+    .eq("entity_key", baseData.id)
+    .in("status", ["draft", "review"])
+    .maybeSingle();
+
+  if (revisionError && !revisionError.message.toLowerCase().includes("does not exist")) {
+    throw new Error(revisionError.message);
+  }
+
+  const activePayload = activeRevision?.payload
+    && typeof activeRevision.payload === "object"
+    && !Array.isArray(activeRevision.payload)
+    ? activeRevision.payload as Record<string, unknown>
+    : null;
+  const data = activePayload
+    ? { ...baseData, ...activePayload, id: baseData.id, slug: baseData.slug }
+    : baseData;
 
   const safeAuditPage = Math.max(1, auditPage);
   const auditFrom = (safeAuditPage - 1) * auditPageSize;
@@ -130,7 +153,10 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
     })),
   ]);
 
-  const serviceIds = (relationships.data ?? []).map((relationship) => relationship.service_id);
+  const revisionServiceIds = activePayload?.service_ids;
+  const serviceIds = Array.isArray(revisionServiceIds)
+    ? revisionServiceIds.filter((value): value is string => typeof value === "string")
+    : (relationships.data ?? []).map((relationship) => relationship.service_id);
   let services: AdminCaseStudyReview["services"] = [];
 
   if (serviceIds.length) {
@@ -149,6 +175,8 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
 
   return {
     ...data,
+    revision_id: activeRevision?.id ?? null,
+    revision_status: activeRevision?.status ?? null,
     featured_image_url: featuredImage.data?.signedUrl || null,
     supporting_media: supportingMediaWithUrls,
     services,

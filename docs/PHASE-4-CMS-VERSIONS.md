@@ -19,7 +19,7 @@ The existing immutable service audit snapshots now support a controlled restorat
 ## Staging rollout
 
 1. Push the version restoration implementation to `staging` after the audit migration has been applied.
-2. Open `/admin/services/branding` as the owner.
+2. Open `/crimson-admin-control/services/branding` as the owner.
 3. Choose a prior audited snapshot and select **Restore as review**.
 4. Confirm the warning, verify the success message, and confirm the content/status return to `review`.
 5. Confirm a new audit entry appears, then publish only after reviewing the restored content.

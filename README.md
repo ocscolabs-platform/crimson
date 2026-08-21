@@ -10,11 +10,11 @@ Project Crimson is OCSCO's new platform repository. It will eventually support a
 - ESLint
 - npm
 
-Supabase is the backend service. Preview/Staging and Production use separate Supabase projects and Resend configuration; no credentials or backend configuration values are stored in the repository. GitHub is the source repository and Vercel hosts the deployments.
+Supabase is the backend service. The CMS release model is being reset to a single published-content source with revision-based publishing; the transition plan is documented in [`docs/RELEASE-ARCHITECTURE.md`](docs/RELEASE-ARCHITECTURE.md). No credentials or backend configuration values are stored in the repository. GitHub is the source repository and Vercel hosts the deployments.
 
 ## Local development
 
-Requirements: Node.js 20.9 or newer and npm.
+Requirements: Node.js 22.x and npm. The repository uses `.nvmrc` and the package engine declaration to keep local and CI validation aligned.
 
 ```bash
 npm install
@@ -43,6 +43,6 @@ public/        Public static assets and the browsable HTML design style guide
 
 The official v1.0 visual source of truth is [`public/style-guide/index.html`](./public/style-guide/index.html), available at `/style-guide` in the deployed application and locally while the development server is running. It documents the OCSCO visual principles, tokens, components, content voice, and implementation rules used for the redesign.
 
-The staging branch also contains a protected CMS dashboard at `/admin`, a controlled service editor at `/admin/services/[slug]`, and database-generated audit history. It uses Supabase Auth sessions and RLS-backed role boundaries; staging setup, publishing limits, audit safeguards, and the case-study design gate are described in [`docs/PHASE-4-CMS-AUTH.md`](./docs/PHASE-4-CMS-AUTH.md), [`docs/PHASE-4-CMS-EDITOR.md`](./docs/PHASE-4-CMS-EDITOR.md), [`docs/PHASE-4-CMS-AUDIT.md`](./docs/PHASE-4-CMS-AUDIT.md), and [`docs/PHASE-4-CMS-CASE-STUDIES.md`](./docs/PHASE-4-CMS-CASE-STUDIES.md). Editorial work remains in staging; approved public content reaches Production through the guarded release workflow documented in [`docs/CMS-PROMOTION.md`](./docs/CMS-PROMOTION.md).
+The CMS is available only at the canonical `/crimson-admin-control` path. Direct `/admin` and `/admin/*` requests return `404`; the generic namespace is not a CMS entry point. It uses Supabase Auth sessions, revision-based publishing, and RLS-backed role boundaries. The current release contract and merge gates are documented in [`docs/RELEASE-READINESS.md`](./docs/RELEASE-READINESS.md). The guarded row-copy workflow in [`docs/CMS-PROMOTION.md`](./docs/CMS-PROMOTION.md) is transitional infrastructure only and is not the target editorial workflow.
 
 Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the information architecture, content model, visual direction, content briefs, and [`PHASE-3-IMPLEMENTATION.md`](./docs/PHASE-3-IMPLEMENTATION.md).

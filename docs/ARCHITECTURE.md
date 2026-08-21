@@ -2,9 +2,9 @@
 
 ## Current state
 
-The repository currently contains a Next.js App Router application using TypeScript, Tailwind CSS, and ESLint. The first public route structure is implemented for the homepage, Services, service detail pages, Work, About, and Contact. The public website is deployed through Vercel and the contact workflow uses environment-specific Supabase and Resend server integrations. Public page, service, work, and shared chrome content now use a reviewed published-only Supabase read boundary with local fallbacks. A staging-only Supabase Auth boundary protects `/admin`, where the controlled Services editor uses role-aware RLS and database-generated audit history; broader CMS mutations remain out of scope.
+The repository contains a Next.js App Router application using TypeScript, Tailwind CSS, and ESLint. The public route structure is implemented for the homepage, Services, service detail pages, Work, About, and Contact. The public website is deployed through Vercel and the contact workflow uses environment-specific Supabase and Resend server integrations. Public content uses the published Supabase read boundary. The authenticated CMS is exposed only at the canonical `/crimson-admin-control` path; direct `/admin` and `/admin/*` requests return `404` before the internal route rewrite. Revision records, owner-only publish/restore RPCs, role-aware RLS, and database-generated audit history define the target CMS workflow. The current release gates are documented in [`RELEASE-READINESS.md`](./RELEASE-READINESS.md).
 
-No CMS editor, role/permission model, storage/media library, CRM, or production admin access exists yet. Production credentials remain outside the repository.
+Production credentials remain outside the repository. Staging and Production remain separate runtime environments; Git merges move code only and do not synchronize CMS rows, Auth users, or Storage objects. The row-copy runner is temporary migration infrastructure and must not become the normal editorial release path.
 
 ## Planned high-level architecture
 
@@ -40,4 +40,4 @@ These are plans, not claims that the systems already exist. Future architecture 
 
 ## Current protected boundary
 
-The staging `/admin` route uses Supabase Auth cookies through `@supabase/ssr` and verifies the current user server-side. It reads records through the published-only RLS boundary, with the first controlled write slice limited to service records for assigned owner/editor roles. Pages, navigation, site settings, case studies, media, and CRM remain outside the editor.
+The `/crimson-admin-control` route uses Supabase Auth cookies through `@supabase/ssr` and verifies the current user server-side. The password recovery callback exchanges the one-time PKCE code on the server before exposing the reset form. CMS writes use revision RPCs and role checks; direct content-table writes are not the normal editor path. Production migration state and external environment configuration must be verified before the staging branch is merged.

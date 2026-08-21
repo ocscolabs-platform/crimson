@@ -26,7 +26,7 @@ This milestone adds database-generated audit history and defense-in-depth publis
 
 1. Apply `supabase/migrations/20260820060000_add_staging_cms_audit.sql` in `crimson-staging` after the membership and service-editor migrations.
 2. Push the staging branch and wait for Vercel to deploy it.
-3. Open `/admin/services/branding` as the staging owner and confirm the change-history panel appears.
+3. Open `/crimson-admin-control/services/branding` as the staging owner and confirm the change-history panel appears.
 4. Confirm a published record cannot be edited while it remains published. Move it to Review first, save, make one non-sensitive change, then publish it again.
 5. Confirm the audit history shows the status changes and content update. Do not apply this migration in Production.
 

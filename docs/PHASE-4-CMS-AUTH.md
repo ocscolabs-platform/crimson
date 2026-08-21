@@ -1,16 +1,17 @@
 # Phase 4 — CMS Authentication Boundary
 
-**Status:** Staging implementation in progress
+**Status:** Historical implementation note; current release guidance is in [`RELEASE-READINESS.md`](./RELEASE-READINESS.md)
 
 ## Scope of this slice
 
-The first protected CMS slice adds a Supabase Auth session boundary and a read-only dashboard at `/admin`. It is intentionally limited to reviewing content that is already published through the CMS foundation.
+The first protected CMS slice added a Supabase Auth session boundary and a read-only dashboard. The canonical path is `/crimson-admin-control`; direct `/admin` and `/admin/*` requests return `404` and are not CMS entry points. It was intentionally limited to reviewing content that was already published through the CMS foundation.
 
 Included:
 
 - Cookie-based Supabase SSR sessions using `@supabase/ssr`.
-- Email/password sign-in at `/admin/login`.
-- Password recovery at `/admin/forgot-password` and `/admin/reset-password`.
+- Email/password sign-in at `/crimson-admin-control/login`.
+- Password recovery at `/crimson-admin-control/forgot-password` and `/crimson-admin-control/reset-password`.
+- Password-reset links exchange the Supabase PKCE recovery code at `/crimson-admin-control/auth/callback` before the reset form is shown.
 - Server-side user verification with `supabase.auth.getUser()`.
 - A staging-only dashboard showing published settings, navigation, pages, services, and case studies.
 - Sign-out and protected-route redirects.
@@ -35,15 +36,15 @@ The proposed role model is documented in [`PHASE-4-CMS-ROLES.md`](./PHASE-4-CMS-
 
 1. In the `crimson-staging` Supabase project, open **Authentication → Users** and create the owner/staff user that should review the CMS. Do not commit the password or share it in repository files.
 2. In **Authentication → URL Configuration**, add the current staging deployment URL to the allowed redirect URLs. Keep the production domain out of this staging-only configuration.
-   - Include the exact password-reset callback URL: `<staging-deployment-url>/admin/reset-password`.
+   - Include the exact password-reset callback URL: `<staging-deployment-url>/crimson-admin-control/auth/callback`.
 3. Confirm the existing Vercel Preview variables point to the staging Supabase project:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-4. Visit `/admin/login` on the staging deployment and sign in with the Supabase Auth user.
+4. Visit `/crimson-admin-control/login` on the staging deployment and sign in with the Supabase Auth user.
 
 ## Acceptance criteria
 
-- Anonymous visitors are redirected from `/admin` to `/admin/login`.
+- Anonymous visitors must open `/crimson-admin-control`; direct `/admin` requests return `404`.
 - Authenticated staging users can view the dashboard and sign out.
 - The dashboard only shows records permitted by the published-only RLS policies.
 - No admin page or auth configuration is promoted to `main` until staging QA and the role/permission decision are complete.

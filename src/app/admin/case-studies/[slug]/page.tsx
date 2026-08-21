@@ -73,7 +73,45 @@ function mediaItems(value: unknown): AdminCaseStudyMediaItem[] {
 }
 
 function mediaError(slug: string, message: string): never {
-  redirect(`/admin/case-studies/${slug}?error=${encodeURIComponent(message)}`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?error=${encodeURIComponent(message)}`);
+}
+
+async function getEditableCaseStudy(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  slug: string,
+) {
+  const { data: base, error } = await supabase
+    .from("case_studies")
+    .select("id, slug, status, client_visibility, project_name, project_type, project_category, external_url, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status, media_reviewed_at, is_featured, sort_order, published_at, last_reviewed_at")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error || !base) {
+    mediaError(slug, "The case study could not be found.");
+  }
+
+  const { data: revision, error: revisionError } = await supabase
+    .from("cms_revisions")
+    .select("status, payload")
+    .eq("entity_type", "case_study")
+    .eq("entity_key", base.id)
+    .in("status", ["draft", "review"])
+    .maybeSingle();
+
+  if (revisionError && !revisionError.message.toLowerCase().includes("does not exist")) {
+    mediaError(slug, revisionError.message);
+  }
+
+  const payload = revision?.payload
+    && typeof revision.payload === "object"
+    && !Array.isArray(revision.payload)
+    ? revision.payload as Record<string, unknown>
+    : null;
+
+  return {
+    base,
+    current: payload ? { ...base, ...payload, id: base.id, slug: base.slug } : base,
+  };
 }
 
 async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting", slot: number | null, formData: FormData) {
@@ -81,28 +119,15 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
     mediaError(slug, "Only the owner can upload case-study media.");
   }
 
-  const { data: existing, error: existingError } = await supabase
-    .from("case_studies")
-    .select("id, slug, status, supporting_media")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (existingError || !existing) {
-    mediaError(slug, "The case study could not be found.");
-  }
-
-  if (existing.status === "published") {
-    mediaError(slug, "Move the case study to Review before changing its media.");
-  }
-
-  const currentMedia = mediaItems(existing.supporting_media);
+  const { current } = await getEditableCaseStudy(supabase, slug);
+  const currentMedia = mediaItems(current.supporting_media);
   if (kind === "supporting" && (!Number.isInteger(slot) || slot === null || slot < 0 || slot > 1 || slot > currentMedia.length)) {
     mediaError(slug, slot === 1 && currentMedia.length === 0 ? "Upload supporting visual 1 before adding visual 2." : "Choose one of the two supporting media slots.");
   }
@@ -174,7 +199,12 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
       media_status: "pending",
       media_reviewed_at: null,
     };
-  const { error: updateError } = await supabase.from("case_studies").update(update).eq("id", existing.id);
+  const { error: updateError } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: "case_study",
+    p_entity_key: current.id,
+    p_status: "review",
+    p_payload: update,
+  });
 
   if (updateError) {
     mediaError(slug, updateError.message);
@@ -183,7 +213,7 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
   revalidatePath("/admin/case-studies/" + slug);
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
-  redirect(`/admin/case-studies/${slug}?saved=media`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=media`);
 }
 
 async function approveCaseStudyMedia(slug: string) {
@@ -191,42 +221,35 @@ async function approveCaseStudyMedia(slug: string) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
     mediaError(slug, "Only the owner can approve case-study media.");
   }
 
-  const { data: existing, error: existingError } = await supabase
-    .from("case_studies")
-    .select("id, status, featured_image_path, featured_image_alt, supporting_media")
-    .eq("slug", slug)
-    .maybeSingle();
+  const { current } = await getEditableCaseStudy(supabase, slug);
 
-  if (existingError || !existing) {
-    mediaError(slug, "The case study could not be found.");
-  }
-
-  if (existing.status === "published") {
-    mediaError(slug, "Move the case study to Review before approving its media.");
-  }
-
-  if (!existing.featured_image_path || String(existing.featured_image_alt || "").trim().length < 8) {
+  if (!current.featured_image_path || String(current.featured_image_alt || "").trim().length < 8) {
     mediaError(slug, "Add a featured image with meaningful alternative text before approving the media package.");
   }
 
-  const approvedSupportingMedia = mediaItems(existing.supporting_media).map((item) => ({
+  const approvedSupportingMedia = mediaItems(current.supporting_media).map((item) => ({
     path: item.path,
     alt: item.alt,
     media_type: "image" as const,
     approval: "approved" as const,
   }));
-  const { error: updateError } = await supabase.from("case_studies").update({
+  const { error: updateError } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: "case_study",
+    p_entity_key: current.id,
+    p_status: "review",
+    p_payload: {
     supporting_media: approvedSupportingMedia,
     media_status: "approved",
     media_reviewed_at: new Date().toISOString(),
-  }).eq("id", existing.id);
+    },
+  });
 
   if (updateError) {
     mediaError(slug, updateError.message);
@@ -235,7 +258,7 @@ async function approveCaseStudyMedia(slug: string) {
   revalidatePath("/admin/case-studies/" + slug);
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
-  redirect(`/admin/case-studies/${slug}?saved=media-approved`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=media-approved`);
 }
 
 async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting", slot: number | null) {
@@ -243,36 +266,23 @@ async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (membership.role !== "owner") {
     mediaError(slug, "Only the owner can remove case-study media.");
   }
 
-  const { data: existing, error: existingError } = await supabase
-    .from("case_studies")
-    .select("id, status, featured_image_path, featured_image_alt, supporting_media")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (existingError || !existing) {
-    mediaError(slug, "The case study could not be found.");
-  }
-
-  if (existing.status === "published") {
-    mediaError(slug, "Move the case study to Review before removing its media.");
-  }
-
-  const currentMedia = mediaItems(existing.supporting_media);
+  const { base, current } = await getEditableCaseStudy(supabase, slug);
+  const currentMedia = mediaItems(current.supporting_media);
   let storagePath: string | null = null;
   let update: Record<string, unknown>;
 
   if (kind === "featured") {
-    if (!existing.featured_image_path) {
+    if (!current.featured_image_path) {
       mediaError(slug, "No featured image is configured.");
     }
-    storagePath = existing.featured_image_path;
+    storagePath = current.featured_image_path;
     update = {
       featured_image_path: null,
       featured_image_alt: null,
@@ -293,12 +303,19 @@ async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting
     };
   }
 
-  const { error: updateError } = await supabase.from("case_studies").update(update).eq("id", existing.id);
+  const { error: updateError } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: "case_study",
+    p_entity_key: current.id,
+    p_status: "review",
+    p_payload: update,
+  });
   if (updateError) {
     mediaError(slug, updateError.message);
   }
 
-  const { error: storageError } = storagePath
+  // If the base record is published, keep the old object until the new
+  // revision is published and a cleanup job can prove it is unreferenced.
+  const { error: storageError } = storagePath && base.status !== "published"
     ? await supabase.storage.from(MEDIA_BUCKET).remove([storagePath])
     : { error: null };
 
@@ -306,9 +323,9 @@ async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
   if (storageError) {
-    redirect(`/admin/case-studies/${slug}?saved=media-removed&warning=${encodeURIComponent("The media was removed from the case study, but its old storage object needs cleanup.")}`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=media-removed&warning=${encodeURIComponent("The media was removed from the case study, but its old storage object needs cleanup.")}`);
   }
-  redirect(`/admin/case-studies/${slug}?saved=media-removed`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=media-removed`);
 }
 
 async function saveCaseStudyRelationships(slug: string, formData: FormData) {
@@ -316,33 +333,23 @@ async function saveCaseStudyRelationships(slug: string, formData: FormData) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (!canEditCaseStudies(membership.role)) {
     mediaError(slug, "This account does not have case-study relationship editing access.");
   }
 
-  const { data: existing, error: existingError } = await supabase
-    .from("case_studies")
-    .select("id, status")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (existingError || !existing) {
-    mediaError(slug, "The case study could not be found.");
-  }
-
-  if (existing.status === "published") {
-    mediaError(slug, "Move the case study to Review before changing its relationships.");
-  }
+  const { current } = await getEditableCaseStudy(supabase, slug);
 
   const serviceIds = [...new Set(formData.getAll("service_ids")
     .map((value) => String(value).trim())
     .filter((value) => /^[0-9a-f-]{36}$/i.test(value)))];
-  const { error: relationshipError } = await supabase.rpc("cms_replace_case_study_services", {
-    p_case_study_id: existing.id,
-    p_service_ids: serviceIds,
+  const { error: relationshipError } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: "case_study",
+    p_entity_key: current.id,
+    p_status: "review",
+    p_payload: { service_ids: serviceIds },
   });
 
   if (relationshipError) {
@@ -352,7 +359,7 @@ async function saveCaseStudyRelationships(slug: string, formData: FormData) {
   revalidatePath("/admin/case-studies/" + slug);
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
-  redirect(`/admin/case-studies/${slug}?saved=relationships`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=relationships`);
 }
 
 async function saveCaseStudy(slug: string, formData: FormData) {
@@ -360,22 +367,14 @@ async function saveCaseStudy(slug: string, formData: FormData) {
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/crimson-admin-control/login");
 
   const membership = await getCmsMembership(user.id);
   if (!canEditCaseStudies(membership.role)) {
-    redirect("/admin/case-studies/" + slug + "?error=This account does not have case-study editing access.");
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=This account does not have case-study editing access.");
   }
 
-  const { data: existing, error: existingError } = await supabase
-    .from("case_studies")
-    .select("id, client_visibility, published_at")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (existingError || !existing) {
-    redirect("/admin/case-studies/" + slug + "?error=The case study could not be found.");
-  }
+  const { current } = await getEditableCaseStudy(supabase, slug);
 
   const projectName = String(formData.get("project_name") || "").trim();
   const projectType = String(formData.get("project_type") || "");
@@ -386,29 +385,29 @@ async function saveCaseStudy(slug: string, formData: FormData) {
   const externalUrl = String(formData.get("external_url") || "").trim();
   const requestedStatus = String(formData.get("status") || "review");
   const allowedTypes = ["case-study", "prototype", "upcoming"];
-  const allowedStatuses = membership.role === "owner"
-    ? ["draft", "review", "published", "archived"]
-    : ["draft", "review"];
+  const allowedStatuses = ["draft", "review"];
 
   if (!projectName || !allowedTypes.includes(projectType) || !allowedStatuses.includes(requestedStatus)) {
-    redirect("/admin/case-studies/" + slug + "?error=Please provide a project name, valid type, and permitted status.");
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=Please provide a project name, valid type, and permitted status.");
   }
 
   if (externalUrl && !/^https:\/\//i.test(externalUrl)) {
-    redirect("/admin/case-studies/" + slug + "?error=External project links must use HTTPS.");
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=External project links must use HTTPS.");
   }
 
   const clientVisibility = canApproveCaseStudyVisibility(membership.role)
     ? String(formData.get("client_visibility") || "hidden")
-    : existing.client_visibility;
+    : current.client_visibility;
 
   if (!["hidden", "approved"].includes(clientVisibility)) {
-    redirect("/admin/case-studies/" + slug + "?error=Client visibility must be Hidden or Approved.");
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=Client visibility must be Hidden or Approved.");
   }
 
-  const { error } = await supabase
-    .from("case_studies")
-    .update({
+  const { error } = await supabase.rpc("cms_save_revision", {
+    p_entity_type: "case_study",
+    p_entity_key: current.id,
+    p_status: requestedStatus,
+    p_payload: {
       project_name: projectName,
       project_type: projectType,
       project_category: projectCategory || null,
@@ -420,19 +419,62 @@ async function saveCaseStudy(slug: string, formData: FormData) {
       outcomes: lineItems(String(formData.get("outcomes") || "")),
       external_url: externalUrl || null,
       status: requestedStatus,
-      published_at: existing.published_at,
-    })
-    .eq("id", existing.id);
+    },
+  });
 
   if (error) {
-    redirect("/admin/case-studies/" + slug + "?error=" + encodeURIComponent(error.message));
+    redirect("/crimson-admin-control/case-studies/" + slug + "?error=" + encodeURIComponent(error.message));
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/case-studies/" + slug);
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
-  redirect("/admin/case-studies/" + slug + "?saved=1");
+  redirect("/crimson-admin-control/case-studies/" + slug + "?saved=1");
+}
+
+async function publishCaseStudy(slug: string) {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/crimson-admin-control/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (membership.role !== "owner") {
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=Only the owner can publish a case-study revision.`);
+  }
+
+  const { data: caseStudy, error: caseStudyError } = await supabase
+    .from("case_studies")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (caseStudyError || !caseStudy) {
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=The case study could not be found.`);
+  }
+
+  const { data: revision, error: revisionError } = await supabase
+    .from("cms_revisions")
+    .select("id")
+    .eq("entity_type", "case_study")
+    .eq("entity_key", caseStudy.id)
+    .eq("status", "review")
+    .maybeSingle();
+  if (revisionError || !revision) {
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=${encodeURIComponent(revisionError?.message || "Save a Review revision before publishing.")}`);
+  }
+
+  const { error: publishError } = await supabase.rpc("cms_publish_revision", { p_revision_id: revision.id });
+  if (publishError) {
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=${encodeURIComponent(publishError.message)}`);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/case-studies/${slug}`);
+  revalidatePath("/work");
+  revalidatePath(`/work/${slug}`);
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=published`);
 }
 
 export const dynamic = "force-dynamic";
@@ -446,7 +488,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/admin/login");
+    redirect("/crimson-admin-control/login");
   }
 
   const [membership, review] = await Promise.all([
@@ -464,7 +506,8 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
   const isOwner = membership.role === "owner";
   const canEdit = canEditCaseStudies(membership.role) && (review.status !== "published" || isOwner);
   const canEditRelationships = canEditCaseStudies(membership.role) && review.status !== "published";
-  const statusOptions = isOwner ? ["draft", "review", "published", "archived"] : ["draft", "review"];
+  const statusOptions = ["draft", "review"];
+  const editorStatus = review.revision_status ?? (review.status === "published" ? "review" : review.status);
   const availableServicesResult = await supabase
     .from("services")
     .select("id, name, slug, status")
@@ -517,7 +560,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
       <div className="admin-shell admin-editor-shell">
         <header className="admin-header">
           <div>
-            <Link className="admin-brand" href="/admin">OCSCO</Link>
+            <Link className="admin-brand" href="/crimson-admin-control">OCSCO</Link>
             <p className="admin-kicker">CMS / Case-study review</p>
           </div>
           <AdminAccountActions email={user.email} role={membership.role} />
@@ -546,7 +589,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
         {query.saved ? (
           <>
             <p className="admin-success" role="status">
-              {query.saved === "media-approved" ? "Media package approved successfully." : query.saved === "media" ? "Case-study media saved successfully." : query.saved === "relationships" ? "Related capabilities saved successfully." : "Case study saved successfully."}
+              {query.saved === "published" ? "Case study published successfully." : query.saved === "media-approved" ? "Media package approved successfully." : query.saved === "media" ? "Case-study media saved successfully." : query.saved === "relationships" ? "Related capabilities saved successfully." : "Case study saved as a private revision."}
             </p>
             <AdminToast
               tone="success"
@@ -554,11 +597,11 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
                 ? "Media approved. It can appear publicly only after the case study is published."
                 : query.saved === "media"
                   ? "Media saved as pending review."
-                  : query.saved === "relationships"
-                    ? "The case study now reflects the selected published capabilities."
-                  : review.client_visibility === "approved"
-                    ? "Saved successfully. Approved identity can appear on the public Work page."
-                    : "Saved successfully. Public Work remains anonymized because visibility is Hidden."}
+                : query.saved === "relationships"
+                  ? "The case study now reflects the selected published capabilities."
+                  : query.saved === "published"
+                    ? "Case study published successfully. The public Work page now uses this revision."
+                    : "Saved as a private revision. The public Work page remains unchanged until the owner publishes it."}
             />
           </>
         ) : null}
@@ -728,6 +771,12 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             </p>
           </div>
 
+          {review.revision_id ? (
+            <p className="admin-editor-warning" role="note">
+              This {review.revision_status} revision is private until the owner publishes it. The public Work page remains on its last published version.
+            </p>
+          ) : null}
+
           <form className="admin-editor-form" action={saveCaseStudy.bind(null, slug)}>
             <label>
               Project name
@@ -780,7 +829,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             </label>
             <label>
               Editorial status
-              <AdminSelect name="status" defaultValue={review.status} disabled={!canEdit}>
+              <AdminSelect name="status" defaultValue={editorStatus} disabled={!canEdit}>
                 {statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
               </AdminSelect>
             </label>
@@ -789,6 +838,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             </div>
             {canEdit ? <AdminSubmitButton /> : null}
           </form>
+          {isOwner && review.revision_id && review.revision_status === "review" ? <form className="admin-publish-form" action={publishCaseStudy.bind(null, slug)}><AdminSubmitButton label="Publish case study" pendingLabel="Publishing…" /></form> : null}
         </section>
 
         <section className="admin-review-grid admin-review-content-grid">

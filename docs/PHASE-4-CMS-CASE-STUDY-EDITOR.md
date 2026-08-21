@@ -43,7 +43,7 @@ The editor displays but does not mutate featured placement, media paths, media a
 
 1. Apply supabase/migrations/20260820090000_add_staging_case_study_editor_policies.sql in crimson-staging only, after the audit and media-contract migrations.
 2. Push the staging branch and wait for Vercel.
-3. Sign in as the staging owner and open /admin/case-studies/membership-portal for the first non-featured workflow test.
+3. Sign in as the staging owner and open `/crimson-admin-control/case-studies/membership-portal` for the first non-featured workflow test.
 4. Move the record to review, change one non-sensitive field, and save. Confirm the loading state, success toast, persistent success message, public record behavior, and case-study audit entry.
 5. Publish the reviewed record again as the owner. Confirm published_at is restored and the public record returns.
 6. Do not test with client facts, private media, or the Production environment.
