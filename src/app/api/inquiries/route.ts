@@ -20,6 +20,13 @@ function stringValue(value: unknown) {
 }
 
 export async function POST(request: Request) {
+  const submissionsEnabled = process.env.INQUIRY_SUBMISSIONS_ENABLED === "true"
+    || process.env.VERCEL_ENV === "production";
+
+  if (!submissionsEnabled) {
+    return NextResponse.json({ error: "Inquiry submissions are disabled in this environment." }, { status: 503 });
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
   const resendApiKey = process.env.RESEND_API_KEY;

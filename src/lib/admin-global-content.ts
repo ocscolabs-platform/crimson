@@ -9,6 +9,8 @@ export type AdminSiteSettings = {
   default_seo_description: string | null;
   default_og_image_path: string | null;
   primary_contact_path: string;
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
 };
 
 export type AdminNavigationItem = {
@@ -18,6 +20,8 @@ export type AdminNavigationItem = {
   navigation_group: "primary" | "footer";
   sort_order: number;
   is_visible: boolean;
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
 };
 
 export type AdminPageMetadata = {
@@ -34,6 +38,8 @@ export type AdminPageMetadata = {
   status: "draft" | "review" | "published" | "archived";
   published_at: string | null;
   last_reviewed_at: string | null;
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
 };
 
 export type AdminPageSection = {
@@ -43,6 +49,8 @@ export type AdminPageSection = {
   label: string;
   sort_order: number;
   is_visible: boolean;
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
 };
 
 export type AdminGlobalContent = {
@@ -89,17 +97,63 @@ export async function getAdminGlobalContent(): Promise<AdminGlobalContent> {
     throw new Error(firstError.message);
   }
 
+  const { data: revisions, error: revisionsError } = await supabase
+    .from("cms_revisions")
+    .select("id, entity_type, entity_key, status, payload")
+    .in("status", ["draft", "review"]);
+
+  // Keep the legacy editor readable until the revision migration is applied
+  // in the current environment. Once present, active revisions become the
+  // editor view while the public site continues reading the base tables.
+  if (revisionsError && !revisionsError.message.toLowerCase().includes("does not exist")) {
+    throw new Error(revisionsError.message);
+  }
+
+  const revisionMap = new Map(
+    (revisions ?? []).map((revision) => [
+      `${revision.entity_type}:${revision.entity_key}`,
+      {
+        id: revision.id,
+        status: revision.status as "draft" | "review",
+        payload: revision.payload && typeof revision.payload === "object" && !Array.isArray(revision.payload)
+          ? revision.payload as Record<string, unknown>
+          : {},
+      },
+    ]),
+  );
+
+  const settingsRevision = revisionMap.get("site_settings:default");
+  const settingsPayload = settingsRevision?.payload;
+  const settingsRecord = settings.data as AdminSiteSettings | null;
+  const resolvedSettings = settingsRecord && settingsPayload
+    ? { ...settingsRecord, ...settingsPayload, id: settingsRecord.id, revision_id: settingsRevision.id, revision_status: settingsRevision.status }
+    : settingsRecord;
+
+  const resolvedNavigation = (navigation.data ?? []).map((item) => {
+    const revision = revisionMap.get(`navigation_item:${item.id}`);
+    return revision ? { ...item, ...revision.payload, id: item.id, revision_id: revision.id, revision_status: revision.status } : item;
+  }) as AdminNavigationItem[];
+
+  const resolvedPages = (pages.data ?? []).map((page) => {
+    const revision = revisionMap.get(`page:${page.id}`);
+    return revision ? { ...page, ...revision.payload, id: page.id, slug: page.slug, revision_id: revision.id, revision_status: revision.status } : page;
+  }) as AdminPageMetadata[];
+
   const sectionMap: Record<string, AdminPageSection[]> = {};
   for (const section of (sections.data ?? []) as AdminPageSection[]) {
+    const revision = revisionMap.get(`page_section:${section.id}`);
+    const resolvedSection = revision
+      ? { ...section, ...revision.payload, id: section.id, page_id: section.page_id, revision_id: revision.id, revision_status: revision.status }
+      : section;
     const pageSections = sectionMap[section.page_id] ?? [];
-    pageSections.push(section);
+    pageSections.push(resolvedSection as AdminPageSection);
     sectionMap[section.page_id] = pageSections;
   }
 
   return {
-    settings: settings.data as AdminSiteSettings | null,
-    navigation: (navigation.data ?? []) as AdminNavigationItem[],
-    pages: (pages.data ?? []) as AdminPageMetadata[],
+    settings: resolvedSettings,
+    navigation: resolvedNavigation,
+    pages: resolvedPages,
     sections: sectionMap,
   };
 }

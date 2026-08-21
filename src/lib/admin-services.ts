@@ -11,6 +11,8 @@ export type AdminServiceRecord = {
   status: "draft" | "review" | "published" | "archived";
   published_at: string | null;
   last_reviewed_at: string | null;
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | "published" | "archived" | null;
 };
 
 export type AdminServiceAuditEntry = {
@@ -38,7 +40,41 @@ export async function getAdminService(slug: string): Promise<AdminServiceRecord 
     throw new Error(error.message);
   }
 
-  return data as AdminServiceRecord | null;
+  if (!data) {
+    return null;
+  }
+
+  const { data: revision, error: revisionError } = await supabase
+    .from("cms_revisions")
+    .select("id, status, payload")
+    .eq("entity_type", "service")
+    .eq("entity_key", data.id)
+    .in("status", ["draft", "review"])
+    .maybeSingle();
+
+  // The revision table is introduced after the existing staging editor. Keep
+  // the editor readable while the migration is being rolled out, but surface
+  // real query failures once the table exists.
+  if (revisionError && !revisionError.message.toLowerCase().includes("does not exist")) {
+    throw new Error(revisionError.message);
+  }
+
+  if (!revision) {
+    return data as AdminServiceRecord;
+  }
+
+  const payload = revision.payload && typeof revision.payload === "object" && !Array.isArray(revision.payload)
+    ? revision.payload as Partial<AdminServiceRecord>
+    : {};
+
+  return {
+    ...(data as AdminServiceRecord),
+    ...payload,
+    id: data.id,
+    slug: data.slug,
+    revision_id: revision.id,
+    revision_status: revision.status as AdminServiceRecord["revision_status"],
+  };
 }
 
 export type AdminServiceAuditPage = {

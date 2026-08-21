@@ -497,6 +497,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-page-section-row form label { display: grid; gap: 7px; color: #a7a7a7; font-size: .68rem; font-weight: 700; }
 .admin-page-section-row form .admin-input { min-height: 44px; padding: 10px 12px; }
 .admin-page-section-row form .admin-submit { width: auto; min-width: 112px; margin-top: 0; }
+.admin-publish-form { display: flex; align-items: center; margin-top: 14px; }
+.admin-publish-form .admin-submit { width: auto; min-width: 190px; margin-top: 0; }
 
 @media (max-width: 840px) {
   .hero { min-height: 720px; }
@@ -604,6 +606,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-page-metadata-form label:nth-child(5), .admin-page-metadata-form button { grid-column: auto; }
   .admin-page-section-row form { grid-template-columns: 1fr 1fr; }
   .admin-page-section-row form .admin-submit { grid-column: 1 / -1; }
+  .admin-publish-form, .admin-publish-form .admin-submit { width: 100%; }
   .admin-media-list { grid-template-columns: 1fr; }
   .admin-account-identity { flex: 1; }
   .admin-user { max-width: 150px; }
