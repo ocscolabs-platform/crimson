@@ -1,5 +1,7 @@
 # Architecture Decision Log
 
+> Current release guidance is consolidated in [`RELEASE-READINESS.md`](./RELEASE-READINESS.md). Earlier ADR entries are historical decisions; where older entries describe `/admin` or row-copy publication as the current workflow, the release-readiness baseline supersedes that wording.
+
 Dates use the repository work date where a decision was made during Phase 0.
 
 ## ADR-001 — Replace WordPress
@@ -382,4 +384,4 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Status:** Accepted for Production and staging
 - **Decision:** Use `/crimson-admin-control` as the canonical authenticated CMS path. Keep `/admin` only as a compatibility redirect to the canonical path so existing bookmarks do not break. Route protection, Supabase Auth, CMS membership, and RLS remain the actual security controls.
 - **Reason:** A less obvious path reduces casual discovery and avoids presenting the CMS as a generic `/admin` endpoint, while the compatibility redirect provides a controlled migration path. The path is not treated as a security boundary.
-- **Consequence:** Vercel/Supabase Auth reset URLs must use `/crimson-admin-control/reset-password`. Internal route rewrites continue to use the existing App Router implementation, and no data, role, or credential changes are introduced.
+- **Consequence:** Vercel/Supabase Auth reset URLs must use `/crimson-admin-control/auth/callback?next=/crimson-admin-control/reset-password`. The callback exchanges the one-time recovery code server-side before the reset form loads. Internal route rewrites continue to use the existing App Router implementation, and no data, role, or credential changes are introduced.

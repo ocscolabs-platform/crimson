@@ -18,6 +18,7 @@ export default function AdminResetPasswordPage() {
   useEffect(() => {
     const supabase = createClient();
     let isMounted = true;
+    const queryError = new URLSearchParams(window.location.search).get("error");
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
@@ -29,33 +30,17 @@ export default function AdminResetPasswordPage() {
     });
 
     async function establishRecoverySession() {
-      const code = new URLSearchParams(window.location.search).get("code");
-
-      if (code) {
-        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-
-        if (exchangeError) {
-          if (isMounted) {
-            setError("This password reset link is invalid or has expired. Request a new link and try again.");
-            setIsCheckingSession(false);
-          }
-          return;
-        }
-
-        if (data.session && isMounted) {
-          setHasRecoverySession(true);
-          setIsCheckingSession(false);
-          return;
-        }
-      }
-
-      const { data } = await supabase.auth.getSession();
+      const { data, error: sessionError } = await supabase.auth.getSession();
       if (!isMounted) return;
 
       setHasRecoverySession(Boolean(data.session));
       setIsCheckingSession(false);
       if (!data.session) {
-        setError("Auth session missing. Request a new password reset link and open it in this browser.");
+        setError(
+          queryError ||
+            sessionError?.message ||
+            "Auth session missing. Request a new password reset link and open it in this browser.",
+        );
       }
     }
 
