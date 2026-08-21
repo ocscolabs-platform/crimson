@@ -42,9 +42,9 @@ feature/*  →  staging / Preview  →  main / Production
 The live remote refs were fetched and compared on 2026-08-22 before this plan was finalized:
 
 - `origin/main` is `0b58c0351afa8a022c7c633592a829a02039ebc9`.
-- `origin/staging` is `58aab705d9f6c683e7ed8af567d3a288b46ae2a3`.
-- `origin/main` is the merge base of `origin/staging`; `git rev-list --left-right --count origin/main...origin/staging` returns `0 7`.
-- Therefore, the approved application baseline is already in `main`, while `staging` is seven commits ahead with documentation/reconciliation and merge-history commits. Staging is not behind main and does not need a forced reset or history rewrite. The next feature cycle should start from a deliberate sync decision after Phase 4C sign-off.
+- `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`.
+- `origin/main` is the merge base of `origin/staging`; `git rev-list --left-right --count origin/main...origin/staging` returns `0 9`.
+- Therefore, the approved application baseline is already in `main`, while `staging` is nine commits ahead with documentation/reconciliation and merge-history commits. The only non-documentation file difference is a comment-only clarification in the existing Production CMS migration; there is no unreviewed application-code divergence. Staging is not behind main and does not need a forced reset or history rewrite. The next feature cycle should start from a deliberate sync decision after Phase 4C sign-off.
 - This Git result proves code promotion only. It does not prove that Production Supabase migrations, rows, Auth configuration, Storage objects/policies, environment variables, or public runtime behavior are correct.
 
 ## Phase status at a glance
