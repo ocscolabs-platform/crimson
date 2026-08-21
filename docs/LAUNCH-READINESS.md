@@ -1,8 +1,10 @@
 # Phase 3 Launch Readiness
 
+> **Historical checklist:** Phase 3 was completed before the current post-merge stabilization gate. The authoritative current plan is [`MASTER-PLAN.md`](./MASTER-PLAN.md), with release criteria in [`RELEASE-READINESS.md`](./RELEASE-READINESS.md). Statements below that describe a future staging-to-main promotion are historical and are not the current release gate.
+
 **Status:** Technical launch complete; owner content and accessibility follow-up pending
 
-This checklist is the release gate for the public OCSCO website before the full staging implementation is promoted to `main`.
+This checklist records the release gate for the public OCSCO website before the full staging implementation was promoted to `main`.
 
 ## Engineering checks completed
 
@@ -44,7 +46,7 @@ Do not reuse staging credentials in Production. Before promoting the full contac
 
 1. Owner reviews and approves the remaining content and accessibility items.
 2. Production Supabase and Resend configuration is created and tested separately. **Complete.**
-3. The full reviewed staging branch is promoted to `main`. **Complete in `1dc5c54`.**
+3. The full reviewed staging branch was promoted to `main`. **Historical completion recorded in `1dc5c54`; current post-merge verification is tracked in `MASTER-PLAN.md`.**
 4. Vercel Production redeploys with Production variables. **Complete.**
 5. A controlled Production smoke test verifies routes, CTA navigation, contact submission, database storage, and email notification. **Complete.**
 6. DNS is switched from WordPress to Vercel after the controlled test passes. **Complete.**

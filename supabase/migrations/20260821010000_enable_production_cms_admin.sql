@@ -1,7 +1,9 @@
 -- OCSCO Project Crimson canonical Production CMS boundary.
 --
 -- Apply once to the Production Supabase project after the public CMS
--- foundation migration. This enables the authenticated /admin surface and
+-- foundation migration. This enables the authenticated CMS surface at the
+-- canonical /crimson-admin-control route; direct /admin requests remain 404
+-- at the application edge.
 -- the existing controlled editor policies. It does not create an account or
 -- seed an account-specific user; create the owner in Supabase Auth and add
 -- that user's UUID to public.cms_members separately.
@@ -195,4 +197,4 @@ create policy "cms members can read global audit history"
   using (public.cms_has_role(array['owner', 'editor', 'reviewer']::text[]));
 
 comment on schema public is
-  'OCSCO canonical CMS source. Production /admin is authenticated; public reads remain published-only.';
+  'OCSCO canonical CMS source. The CMS uses /crimson-admin-control; direct /admin requests remain 404 and public reads remain published-only.';

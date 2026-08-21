@@ -1,6 +1,6 @@
 # Phase 1 — Information Architecture
 
-**Status:** Proposed for owner review  
+**Status:** Phase 1 baseline; Blog / Insights approved for Phase 6 in [`MASTER-PLAN.md`](./MASTER-PLAN.md)
 **Scope:** Public website structure and content relationships only  
 **Out of scope:** Visual design, page implementation, CMS implementation, CRM implementation, authentication, and production data connections
 
@@ -45,10 +45,12 @@ Primary conversion action: **Start a conversation** → `/contact`.
 | `/work/[slug]` | Give one project enough context to establish credibility. | Qualified prospects | Start a related conversation | Required |
 | `/about` | Explain OCSCO's approach, capabilities, and point of view. | Prospective clients and partners | Start a conversation | Required |
 | `/contact` | Provide the approved path for starting a qualified inquiry. | Qualified prospects | Submit an inquiry or use approved contact method | Required |
+| `/insights` | List published OCSCO articles and provide discovery through categories, tags, search, and filtering. | Prospective clients, partners, and existing audiences | Read an article | Planned — Phase 6 |
+| `/insights/[slug]` | Present one published article with its metadata, content, media, and related articles. | Readers evaluating OCSCO expertise | Read a related article or start a conversation | Planned — Phase 6 |
 
-### Deferred until separately approved
+### Planned but not yet implemented
 
-- `/insights` and article detail routes
+- Blog / Insights routes and navigation entry — approved for Phase 6, not yet implemented
 - Client portal or protected admin routes
 - Public CMS or CRM product dashboards
 - Account creation, authentication, or self-service workflows
@@ -66,7 +68,9 @@ Home
 ├── Work
 │   └── Case Study Detail
 ├── About
-└── Contact
+├── Contact
+└── Insights
+    └── Article Detail
 ```
 
 ## Navigation rules
@@ -75,7 +79,12 @@ Home
 - Every service detail page should link to at least one relevant work item or proof point when one is approved.
 - Every major page should provide one clear next action rather than competing calls to action.
 - Case studies should link back to the related service category and to `/contact`.
+- Insights should expose only published articles, with stable SEO-friendly slugs and a clear route back to `/contact` where appropriate.
 - Deferred routes must not appear in navigation until they have approved content and an implementation plan.
+
+## Blog / Insights structural requirements
+
+The Phase 6 public experience must support article listing, optional featured content, categories, tags, search, filtering, pagination or load-more, responsive behavior, no-results/error states, SEO-friendly URLs, and individual article pages with metadata, media, content, and related articles. The Cairnstack routes are structural references only. OCSCO's visual direction, components, typography, and implementation remain governed by the OCSCO design system.
 
 ## Owner decisions needed
 
