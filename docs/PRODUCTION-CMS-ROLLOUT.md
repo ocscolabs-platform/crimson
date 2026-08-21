@@ -1,4 +1,6 @@
-# Production CMS rollout
+# Historical Production CMS rollout
+
+> This document is retained as migration history. The current merge and environment contract is [`RELEASE-READINESS.md`](./RELEASE-READINESS.md). Do not follow this document as a standalone instruction set.
 
 This is the one-time setup for the canonical `https://ocsco.io/crimson-admin-control` boundary. It is intentionally separate from Git merges: Git deploys code, while Supabase owns CMS data, Auth, Storage, and RLS.
 
@@ -20,7 +22,7 @@ set role = excluded.role;
 
 ```text
 Site URL: https://ocsco.io
-Redirect URL: https://ocsco.io/crimson-admin-control/reset-password
+Redirect URL: https://ocsco.io/crimson-admin-control/auth/callback
 ```
 
 6. Confirm Production Vercel has the Production Supabase URL, publishable key, and server secret already configured. Do not copy Preview values into Production.
@@ -28,6 +30,6 @@ Redirect URL: https://ocsco.io/crimson-admin-control/reset-password
 
 ## Important transition rule
 
-This boundary makes Production `/admin` reachable and authenticated. It does not yet retire the row-copy promotion bridge or make direct global-content edits revision-safe. The revision migration must be implemented and verified before the owner uses Production `/admin` for ordinary editorial publishing or before the bridge is deleted.
+This historical boundary was intended to make Production `/admin` reachable and authenticated. The current release baseline keeps editorial work on the staging CMS until the Production revision boundary and configuration are separately verified. It does not retire the row-copy promotion bridge or make direct global-content edits revision-safe.
 
 Preview inquiry submissions are disabled by default. Production is the only environment that automatically accepts real inquiries.
