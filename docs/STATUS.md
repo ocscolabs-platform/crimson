@@ -53,7 +53,7 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 ## In Progress
 
 - Keep case-study creation/deletion and Production administration separate until the content and consent review is complete.
-- Apply `20260821020000_add_cms_revisions.sql`, `20260821030000_lock_cms_direct_writes.sql`, and `20260821040000_restore_cms_read_access.sql` in the staging Supabase project, then verify the complete save/review/publish path before applying any Production migration.
+- Apply `20260821020000_add_cms_revisions.sql`, `20260821030000_lock_cms_direct_writes.sql`, `20260821040000_restore_cms_read_access.sql`, and `20260821050000_allow_revision_case_study_publish.sql` in the staging Supabase project, then verify the complete save/review/publish path before applying any Production migration.
 - Do not delete the current promotion bridge or change cloud environment variables yet. The bridge remains rollback infrastructure until staging QA and the direct-write lockdown are complete.
 
 ## Blocked / Requires Owner Action
