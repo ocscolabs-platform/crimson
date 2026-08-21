@@ -20,7 +20,7 @@ export default function AdminForgotPasswordPage() {
     try {
       const supabase = createClient();
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/crimson-admin-control/reset-password`,
+        redirectTo: `${window.location.origin}/crimson-admin-control/auth/callback?next=/crimson-admin-control/reset-password`,
       });
 
       if (resetError) {

@@ -20,11 +20,13 @@ Preview/Staging and Production must eventually use separate environment configur
 
 The repository intentionally does not contain account IDs, deployment URLs, domains, credentials, or environment values. Human owners will need to supply those values through GitHub/Vercel/Supabase configuration when the integrations are approved.
 
+The current release contract is [`RELEASE-READINESS.md`](./RELEASE-READINESS.md). It supersedes older rollout notes where they describe row copying as the normal way to publish content.
+
 ## CMS publication boundary
 
 The staging CMS and the Production public website use separate Supabase projects. Git promotion moves code only; it does not move CMS rows, Auth users, Storage objects, or database IDs. The one-time Production CMS boundary is defined in [`CMS-PROMOTION.md`](./CMS-PROMOTION.md) and [`20260821000000_create_production_cms_boundary.sql`](../supabase/migrations/20260821000000_create_production_cms_boundary.sql).
 
-Approved content is promoted through the protected GitHub `production-cms` environment using `scripts/cms-promote.mjs`. The workflow is dry-run by default and requires an explicit apply input. Production service-role credentials must remain GitHub Environment Secrets and must never be placed in the browser, Vercel public variables, or the repository.
+The guarded GitHub `production-cms` workflow and `scripts/cms-promote.mjs` remain only as a temporary migration bridge. They are dry-run by default and require an explicit apply input, but they must not be used as the steady-state content release process once Production revision publishing is verified. Production service-role credentials must remain server-side and must never be placed in browser variables or the repository.
 
 ## Remaining owner configuration
 
@@ -53,9 +55,9 @@ The Production `/contact` form uses the selected clean Production Supabase proje
 
 ## Staging CMS authentication
 
-Editorial editing, publishing, and draft access remain in staging. Production receives approved public content through the guarded promotion workflow in [`CMS-PROMOTION.md`](./CMS-PROMOTION.md); Production admin access is not required for this publication boundary.
+Editorial editing, publishing, and draft access are tested in staging before the Production CMS boundary is enabled. The canonical authenticated path is `/crimson-admin-control`; legacy `/admin` requests redirect there. Production CMS access must use the Production Supabase project and the same revision contract after the Production migration is verified.
 
-The staging branch includes a protected CMS dashboard at `/admin`. It uses the existing Preview Supabase URL and publishable key through cookie-based Supabase SSR sessions. No new secret variable is required and `SUPABASE_SECRET_KEY` is not used by the dashboard.
+The application uses the environment-specific Supabase URL and publishable key through cookie-based Supabase SSR sessions. Password reset emails must use the canonical `/crimson-admin-control/auth/callback` route, and each Supabase project must allow its own callback URL. No service-role key is used by browser code.
 
 The first staging write slice is the service editor. Apply `supabase/migrations/20260820050000_add_staging_service_editor_policies.sql` only after the CMS membership migration is active in `crimson-staging`. It grants authenticated database insert/update privileges only where RLS permits them: owners can manage service status, editors can work with draft/review records, and reviewers remain read-only. Do not run this migration in Production.
 

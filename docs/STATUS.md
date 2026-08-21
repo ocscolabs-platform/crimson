@@ -4,7 +4,7 @@
 
 **Phase 4 — Custom CMS Foundation**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 is active with a reviewed CMS schema, published-only public read boundary, staging-only protected admin auth, the initial role/authorization boundary, a controlled Services editor, audit/publishing safeguards, owner-only restore-as-review, a privacy-safe Work renderer, controlled global content and page-section composition, the case-study media contract, an update-only case-study editor, and verified staging media and relationship workflows. Case-study creation/deletion, general version management, and production admin access remain unimplemented.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 contains the CMS schema, published-only public read boundary, role authorization, revision-based publishing, media workflow, relationships, audit history, and canonical `/crimson-admin-control` route. The current release audit has paused further feature work until the staging and Production database boundaries, password recovery, environment configuration, and release protections are verified.
 
 ## Completed
 
@@ -52,9 +52,11 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 ## In Progress
 
-- Keep case-study creation/deletion and Production administration separate until the content and consent review is complete.
-- Apply `20260821020000_add_cms_revisions.sql`, `20260821030000_lock_cms_direct_writes.sql`, `20260821040000_restore_cms_read_access.sql`, and `20260821050000_allow_revision_case_study_publish.sql` in the staging Supabase project, then verify the complete save/review/publish path before applying any Production migration.
-- Do not delete the current promotion bridge or change cloud environment variables yet. The bridge remains rollback infrastructure until staging QA and the direct-write lockdown are complete.
+- Verify the exact staging migration state and run the full revision, permission, media, relationship, audit, and public-visibility QA matrix.
+- Verify the Production migration state and environment mapping before enabling Production CMS editing.
+- Complete and test the canonical password recovery callback in each environment.
+- Configure branch protection and required approval for the Production release environment.
+- Retire the row-copy promotion bridge only after the revision workflow is proven in Production.
 
 ## Blocked / Requires Owner Action
 
@@ -67,4 +69,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-The staging CMS media and relationship workflows are verified on the Cairnstack record, the Admin UX hardening follow-up passed review, and the current guarded promotion bridge has successfully released the initial Production package. The release-model reset is implemented on the feature branch; the next milestone is staging migration and QA of revision-based drafts, review, explicit owner publish, and rollback before the temporary row-copy workflow is removed.
+Follow [`docs/RELEASE-READINESS.md`](./RELEASE-READINESS.md) in order. No staging-to-main merge should be recommended until every critical gate passes.
