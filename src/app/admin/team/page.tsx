@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { CMS_ROLES, getAdminMembers, inviteCmsMember, isCmsRole, updateCmsMemberRole, type AdminMember } from "@/lib/admin-members";
@@ -40,7 +41,13 @@ async function inviteMember(formData: FormData) {
   }
 
   try {
-    await inviteCmsMember(email, role);
+    const requestHeaders = await headers();
+    const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+    const forwardedProtocol = requestHeaders.get("x-forwarded-proto")?.split(",", 1)[0];
+    const origin = host ? `${forwardedProtocol || "https"}://${host}` : "https://www.ocsco.io";
+    const redirectTo = `${origin}/crimson-admin-control/invite`;
+
+    await inviteCmsMember(email, role, redirectTo);
   } catch (error) {
     const message = error instanceof Error ? error.message : "The invitation could not be created.";
     redirect(`/crimson-admin-control/team?error=${encodeURIComponent(message)}`);
