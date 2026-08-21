@@ -95,6 +95,7 @@ as $$
 declare
   existing_id uuid;
   current_payload jsonb;
+  existing_payload jsonb;
   merged_payload jsonb;
 begin
   if not public.cms_has_role(array['owner', 'editor']::text[]) then
@@ -112,6 +113,16 @@ begin
   if not public.cms_revision_entity_exists(p_entity_type, p_entity_key) then
     raise exception 'The CMS entity does not exist';
   end if;
+
+  -- Preserve edits already made in the active Draft/Review revision. Without
+  -- this read, a second field or media action would rebuild from the published
+  -- base record and silently discard earlier unpublished changes.
+  select id, payload into existing_id, existing_payload
+  from public.cms_revisions
+  where entity_type = p_entity_type
+    and entity_key = p_entity_key
+    and status in ('draft', 'review')
+  for update;
 
   -- A partial payload is accepted so each editor can change only its own
   -- fields while preserving the rest of the current record.
@@ -135,15 +146,12 @@ begin
     from public.case_studies c where c.id = p_entity_key::uuid;
   end if;
 
-  merged_payload := coalesce(current_payload, '{}'::jsonb) || p_payload;
+  merged_payload := coalesce(current_payload, '{}'::jsonb);
+  if existing_payload is not null then
+    merged_payload := merged_payload || existing_payload;
+  end if;
+  merged_payload := merged_payload || p_payload;
   merged_payload := jsonb_set(merged_payload, '{status}', to_jsonb(p_status), true);
-
-  select id into existing_id
-  from public.cms_revisions
-  where entity_type = p_entity_type
-    and entity_key = p_entity_key
-    and status in ('draft', 'review')
-  for update;
 
   if existing_id is null then
     insert into public.cms_revisions (entity_type, entity_key, status, payload, created_by)

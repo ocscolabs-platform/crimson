@@ -34,9 +34,7 @@ async function saveService(slug: string, formData: FormData) {
   const audience = String(formData.get("audience") || "").trim();
   const outcome = String(formData.get("outcome") || "").trim();
   const requestedStatus = String(formData.get("status") || "draft");
-  const allowedStatuses = membership.role === "owner"
-    ? ["draft", "review", "published"]
-    : ["draft", "review"];
+  const allowedStatuses = ["draft", "review"];
 
   if (!name || !allowedStatuses.includes(requestedStatus)) {
     redirect(`/admin/services/${slug}?error=Please provide a service name and a permitted status.`);
@@ -52,11 +50,10 @@ async function saveService(slug: string, formData: FormData) {
     redirect(`/admin/services/${slug}?error=The service could not be found.`);
   }
 
-  const revisionStatus = requestedStatus === "published" ? "review" : requestedStatus;
   const { data: revisionId, error: revisionError } = await supabase.rpc("cms_save_revision", {
     p_entity_type: "service",
     p_entity_key: existing.id,
-    p_status: revisionStatus,
+    p_status: requestedStatus,
     p_payload: {
       name,
       short_description: shortDescription || null,
@@ -69,25 +66,43 @@ async function saveService(slug: string, formData: FormData) {
     redirect(`/admin/services/${slug}?error=${encodeURIComponent(revisionError?.message || "The service revision could not be saved.")}`);
   }
 
-  if (requestedStatus === "published") {
-    if (membership.role !== "owner") {
-      redirect(`/admin/services/${slug}?error=Only the owner can publish a service revision.`);
-    }
-
-    const { error: publishError } = await supabase.rpc("cms_publish_revision", {
-      p_revision_id: revisionId,
-    });
-
-    if (publishError) {
-      redirect(`/admin/services/${slug}?error=${encodeURIComponent(publishError.message)}`);
-    }
-  }
-
   revalidatePath("/admin");
   revalidatePath("/admin/services");
   revalidatePath("/services");
   revalidatePath(`/services/${slug}`);
   redirect(`/admin/services/${slug}?saved=1`);
+}
+
+async function publishService(slug: string) {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/admin/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (membership.role !== "owner") redirect(`/admin/services/${slug}?error=Only the owner can publish a service revision.`);
+
+  const { data: service, error: serviceError } = await supabase.from("services").select("id").eq("slug", slug).maybeSingle();
+  if (serviceError || !service) redirect(`/admin/services/${slug}?error=The service could not be found.`);
+
+  const { data: revision, error: revisionError } = await supabase
+    .from("cms_revisions")
+    .select("id")
+    .eq("entity_type", "service")
+    .eq("entity_key", service.id)
+    .eq("status", "review")
+    .maybeSingle();
+  if (revisionError || !revision) redirect(`/admin/services/${slug}?error=${encodeURIComponent(revisionError?.message || "Save a Review revision before publishing.")}`);
+
+  const { error: publishError } = await supabase.rpc("cms_publish_revision", { p_revision_id: revision.id });
+  if (publishError) redirect(`/admin/services/${slug}?error=${encodeURIComponent(publishError.message)}`);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/services");
+  revalidatePath("/services");
+  revalidatePath(`/services/${slug}`);
+  redirect(`/admin/services/${slug}?saved=published`);
 }
 
 async function restoreServiceFromAudit(slug: string, auditId: string, _formData: FormData) {
@@ -191,9 +206,8 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
   }
 
   const canEdit = canEditServices(membership.role);
-  const statusOptions = membership.role === "owner"
-    ? ["draft", "review", "published"]
-    : ["draft", "review"];
+  const statusOptions = ["draft", "review"];
+  const editorStatus = service.revision_status ?? (service.status === "published" ? "review" : service.status);
 
   return (
     <main className="admin-page">
@@ -220,8 +234,8 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
 
         {query.saved ? (
           <>
-            <p className="admin-success" role="status">Service saved successfully.</p>
-            <AdminToast tone="success" message="Service saved successfully." />
+            <p className="admin-success" role="status">{query.saved === "published" ? "Service published successfully." : "Service saved as a private revision."}</p>
+            <AdminToast tone="success" message={query.saved === "published" ? "Service published successfully." : "Service saved as a private revision."} />
           </>
         ) : null}
         {query.restored ? (
@@ -253,7 +267,7 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
           ) : null}
           {service.revision_id ? (
             <p className="admin-editor-warning" role="note">
-              Unsaved-to-public revision: this {service.revision_status} revision is private until an owner publishes it.
+              This {service.revision_status} revision is private until the owner publishes it. The public site remains on its last published version.
             </p>
           ) : null}
 
@@ -280,12 +294,13 @@ export default async function AdminServicePage({ params, searchParams }: AdminSe
             </label>
             <label>
               Editorial status
-              <AdminSelect name="status" defaultValue={service.status} disabled={!canEdit}>
+              <AdminSelect name="status" defaultValue={editorStatus} disabled={!canEdit}>
                 {statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
               </AdminSelect>
             </label>
             {canEdit ? <AdminSubmitButton /> : null}
           </form>
+          {membership.role === "owner" && service.revision_id && service.revision_status === "review" ? <form className="admin-publish-form" action={publishService.bind(null, slug)}><AdminSubmitButton label="Publish service" pendingLabel="Publishing…" /></form> : null}
         </section>
 
         <section className="admin-audit-panel">

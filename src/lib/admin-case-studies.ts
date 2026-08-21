@@ -42,6 +42,8 @@ export type AdminCaseStudyReview = {
   media_reviewed_at: string | null;
   featured_image_url: string | null;
   status: "draft" | "review" | "published" | "archived";
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
   published_at: string | null;
   last_reviewed_at: string | null;
   updated_at: string;
@@ -88,7 +90,7 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
 
   const { data: activeRevision, error: revisionError } = await supabase
     .from("cms_revisions")
-    .select("status, payload")
+    .select("id, status, payload")
     .eq("entity_type", "case_study")
     .eq("entity_key", baseData.id)
     .in("status", ["draft", "review"])
@@ -173,6 +175,8 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
 
   return {
     ...data,
+    revision_id: activeRevision?.id ?? null,
+    revision_status: activeRevision?.status ?? null,
     featured_image_url: featuredImage.data?.signedUrl || null,
     supporting_media: supportingMediaWithUrls,
     services,

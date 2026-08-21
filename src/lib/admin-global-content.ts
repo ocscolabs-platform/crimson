@@ -9,6 +9,8 @@ export type AdminSiteSettings = {
   default_seo_description: string | null;
   default_og_image_path: string | null;
   primary_contact_path: string;
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
 };
 
 export type AdminNavigationItem = {
@@ -18,6 +20,8 @@ export type AdminNavigationItem = {
   navigation_group: "primary" | "footer";
   sort_order: number;
   is_visible: boolean;
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
 };
 
 export type AdminPageMetadata = {
@@ -34,6 +38,8 @@ export type AdminPageMetadata = {
   status: "draft" | "review" | "published" | "archived";
   published_at: string | null;
   last_reviewed_at: string | null;
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
 };
 
 export type AdminPageSection = {
@@ -43,6 +49,8 @@ export type AdminPageSection = {
   label: string;
   sort_order: number;
   is_visible: boolean;
+  revision_id?: string | null;
+  revision_status?: "draft" | "review" | null;
 };
 
 export type AdminGlobalContent = {
@@ -91,7 +99,7 @@ export async function getAdminGlobalContent(): Promise<AdminGlobalContent> {
 
   const { data: revisions, error: revisionsError } = await supabase
     .from("cms_revisions")
-    .select("entity_type, entity_key, status, payload")
+    .select("id, entity_type, entity_key, status, payload")
     .in("status", ["draft", "review"]);
 
   // Keep the legacy editor readable until the revision migration is applied
@@ -104,33 +112,38 @@ export async function getAdminGlobalContent(): Promise<AdminGlobalContent> {
   const revisionMap = new Map(
     (revisions ?? []).map((revision) => [
       `${revision.entity_type}:${revision.entity_key}`,
-      revision.payload && typeof revision.payload === "object" && !Array.isArray(revision.payload)
-        ? revision.payload as Record<string, unknown>
-        : {},
+      {
+        id: revision.id,
+        status: revision.status as "draft" | "review",
+        payload: revision.payload && typeof revision.payload === "object" && !Array.isArray(revision.payload)
+          ? revision.payload as Record<string, unknown>
+          : {},
+      },
     ]),
   );
 
-  const settingsPayload = revisionMap.get("site_settings:default");
+  const settingsRevision = revisionMap.get("site_settings:default");
+  const settingsPayload = settingsRevision?.payload;
   const settingsRecord = settings.data as AdminSiteSettings | null;
   const resolvedSettings = settingsRecord && settingsPayload
-    ? { ...settingsRecord, ...settingsPayload, id: settingsRecord.id }
+    ? { ...settingsRecord, ...settingsPayload, id: settingsRecord.id, revision_id: settingsRevision.id, revision_status: settingsRevision.status }
     : settingsRecord;
 
   const resolvedNavigation = (navigation.data ?? []).map((item) => {
-    const payload = revisionMap.get(`navigation_item:${item.id}`);
-    return payload ? { ...item, ...payload, id: item.id } : item;
+    const revision = revisionMap.get(`navigation_item:${item.id}`);
+    return revision ? { ...item, ...revision.payload, id: item.id, revision_id: revision.id, revision_status: revision.status } : item;
   }) as AdminNavigationItem[];
 
   const resolvedPages = (pages.data ?? []).map((page) => {
-    const payload = revisionMap.get(`page:${page.id}`);
-    return payload ? { ...page, ...payload, id: page.id, slug: page.slug } : page;
+    const revision = revisionMap.get(`page:${page.id}`);
+    return revision ? { ...page, ...revision.payload, id: page.id, slug: page.slug, revision_id: revision.id, revision_status: revision.status } : page;
   }) as AdminPageMetadata[];
 
   const sectionMap: Record<string, AdminPageSection[]> = {};
   for (const section of (sections.data ?? []) as AdminPageSection[]) {
-    const payload = revisionMap.get(`page_section:${section.id}`);
-    const resolvedSection = payload
-      ? { ...section, ...payload, id: section.id, page_id: section.page_id }
+    const revision = revisionMap.get(`page_section:${section.id}`);
+    const resolvedSection = revision
+      ? { ...section, ...revision.payload, id: section.id, page_id: section.page_id, revision_id: revision.id, revision_status: revision.status }
       : section;
     const pageSections = sectionMap[section.page_id] ?? [];
     pageSections.push(resolvedSection as AdminPageSection);

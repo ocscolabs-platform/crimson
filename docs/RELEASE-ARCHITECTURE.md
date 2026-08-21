@@ -46,7 +46,7 @@ The first rollout step is to make the Production Supabase project the canonical 
 7. Migrate the current Production package into the published revision baseline without changing the public output.
 8. After verification, remove the temporary promotion workflow, `scripts/cms-promote.mjs`, `cms:promote`, the `production-cms` GitHub environment secrets, and the old promotion instructions.
 
-The first implementation slice is `supabase/migrations/20260821020000_add_cms_revisions.sql`. It adds the revision ledger and owner-only publish/restore functions, and the global-content and Services editors already understand active Draft/Review revisions. It is an additive scaffold while case-study metadata, relationships, and media are moved to the same transaction boundary. Do not apply it to Production until the remaining editor slices and the QA matrix are complete.
+The implementation migrations are `supabase/migrations/20260821020000_add_cms_revisions.sql` and `supabase/migrations/20260821030000_lock_cms_direct_writes.sql`. They add the revision ledger, owner-only publish/restore functions, and remove the legacy authenticated direct-write grants. The global-content, Services, and case-study editors now understand active Draft/Review revisions, including case-study metadata, relationships, and media references. Save and Publish are separate actions; a public route continues to read the last published base record until the owner publishes the review revision. Apply both migrations in staging first, complete the QA matrix, and only then apply the equivalent boundary in Production.
 
 ## What is explicitly not being done
 

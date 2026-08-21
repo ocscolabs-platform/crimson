@@ -385,9 +385,7 @@ async function saveCaseStudy(slug: string, formData: FormData) {
   const externalUrl = String(formData.get("external_url") || "").trim();
   const requestedStatus = String(formData.get("status") || "review");
   const allowedTypes = ["case-study", "prototype", "upcoming"];
-  const allowedStatuses = membership.role === "owner"
-    ? ["draft", "review", "published"]
-    : ["draft", "review"];
+  const allowedStatuses = ["draft", "review"];
 
   if (!projectName || !allowedTypes.includes(projectType) || !allowedStatuses.includes(requestedStatus)) {
     redirect("/admin/case-studies/" + slug + "?error=Please provide a project name, valid type, and permitted status.");
@@ -405,11 +403,10 @@ async function saveCaseStudy(slug: string, formData: FormData) {
     redirect("/admin/case-studies/" + slug + "?error=Client visibility must be Hidden or Approved.");
   }
 
-  const revisionStatus = requestedStatus === "published" ? "review" : requestedStatus;
-  const { data: revisionId, error } = await supabase.rpc("cms_save_revision", {
+  const { error } = await supabase.rpc("cms_save_revision", {
     p_entity_type: "case_study",
     p_entity_key: current.id,
-    p_status: revisionStatus,
+    p_status: requestedStatus,
     p_payload: {
       project_name: projectName,
       project_type: projectType,
@@ -429,21 +426,55 @@ async function saveCaseStudy(slug: string, formData: FormData) {
     redirect("/admin/case-studies/" + slug + "?error=" + encodeURIComponent(error.message));
   }
 
-  if (requestedStatus === "published") {
-    if (membership.role !== "owner") {
-      redirect("/admin/case-studies/" + slug + "?error=Only the owner can publish a case study revision.");
-    }
-    const { error: publishError } = await supabase.rpc("cms_publish_revision", { p_revision_id: revisionId });
-    if (publishError) {
-      redirect("/admin/case-studies/" + slug + "?error=" + encodeURIComponent(publishError.message));
-    }
-  }
-
   revalidatePath("/admin");
   revalidatePath("/admin/case-studies/" + slug);
   revalidatePath("/work");
   revalidatePath("/work/" + slug);
   redirect("/admin/case-studies/" + slug + "?saved=1");
+}
+
+async function publishCaseStudy(slug: string) {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/admin/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (membership.role !== "owner") {
+    redirect(`/admin/case-studies/${slug}?error=Only the owner can publish a case-study revision.`);
+  }
+
+  const { data: caseStudy, error: caseStudyError } = await supabase
+    .from("case_studies")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (caseStudyError || !caseStudy) {
+    redirect(`/admin/case-studies/${slug}?error=The case study could not be found.`);
+  }
+
+  const { data: revision, error: revisionError } = await supabase
+    .from("cms_revisions")
+    .select("id")
+    .eq("entity_type", "case_study")
+    .eq("entity_key", caseStudy.id)
+    .eq("status", "review")
+    .maybeSingle();
+  if (revisionError || !revision) {
+    redirect(`/admin/case-studies/${slug}?error=${encodeURIComponent(revisionError?.message || "Save a Review revision before publishing.")}`);
+  }
+
+  const { error: publishError } = await supabase.rpc("cms_publish_revision", { p_revision_id: revision.id });
+  if (publishError) {
+    redirect(`/admin/case-studies/${slug}?error=${encodeURIComponent(publishError.message)}`);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/case-studies/${slug}`);
+  revalidatePath("/work");
+  revalidatePath(`/work/${slug}`);
+  redirect(`/admin/case-studies/${slug}?saved=published`);
 }
 
 export const dynamic = "force-dynamic";
@@ -475,7 +506,8 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
   const isOwner = membership.role === "owner";
   const canEdit = canEditCaseStudies(membership.role) && (review.status !== "published" || isOwner);
   const canEditRelationships = canEditCaseStudies(membership.role) && review.status !== "published";
-  const statusOptions = isOwner ? ["draft", "review", "published"] : ["draft", "review"];
+  const statusOptions = ["draft", "review"];
+  const editorStatus = review.revision_status ?? (review.status === "published" ? "review" : review.status);
   const availableServicesResult = await supabase
     .from("services")
     .select("id, name, slug, status")
@@ -557,7 +589,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
         {query.saved ? (
           <>
             <p className="admin-success" role="status">
-              {query.saved === "media-approved" ? "Media package approved successfully." : query.saved === "media" ? "Case-study media saved successfully." : query.saved === "relationships" ? "Related capabilities saved successfully." : "Case study saved successfully."}
+              {query.saved === "published" ? "Case study published successfully." : query.saved === "media-approved" ? "Media package approved successfully." : query.saved === "media" ? "Case-study media saved successfully." : query.saved === "relationships" ? "Related capabilities saved successfully." : "Case study saved as a private revision."}
             </p>
             <AdminToast
               tone="success"
@@ -565,11 +597,11 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
                 ? "Media approved. It can appear publicly only after the case study is published."
                 : query.saved === "media"
                   ? "Media saved as pending review."
-                  : query.saved === "relationships"
-                    ? "The case study now reflects the selected published capabilities."
-                  : review.client_visibility === "approved"
-                    ? "Saved successfully. Approved identity can appear on the public Work page."
-                    : "Saved successfully. Public Work remains anonymized because visibility is Hidden."}
+                : query.saved === "relationships"
+                  ? "The case study now reflects the selected published capabilities."
+                  : query.saved === "published"
+                    ? "Case study published successfully. The public Work page now uses this revision."
+                    : "Saved as a private revision. The public Work page remains unchanged until the owner publishes it."}
             />
           </>
         ) : null}
@@ -739,6 +771,12 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             </p>
           </div>
 
+          {review.revision_id ? (
+            <p className="admin-editor-warning" role="note">
+              This {review.revision_status} revision is private until the owner publishes it. The public Work page remains on its last published version.
+            </p>
+          ) : null}
+
           <form className="admin-editor-form" action={saveCaseStudy.bind(null, slug)}>
             <label>
               Project name
@@ -791,7 +829,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             </label>
             <label>
               Editorial status
-              <AdminSelect name="status" defaultValue={review.status} disabled={!canEdit}>
+              <AdminSelect name="status" defaultValue={editorStatus} disabled={!canEdit}>
                 {statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
               </AdminSelect>
             </label>
@@ -800,6 +838,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             </div>
             {canEdit ? <AdminSubmitButton /> : null}
           </form>
+          {isOwner && review.revision_id && review.revision_status === "review" ? <form className="admin-publish-form" action={publishCaseStudy.bind(null, slug)}><AdminSubmitButton label="Publish case study" pendingLabel="Publishing…" /></form> : null}
         </section>
 
         <section className="admin-review-grid admin-review-content-grid">
