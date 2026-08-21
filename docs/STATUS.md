@@ -2,9 +2,15 @@
 
 ## Current Phase
 
-**Phase 4 — Custom CMS Foundation**
+**Phase 4C — Post-Merge Release Verification and Baseline Stabilization**
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4 contains the CMS schema, published-only public read boundary, role authorization, revision-based publishing, media workflow, relationships, audit history, and canonical `/crimson-admin-control` route. The current release audit has paused further feature work until the staging and Production database boundaries, password recovery, environment configuration, and release protections are verified.
+The canonical roadmap is [`MASTER-PLAN.md`](./MASTER-PLAN.md). This file records the current implementation state; older detailed phase documents and early task entries are historical implementation records where their statuses conflict with later verified slices.
+
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4A and 4B are implemented for the approved CMS slices: schema, published-only public read boundary, role authorization, revision-based publishing, media workflow, relationships, audit history, and canonical `/crimson-admin-control` route. The staging-to-main code merge has already occurred; the current release audit verifies the resulting Production deployment/data boundary and establishes a clean synchronized baseline before Phase 5.
+
+The current CMS is not yet a complete body-content editor for Home, About, Services, and Contact. It currently manages global metadata/settings, navigation, fixed approved section visibility/order, services, case-study editorial data, media, relationships, and revisions. Full page-body editing is Phase 5. Blog / Insights is approved for Phase 6 and has not been implemented. CRM remains Phase 7 and is not implemented beyond inquiry intake.
+
+The current Phase 4C work includes the invitation-flow remediation: Supabase administrator invitations must establish an implicit callback session at `/crimson-admin-control/invite` before the CMS membership is activated. Public signup remains disabled. Staging verification must pass before any Production invitation test or Phase 5 work.
 
 ## Completed
 
@@ -47,20 +53,26 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 - Verified the controlled case-study media workflow in staging: three normalized media slots are rendered with fixed public frames, the approved package is private until publication rules allow signed delivery, and the public Cairnstack route exposes the approved featured/supporting visuals.
 - Verified the controlled case-study relationship workflow in staging: the Cairnstack record has one linked published capability, the audit surface is present, and the public route renders the relationship as an accessible service link.
 - Corrected the shared admin presentation copy after Production review: login, recovery, dashboard, content, service, team, and case-study surfaces now use deployment-neutral CMS language instead of incorrectly labeling Production as staging.
-- Added the guarded staging-to-Production CMS promotion boundary as a temporary migration bridge. It is not the target editorial workflow and is now scheduled for removal after revision-based publishing is verified.
-- Added the additive revision ledger and protected publish/restore RPCs for the core content types. Global content, Services, and case-study metadata, relationships, and media editor actions now save private Draft/Review revisions; owner-only publish controls are separate from Save, and the public site remains on published base records. The migration is intentionally not applied to Production yet because the full staging QA and direct-write lockdown still need to be completed.
+- Added the guarded staging-to-Production CMS promotion boundary as a temporary migration bridge. It is not the target editorial workflow and remains only until the Production revision path is verified and the bridge can be retired safely.
+- Added the additive revision ledger and protected publish/restore RPCs for the core content types. Global content, Services, and case-study metadata, relationships, and media editor actions now save private Draft/Review revisions; owner-only publish controls are separate from Save, and the public site remains on published base records. Production verification is still required; a Git merge does not apply migrations or promote Supabase data/configuration.
+- Verified the live remote Git state on 2026-08-22: `origin/main` (`0b58c03`) is an ancestor of `origin/staging` (`b78976c`); `origin/main` is 0 commits ahead and `origin/staging` is 9 commits ahead. The staging-only history is approved post-merge documentation/reconciliation and merge history; the only non-documentation file difference is a comment-only clarification in the existing Production CMS migration, so there is no unreviewed application-code divergence and staging is not behind main.
+- Verified locally that lint, TypeScript checking, the production build, and whitespace validation pass; no automated test suite is configured in the repository.
+- Verified the Production public route smoke matrix: the public pages and published Cairnstack route return successfully, `/crimson-admin-control` is session-gated, and `/admin` plus `/admin/*` return normal `404` responses.
 
 ## In Progress
 
-- Verify the exact staging migration state and run the full revision, permission, media, relationship, audit, and public-visibility QA matrix.
-- Verify the Production migration state and environment mapping before enabling Production CMS editing.
-- Complete and test the canonical password recovery callback in each environment.
-- Configure branch protection and required approval for the Production release environment.
-- Retire the row-copy promotion bridge only after the revision workflow is proven in Production.
+- Complete the owner-controlled Production Supabase inspection for migrations, RLS, grants, functions, triggers, Storage policies, and the exact Vercel environment mapping.
+- Complete fresh authenticated Production smoke tests for login, logout, password recovery, invitation acceptance, revision save/review/publish/restore, audit, media, relationships, and inquiry behavior.
+- Confirm the public published-only read boundary against an intentionally unpublished or review record and verify the approved media contract in Production.
+- Resolve or retire the temporary row-copy promotion bridge after the Production revision workflow and rollback path are proven.
+- Record the Production release sign-off and keep `staging` synchronized to the approved `main` baseline for the next feature cycle.
 
 ## Blocked / Requires Owner Action
 
 - Configure GitHub branch protection for `feature/*`, `staging`, and `main`.
+- Verify Production Vercel variables point to the Production Supabase project and contain no staging Supabase URL/key pair; confirm the production deployment is using the expected commit.
+- Run the approved read-only Production Supabase verification queries from the owner account. The repository cannot inspect the owner dashboard's migrations, grants, triggers, functions, RLS policies, or Storage policies without owner access.
+- Execute the owner-controlled Production mutation smoke matrix. These tests must create or change real revisions/media only within the approved rollback procedure; they cannot be safely inferred from public reads.
 - Provide approved case-study facts, outcomes, testimonials, team details, and contact destination before implementation.
 - Confirm which visual assets from the existing brand materials may be copied into Crimson.
 - Keep WordPress hosting available during the short rollback window, then cancel it after final owner confirmation.
@@ -69,4 +81,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Follow [`docs/RELEASE-READINESS.md`](./RELEASE-READINESS.md) in order. No staging-to-main merge should be recommended until every critical gate passes.
+Execute the remaining owner-controlled checks in the post-merge Phase 4C checklist in [`docs/MASTER-PLAN.md`](./MASTER-PLAN.md) and [`docs/RELEASE-READINESS.md`](./RELEASE-READINESS.md) in order. Do not begin Phase 5 or Phase 6 until those checks are signed off and `staging` remains synchronized to the approved `main` baseline.

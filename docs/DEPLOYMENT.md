@@ -16,7 +16,7 @@ The `main` branch is connected to Vercel and the production deployment is public
 
 ## Environment separation
 
-Preview/Staging and Production must eventually use separate environment configurations. Production secrets must not be shared indiscriminately with preview or staging deployments. Supabase projects, keys, storage policies, authentication settings, and other external resources should be selected explicitly for the environment being deployed.
+Preview/Staging and Production must remain separate environment configurations. Production secrets must not be shared indiscriminately with preview or staging deployments. Supabase projects, keys, storage policies, authentication settings, and other external resources must be selected explicitly for the environment being deployed. Phase 4C verifies that the Production deployment is using the Production resources rather than staging values.
 
 The repository intentionally does not contain account IDs, deployment URLs, domains, credentials, or environment values. Human owners will need to supply those values through GitHub/Vercel/Supabase configuration when the integrations are approved.
 
@@ -24,9 +24,9 @@ The current release contract is [`RELEASE-READINESS.md`](./RELEASE-READINESS.md)
 
 ## CMS publication boundary
 
-The staging CMS and the Production public website use separate Supabase projects. Git promotion moves code only; it does not move CMS rows, Auth users, Storage objects, or database IDs. The one-time Production CMS boundary is defined in [`CMS-PROMOTION.md`](./CMS-PROMOTION.md) and [`20260821000000_create_production_cms_boundary.sql`](../supabase/migrations/20260821000000_create_production_cms_boundary.sql).
+The staging CMS and the Production public website use separate Supabase projects. Git promotion moves code only; it does not move CMS rows, Auth users, Storage objects, or database IDs. The one-time Production CMS boundary is defined in [`CMS-PROMOTION.md`](./CMS-PROMOTION.md) and [`20260821000000_create_production_cms_boundary.sql`](../supabase/migrations/20260821000000_create_production_cms_boundary.sql). Phase 4C verifies the Production revision-based CMS boundary before the bridge is retired.
 
-The guarded GitHub `production-cms` workflow and `scripts/cms-promote.mjs` remain only as a temporary migration bridge. They are dry-run by default and require an explicit apply input, but they must not be used as the steady-state content release process once Production revision publishing is verified. Production service-role credentials must remain server-side and must never be placed in browser variables or the repository.
+The guarded GitHub `production-cms` workflow and `scripts/cms-promote.mjs` remain only as a transitional migration/rollback bridge. They are dry-run by default and require an explicit apply input. They are not the steady-state content release process and will be retired after Phase 4C verifies Production revision publishing. Production service-role credentials must remain server-side and must never be placed in browser variables or the repository.
 
 ## Remaining owner configuration
 

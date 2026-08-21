@@ -38,6 +38,12 @@ Vercel → deployment infrastructure
 
 These are plans, not claims that the systems already exist. Future architecture changes must be documented in [`DECISIONS.md`](./DECISIONS.md).
 
+## Approved roadmap extensions
+
+The next CMS extension is full structured body-content editing for Home, About, Services, and Contact. After that foundation is stable, Blog / Insights will use the same Next.js application, Supabase data boundary, Auth membership roles, RLS, revision ledger, audit history, private media contract, SEO metadata conventions, and published-only public reads. It will not introduce a third-party CMS or a parallel publishing system. The CRM remains a separate internal capability with its own scope, permissions, and workflow; the public inquiry form is not itself a complete CRM.
+
+The planned public Blog routes are `/insights` and `/insights/[slug]`. The Cairnstack URLs supplied as references define only a structural content expectation and must not drive copied design or implementation.
+
 ## Current protected boundary
 
-The `/crimson-admin-control` route uses Supabase Auth cookies through `@supabase/ssr` and verifies the current user server-side. The password recovery callback exchanges the one-time PKCE code on the server before exposing the reset form. CMS writes use revision RPCs and role checks; direct content-table writes are not the normal editor path. Production migration state and external environment configuration must be verified before the staging branch is merged.
+The `/crimson-admin-control` route uses Supabase Auth cookies through `@supabase/ssr` and verifies the current user server-side. The password recovery callback exchanges the one-time PKCE code on the server before exposing the reset form. CMS signup is disabled; owner invitations use the server-side Supabase administrator API and the dedicated `/crimson-admin-control/invite` implicit callback flow, while normal login/recovery remains PKCE-based. Membership assignment is recoverable if the Auth invite succeeds but the CMS membership write fails. CMS writes use revision RPCs and role checks; direct content-table writes are not the normal editor path. Production migration state and external environment configuration must be verified after the staging-to-main code merge and before the release is declared baseline-stable.

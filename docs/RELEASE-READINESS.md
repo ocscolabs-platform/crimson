@@ -1,10 +1,10 @@
 # Release Readiness Baseline
 
-This document is the operational baseline for the current CMS release model. Older Phase 4 documents remain useful as implementation history, but this file governs staging-to-Production decisions until the CMS rollout is complete.
+This document is the operational baseline for the current CMS release model. Older Phase 4 documents remain useful as implementation history, but this file governs post-merge Production verification and the next staging baseline.
 
 ## Current verdict
 
-The staging branch is not merge-ready until the database boundary, authentication recovery, production configuration, and release protections have passed the acceptance criteria below.
+The previous staging-to-main code merge has completed. The release is not baseline-stable until the Production database boundary, authentication recovery, production configuration, and release protections have passed the acceptance criteria below.
 
 ## Release contract
 
@@ -19,15 +19,16 @@ The staging branch is not merge-ready until the database boundary, authenticatio
 - Staging and Production use separate runtime configuration and Supabase projects.
 - The staging-to-Production row-copy workflow is temporary migration infrastructure. It is not the steady-state content release mechanism and must be retired after revision publishing is proven in Production.
 
-## Required verification order
+## Required post-merge verification order
 
-1. Confirm the exact migration state, grants, RLS policies, functions, triggers, and Storage policies in staging.
-2. Confirm the equivalent Production boundary before deploying code that depends on it.
-3. Verify login, logout, password recovery, role checks, revision save, review, publish, restore, media, relationships, and audit history in staging.
-4. Verify the Production Vercel variables and Supabase Auth URL configuration without exposing secrets.
-5. Enable branch protection and required reviewers for `staging`, `main`, and the `production-cms` environment.
-6. Retire the row-copy bridge only after the Production revision workflow is accepted.
-7. Run the final QA matrix and merge `staging` into `main` only when every gate passes.
+1. Confirm the exact migration state, grants, RLS policies, functions, triggers, and Storage policies in Production; compare them with the approved staging baseline.
+2. Verify the main deployment uses the expected commit and the correct Production Vercel variables, Supabase URL/key pair, Resend configuration, and no staging values.
+3. Verify Production Auth Site URL, callback, password recovery, invite, and canonical CMS redirects.
+4. Verify login, logout, password recovery, role checks, revision save, review, publish, restore, media, relationships, and audit history in Production.
+5. Verify public routes read published content only and that `/crimson-admin-control` remains protected while `/admin` and `/admin/*` return `404`.
+6. Confirm branch protection, required checks, required reviewers, and the `production-cms` environment are documented and working.
+7. Retire the temporary row-copy bridge only after the Production revision workflow is accepted and its rollback path is recorded.
+8. Update `staging` to the approved `main` baseline and record owner signoff before beginning Phase 5.
 
 ## Password recovery contract
 
@@ -41,6 +42,14 @@ The server callback exchanges the one-time Supabase PKCE code and establishes th
 
 Each Supabase project must allow its own canonical callback URL. A fresh reset email must be used for every test because Supabase recovery codes are one-time credentials.
 
+## Invitation contract
+
+CMS accounts are invite-only. Public/self-service signup is disabled; the owner creates members through the server-side Supabase administrator invitation API at `/crimson-admin-control/team`. The invitation email must redirect to `/crimson-admin-control/invite`.
+
+Administrator invitations are accepted in a different browser context from the one that created them, so the invite page uses a dedicated implicit-flow browser client to consume the `access_token` and `refresh_token` returned in the invitation URL fragment. It establishes the session before account setup, clears the fragment from browser history, never logs token values, and then assigns the requested CMS membership role. The normal CMS client remains PKCE-based for login and recovery.
+
+If Auth invitation creation succeeds but membership creation fails, the server performs a compensating Auth-user cleanup and returns a recoverable error. A retry must use a new invitation. A Production invitation test is not accepted until a fresh staging first-click test passes.
+
 ## Steady-state architecture
 
 ```text
@@ -50,4 +59,4 @@ feature/* -> staging -> main
                  +----------> Preview Vercel + Staging Supabase
 ```
 
-Content publication occurs through the Production CMS after the Production revision boundary is verified. It does not require a second database synchronization workflow.
+Content publication occurs through the Production CMS after the Production revision boundary is verified. It does not require a second database synchronization workflow. The prior staging-to-main merge was application-code promotion only.

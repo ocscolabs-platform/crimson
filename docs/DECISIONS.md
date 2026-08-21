@@ -385,3 +385,29 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Use `/crimson-admin-control` as the only public CMS entry point. Direct `/admin` and `/admin/*` requests return `404`. Route protection, Supabase Auth, CMS membership, and RLS remain the actual security controls.
 - **Reason:** A less obvious path reduces casual discovery and avoids presenting the CMS as a generic `/admin` endpoint. The path is not treated as a security boundary.
 - **Consequence:** Vercel/Supabase Auth reset URLs must use `/crimson-admin-control/auth/callback?next=/crimson-admin-control/reset-password`. The callback exchanges the one-time recovery code server-side before the reset form loads. Internal route rewrites continue to use the existing App Router implementation, and no data, role, or credential changes are introduced.
+
+## ADR-056 - Add Blog / Insights after structured page-content editing
+
+- **Date:** 2026-08-22
+- **Status:** Accepted for roadmap planning; implementation not started
+- **Decision:** Add a first-party Blog / Insights system as Phase 6, after Phase 5 completes full structured body-content editing for Home, About, Services, and Contact. Use `/insights` and `/insights/[slug]` as the planned public routes unless a later naming decision approves `/blog`.
+- **Reason:** Blog publishing depends on the CMS's content, revision, media, SEO, preview, and public published-only boundaries. Building it before the page-content editor and Phase 4 release stabilization would repeat the current pattern of adding editorial features on top of an unresolved release contract.
+- **Scope:** Articles, categories, tags, article-to-tag relationships, authors, publication status/dates, featured/social media, SEO metadata, article editor, preview, public index, search/filtering, pagination/load-more, empty states, article detail, and related articles.
+- **Constraints:** Reuse the existing Supabase/Auth/RLS/revision/audit/media architecture. Do not add a third-party CMS, freeform page builder, or copied Cairnstack design. Draft and Review content must remain private.
+- **Consequence:** Blog migrations, routes, CMS controls, and nav placement remain intentionally absent until Phase 6. The Master Plan and Content Model now record the scope and dependencies. CRM remains a separate Phase 7 capability.
+
+## ADR-057 - Treat the staging-to-main merge as complete and stabilize the Production baseline
+
+- **Date:** 2026-08-22
+- **Status:** Accepted for roadmap reconciliation; post-merge verification in progress
+- **Decision:** Treat the live GitHub remote state as authoritative for the current release position. `origin/main` is `0b58c0351afa8a022c7c633592a829a02039ebc9`; `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`; the merge base is `origin/main`; and `git rev-list --left-right --count origin/main...origin/staging` returns `0 9`. The staging-only history is approved documentation/reconciliation and merge history; the only non-documentation file difference is a comment-only clarification in the existing Production CMS migration, not an unreviewed application divergence. Phase 4C remains post-merge Production release verification and baseline stabilization. The next development phase must not begin until Production and the code branches are verified against the criteria in `MASTER-PLAN.md` and `RELEASE-READINESS.md`.
+- **Reason:** The previous pre-merge wording no longer describes the repository. Git promotion has happened, but a Git merge does not prove that Production Supabase migrations, runtime variables, Auth callbacks, RLS, Storage, or revision publication are configured correctly.
+- **Consequence:** No new Phase 5 or Blog implementation starts during this gate. Production is verified independently, temporary promotion infrastructure is retired only after the revision path is proven, and `staging` is synchronized to the approved `main` baseline before Phase 5.
+
+## ADR-058 - Use a dedicated implicit callback for administrator invitations
+
+- **Date:** 2026-08-22
+- **Status:** Accepted for Phase 4C remediation; staging verification pending
+- **Decision:** Keep the normal CMS browser client PKCE-based for login and password recovery, but use a dedicated implicit-flow client for administrator invitation acceptance at `/crimson-admin-control/invite`. The invite page explicitly consumes the invitation fragment, establishes the session, removes the fragment from browser history, and only then allows account setup and membership activation.
+- **Reason:** Supabase administrator invitations are created in one browser context and accepted in another. The callback therefore returns an implicit session fragment; the previous PKCE client rejected it as an invalid/expired PKCE flow on first click.
+- **Consequence:** Public signup remains disabled and owner invitations remain server-side. If membership assignment fails after Auth invite creation, the server performs compensating Auth-user cleanup and returns a recoverable error. No Production invitation test is permitted until a fresh staging first-click test passes.
