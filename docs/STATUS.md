@@ -53,19 +53,24 @@ The current CMS is not yet a complete body-content editor for Home, About, Servi
 - Corrected the shared admin presentation copy after Production review: login, recovery, dashboard, content, service, team, and case-study surfaces now use deployment-neutral CMS language instead of incorrectly labeling Production as staging.
 - Added the guarded staging-to-Production CMS promotion boundary as a temporary migration bridge. It is not the target editorial workflow and remains only until the Production revision path is verified and the bridge can be retired safely.
 - Added the additive revision ledger and protected publish/restore RPCs for the core content types. Global content, Services, and case-study metadata, relationships, and media editor actions now save private Draft/Review revisions; owner-only publish controls are separate from Save, and the public site remains on published base records. Production verification is still required; a Git merge does not apply migrations or promote Supabase data/configuration.
-- Verified the live remote Git state on 2026-08-22: `origin/main` (`0b58c03`) contains the staging merge (`e196ff6`), `origin/staging` (`72ebcaf`) is three commits behind, and no staging-only commits remain.
+- Verified the cached live remote Git state on 2026-08-22: `origin/main` (`0b58c03`) is an ancestor of `origin/staging` (`144e800`); `origin/main` is 0 commits ahead and `origin/staging` is 4 commits ahead. The staging-only commits are the approved post-merge documentation and synchronization history, so staging is not behind main.
+- Verified locally that lint, TypeScript checking, the production build, and whitespace validation pass; no automated test suite is configured in the repository.
+- Verified the Production public route smoke matrix: the public pages and published Cairnstack route return successfully, `/crimson-admin-control` is session-gated, and `/admin` plus `/admin/*` return normal `404` responses.
 
 ## In Progress
 
-- Verify the Production deployment, migration/RLS/function/grant/trigger/Storage boundary, and environment mapping.
-- Complete and test the canonical password recovery, invitation, session, and route protections in Production.
-- Verify revision save/review/publish/restore, public published-only reads, media, relationships, audit, and inquiry behavior in Production.
-- Resolve or retire the temporary row-copy promotion bridge after the revision workflow is proven.
-- Synchronize `staging` to the approved `main` baseline and record the post-merge release sign-off.
+- Complete the owner-controlled Production Supabase inspection for migrations, RLS, grants, functions, triggers, Storage policies, and the exact Vercel environment mapping.
+- Complete fresh authenticated Production smoke tests for login, logout, password recovery, invitation acceptance, revision save/review/publish/restore, audit, media, relationships, and inquiry behavior.
+- Confirm the public published-only read boundary against an intentionally unpublished or review record and verify the approved media contract in Production.
+- Resolve or retire the temporary row-copy promotion bridge after the Production revision workflow and rollback path are proven.
+- Record the Production release sign-off and keep `staging` synchronized to the approved `main` baseline for the next feature cycle.
 
 ## Blocked / Requires Owner Action
 
 - Configure GitHub branch protection for `feature/*`, `staging`, and `main`.
+- Verify Production Vercel variables point to the Production Supabase project and contain no staging Supabase URL/key pair; confirm the production deployment is using the expected commit.
+- Run the approved read-only Production Supabase verification queries from the owner account. The repository cannot inspect the owner dashboard's migrations, grants, triggers, functions, RLS policies, or Storage policies without owner access.
+- Execute the owner-controlled Production mutation smoke matrix. These tests must create or change real revisions/media only within the approved rollback procedure; they cannot be safely inferred from public reads.
 - Provide approved case-study facts, outcomes, testimonials, team details, and contact destination before implementation.
 - Confirm which visual assets from the existing brand materials may be copied into Crimson.
 - Keep WordPress hosting available during the short rollback window, then cancel it after final owner confirmation.
@@ -74,4 +79,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Execute the post-merge Phase 4C checklist in [`docs/MASTER-PLAN.md`](./MASTER-PLAN.md) and [`docs/RELEASE-READINESS.md`](./RELEASE-READINESS.md) in order. Do not begin Phase 5 or Phase 6 until the Production baseline is verified and `staging` is synchronized to the approved `main` commit.
+Execute the remaining owner-controlled checks in the post-merge Phase 4C checklist in [`docs/MASTER-PLAN.md`](./MASTER-PLAN.md) and [`docs/RELEASE-READINESS.md`](./RELEASE-READINESS.md) in order. Do not begin Phase 5 or Phase 6 until those checks are signed off and `staging` remains synchronized to the approved `main` baseline.
