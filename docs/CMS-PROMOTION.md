@@ -2,6 +2,8 @@
 
 > **Phase 4C status — transitional bridge:** This runner is retained only until the Production revision-based CMS workflow, rollback path, and public read boundary are verified. It is not the normal editorial publishing mechanism. Do not run it for ordinary content updates; retire it after the Phase 4C gate closes, or document an explicit rollback exception.
 
+> **Database release boundary:** This document governs the temporary CMS row-copy bridge only. Database schema, RLS, functions, triggers, grants, and Storage policies are released through the canonical `supabase/migrations` history and the approval-gated `.github/workflows/supabase-release.yml` pipeline. The bridge must never be used to recreate database architecture.
+
 The public website and the editing CMS are intentionally separate:
 
 ```text

@@ -10,6 +10,8 @@ Phase 0 through Phase 3 are complete. The public route structure, visual system,
 
 The current CMS is not yet a complete body-content editor for Home, About, Services, and Contact. It currently manages global metadata/settings, navigation, fixed approved section visibility/order, services, case-study editorial data, media, relationships, and revisions. Full page-body editing is Phase 5. Blog / Insights is approved for Phase 6 and has not been implemented. CRM remains Phase 7 and is not implemented beyond inquiry intake.
 
+The current Phase 4C work includes the invitation-flow remediation: Supabase administrator invitations must establish an implicit callback session at `/crimson-admin-control/invite` before the CMS membership is activated. Public signup remains disabled. Staging verification must pass before any Production invitation test or Phase 5 work.
+
 ## Completed
 
 - Connected the local project workspace to the empty GitHub repository `ocscolabs-platform/crimson`.
@@ -53,13 +55,15 @@ The current CMS is not yet a complete body-content editor for Home, About, Servi
 - Corrected the shared admin presentation copy after Production review: login, recovery, dashboard, content, service, team, and case-study surfaces now use deployment-neutral CMS language instead of incorrectly labeling Production as staging.
 - Added the guarded staging-to-Production CMS promotion boundary as a temporary migration bridge. It is not the target editorial workflow and remains only until the Production revision path is verified and the bridge can be retired safely.
 - Added the additive revision ledger and protected publish/restore RPCs for the core content types. Global content, Services, and case-study metadata, relationships, and media editor actions now save private Draft/Review revisions; owner-only publish controls are separate from Save, and the public site remains on published base records. Production verification is still required; a Git merge does not apply migrations or promote Supabase data/configuration.
-- Verified the cached live remote Git state on 2026-08-22: `origin/main` (`0b58c03`) is an ancestor of `origin/staging` (`144e800`); `origin/main` is 0 commits ahead and `origin/staging` is 4 commits ahead. The staging-only commits are the approved post-merge documentation and synchronization history, so staging is not behind main.
-- Verified locally that lint, TypeScript checking, the production build, and whitespace validation pass; no automated test suite is configured in the repository.
+- The latest refreshed Git comparison is `origin/main` (`f098902`) versus `origin/staging` (`b78976c`): `git rev-list --left-right --count origin/main...origin/staging` returned `3 1`. The remote branches are divergent; the remediation branch is based on the latest `origin/main` and must enter `staging` through a normal pull request. No force reset or history rewrite is allowed.
+- Added the canonical Supabase CLI configuration, migration-history validator, read-only parity contract, and approval-gated staging/Production migration workflow. Local lint, typecheck, migration validation, production build, and diff checks pass; no automated application test suite is configured in the repository.
+- The CMS row-copy promotion workflow remains transitional and separate from the database migration pipeline. Production database changes require explicit owner approval through the protected `production-supabase` environment.
 - Verified the Production public route smoke matrix: the public pages and published Cairnstack route return successfully, `/crimson-admin-control` is session-gated, and `/admin` plus `/admin/*` return normal `404` responses.
 
 ## In Progress
 
 - Complete the owner-controlled Production Supabase inspection for migrations, RLS, grants, functions, triggers, Storage policies, and the exact Vercel environment mapping.
+- Configure and verify the GitHub `staging-supabase` and `production-supabase` environments required by the canonical migration workflow; no secret values belong in Git.
 - Complete fresh authenticated Production smoke tests for login, logout, password recovery, invitation acceptance, revision save/review/publish/restore, audit, media, relationships, and inquiry behavior.
 - Confirm the public published-only read boundary against an intentionally unpublished or review record and verify the approved media contract in Production.
 - Resolve or retire the temporary row-copy promotion bridge after the Production revision workflow and rollback path are proven.

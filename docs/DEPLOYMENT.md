@@ -22,6 +22,20 @@ The repository intentionally does not contain account IDs, deployment URLs, doma
 
 The current release contract is [`RELEASE-READINESS.md`](./RELEASE-READINESS.md). It supersedes older rollout notes where they describe row copying as the normal way to publish content.
 
+## Canonical Supabase migration pipeline
+
+The repository's only canonical database history is `supabase/migrations`. The committed Supabase CLI configuration intentionally contains no project credentials or remote project secret. GitHub Environment variables and secrets select the remote project at runtime:
+
+```text
+feature/* → CI validation → staging → owner QA → main → Production migration plan
+                                                              ↓
+                                             explicit owner-approved apply
+```
+
+`.github/workflows/supabase-release.yml` validates lint, typecheck, migration filenames, and the production build. A push to `staging` applies the same versioned migrations to the staging project after a dry run. A push to `main` only plans and reports pending Production migrations; Production changes require a manual workflow dispatch with `apply=true` and approval from the protected `production-supabase` GitHub Environment. This is intentionally separate from Vercel deployment and from CMS content promotion.
+
+The read-only contract in [`../supabase/verification/release-contract.sql`](../supabase/verification/release-contract.sql) checks the expected schema, RLS, functions, triggers, grants, Storage bucket, and Storage policies. It must be run against both projects during Phase 4C verification. The row-copy CMS bridge remains transitional and must not be used as a substitute for migration application.
+
 ## CMS publication boundary
 
 The staging CMS and the Production public website use separate Supabase projects. Git promotion moves code only; it does not move CMS rows, Auth users, Storage objects, or database IDs. The one-time Production CMS boundary is defined in [`CMS-PROMOTION.md`](./CMS-PROMOTION.md) and [`20260821000000_create_production_cms_boundary.sql`](../supabase/migrations/20260821000000_create_production_cms_boundary.sql). Phase 4C verifies the Production revision-based CMS boundary before the bridge is retired.

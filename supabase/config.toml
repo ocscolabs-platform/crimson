@@ -1,0 +1,9 @@
+# Local Supabase CLI configuration only. Remote project references and secrets
+# are supplied by GitHub Environments and are intentionally not committed.
+project_id = "ocsco-project-crimson"
+
+[db]
+major_version = 15
+
+[db.seed]
+enabled = false

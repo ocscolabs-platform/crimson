@@ -27,9 +27,13 @@ Open `http://localhost:3000` to view the foundation shell.
 
 ```bash
 npm run lint
+npm run typecheck
+npm run validate:migrations
 npm run build
 npm run start
 ```
+
+Database changes use the canonical files in `supabase/migrations`. The guarded GitHub workflow in `.github/workflows/supabase-release.yml` validates the migration history on every relevant push, applies approved migrations to staging, and performs a read-only Production plan on `main`. Production application requires an explicit workflow dispatch with the protected `production-supabase` environment approval; merging `staging` into `main` never changes the Production database by itself.
 
 Copy `.env.example` to `.env.local` only when local configuration is needed. Keep real values local and never commit them.
 
@@ -43,6 +47,6 @@ public/        Public static assets and the browsable HTML design style guide
 
 The official v1.0 visual source of truth is [`public/style-guide/index.html`](./public/style-guide/index.html), available at `/style-guide` in the deployed application and locally while the development server is running. It documents the OCSCO visual principles, tokens, components, content voice, and implementation rules used for the redesign.
 
-The CMS is available only at the canonical `/crimson-admin-control` path. Direct `/admin` and `/admin/*` requests return `404`; the generic namespace is not a CMS entry point. It uses Supabase Auth sessions, revision-based publishing, and RLS-backed role boundaries. The current release contract and merge gates are documented in [`docs/RELEASE-READINESS.md`](./docs/RELEASE-READINESS.md). The guarded row-copy workflow in [`docs/CMS-PROMOTION.md`](./docs/CMS-PROMOTION.md) is transitional infrastructure only and is not the target editorial workflow.
+The CMS is available only at the canonical `/crimson-admin-control` path. Direct `/admin` and `/admin/*` requests return `404`; the generic namespace is not a CMS entry point. CMS access is invite-only: public signup is disabled, and new members are created through the owner-controlled Supabase administrator invitation flow. It uses Supabase Auth sessions, revision-based publishing, and RLS-backed role boundaries. The current release contract and merge gates are documented in [`docs/RELEASE-READINESS.md`](./docs/RELEASE-READINESS.md). The guarded row-copy workflow in [`docs/CMS-PROMOTION.md`](./docs/CMS-PROMOTION.md) is transitional infrastructure only and is not the target editorial workflow.
 
 Read [`AGENTS.md`](./AGENTS.md) before making repository changes. Deeper project documentation lives in [`docs/`](./docs/), including the information architecture, content model, visual direction, content briefs, and [`PHASE-3-IMPLEMENTATION.md`](./docs/PHASE-3-IMPLEMENTATION.md).

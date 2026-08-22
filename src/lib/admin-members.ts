@@ -53,7 +53,16 @@ export async function inviteCmsMember(email: string, role: CmsRole, redirectTo: 
     .from("cms_members")
     .upsert({ user_id: data.user.id, role }, { onConflict: "user_id" });
 
-  if (membershipError) throw new Error(membershipError.message);
+  if (!membershipError) return;
+
+  const { error: cleanupError } = await supabase.auth.admin.deleteUser(data.user.id);
+  if (cleanupError) {
+    throw new Error(
+      "The invitation was created, but the CMS role could not be assigned. No CMS access was granted; remove the pending Auth user before retrying.",
+    );
+  }
+
+  throw new Error("The CMS role could not be assigned, so the invitation was rolled back. Request a new invitation.");
 }
 
 export async function updateCmsMemberRole(userId: string, role: CmsRole) {

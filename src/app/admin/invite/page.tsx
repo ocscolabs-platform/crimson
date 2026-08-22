@@ -4,8 +4,28 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/client";
+import { createInviteClient } from "@/lib/supabase/invite-client";
 import AdminToast from "@/app/admin/AdminToast";
+
+const INVITE_ERROR = "This invitation link is invalid or has expired. Request a new invitation.";
+
+function clearInviteHash() {
+  window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+}
+
+function getInviteTokens() {
+  const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : window.location.hash;
+  if (!hash) return null;
+
+  const params = new URLSearchParams(hash);
+  const accessToken = params.get("access_token");
+  const refreshToken = params.get("refresh_token");
+  const type = params.get("type");
+
+  if (!accessToken || !refreshToken || type !== "invite") return null;
+
+  return { accessToken, refreshToken };
+}
 
 export default function AdminInvitePage() {
   const router = useRouter();
@@ -17,7 +37,7 @@ export default function AdminInvitePage() {
   const [hasInviteSession, setHasInviteSession] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = createInviteClient();
     let isMounted = true;
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
@@ -28,13 +48,31 @@ export default function AdminInvitePage() {
     });
 
     async function establishInviteSession() {
-      const { data, error: sessionError } = await supabase.auth.getSession();
-      if (!isMounted) return;
+      try {
+        const tokens = getInviteTokens();
+        if (tokens) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: tokens.accessToken,
+            refresh_token: tokens.refreshToken,
+          });
 
-      setHasInviteSession(Boolean(data.session));
-      setIsCheckingSession(false);
-      if (!data.session) {
-        setError(sessionError?.message || "This invitation link is invalid or has expired. Request a new invitation.");
+          if (sessionError) throw sessionError;
+          clearInviteHash();
+        }
+
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
+        setHasInviteSession(Boolean(data.session));
+        setIsCheckingSession(false);
+        if (!data.session) setError(sessionError?.message || INVITE_ERROR);
+      } catch (caughtError) {
+        if (!isMounted) return;
+
+        clearInviteHash();
+        setHasInviteSession(false);
+        setIsCheckingSession(false);
+        setError(caughtError instanceof Error ? caughtError.message : INVITE_ERROR);
       }
     }
 
@@ -62,7 +100,7 @@ export default function AdminInvitePage() {
 
     setIsSubmitting(true);
     try {
-      const supabase = createClient();
+      const supabase = createInviteClient();
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) {
         setError(updateError.message);

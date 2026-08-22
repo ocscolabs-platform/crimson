@@ -8,6 +8,14 @@ This queue records approved next-step work before implementation. Tasks in this 
 
 The current gate is **PH4-017 — Post-merge release verification and baseline stabilization**. The staging-to-main code merge has already occurred; this task now verifies the Production boundary and synchronizes staging to the approved main baseline. No Blog implementation is authorized by this roadmap update. Full page-body editing is Phase 5, Blog / Insights is Phase 6, and CRM is Phase 7.
 
+## PH4-018 — Remediate the administrator invitation callback
+
+- **Status:** In progress / staging verification required
+- **Goal:** Make the owner-controlled Supabase administrator invitation flow establish a valid session and activate the assigned CMS membership without relying on public signup or the normal PKCE client.
+- **Scope:** `/crimson-admin-control/invite`, invitation callback/session exchange, membership activation, recoverable Auth-user cleanup, and invitation error handling only.
+- **Root cause:** `inviteUserByEmail` accepts the invitation in a different browser context and returns an implicit callback session in the URL fragment. The previous invite page used the normal PKCE browser client and rejected that fragment before a session could be established.
+- **Acceptance criteria:** A fresh staging invitation succeeds on its first click; the invite page establishes the callback session before account setup and never logs tokens; the assigned CMS membership is created with the requested role; membership failure is recoverable without an unintended usable CMS account; existing login, recovery, logout, role authorization, public-signup-disabled behavior, and `/admin` 404 behavior remain unchanged; no Production invitation is sent until staging passes and the owner approves the next controlled Production test.
+
 ## PH4-017 — Verify the post-merge CMS release boundary
 
 - **Status:** In progress / current post-merge release gate
@@ -361,7 +369,7 @@ The current gate is **PH4-017 — Post-merge release verification and baseline s
 - Each published case study has an explicit identity, media, claims, testimonial, external-link, and related-capability decision.
 - Contact form field language, privacy/consent copy, response-time expectation, inquiry owner, and retention expectation are approved.
 - Desktop, tablet/mobile, keyboard, focus, and screen-reader review is completed or exceptions are documented and accepted.
-- The owner explicitly authorized promotion to `main` on 2026-08-21; the live remote refs now confirm that the code merge occurred. Supabase data/configuration promotion remains a separate verification boundary.
+- The owner explicitly authorized promotion to `main` on 2026-08-21 and the repository history records that code merge. The latest remote comparison is `origin/main...origin/staging = 3 1`, so the branches are divergent; the current remediation branch is based on `origin/main` and must enter `staging` through a normal pull request. Supabase data/configuration promotion remains a separate verification boundary handled by the approval-gated migration pipeline.
 
 ### Approval record
 
