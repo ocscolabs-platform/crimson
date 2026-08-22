@@ -20,6 +20,15 @@ Preview/Staging and Production must remain separate environment configurations. 
 
 The repository intentionally does not contain account IDs, deployment URLs, domains, credentials, or environment values. Human owners will need to supply those values through GitHub/Vercel/Supabase configuration when the integrations are approved.
 
+## Public site-origin contract
+
+Set the public, non-secret `NEXT_PUBLIC_SITE_URL` variable separately in each Vercel environment:
+
+- Preview/Staging: the stable staging deployment alias only;
+- Production: `https://ocsco.io` only.
+
+The application uses this origin for `metadataBase`, Open Graph URLs, and any future absolute canonical metadata. A Vercel Preview deployment fails closed when the variable is missing or points to Production. Production retains the `https://ocsco.io` fallback if its variable is absent, while local development may omit the variable and uses `http://localhost:3000` rather than a remote environment.
+
 The current release contract is [`RELEASE-READINESS.md`](./RELEASE-READINESS.md). It supersedes older rollout notes where they describe row copying as the normal way to publish content.
 
 ## Canonical Supabase migration pipeline
