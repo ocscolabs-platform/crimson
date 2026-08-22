@@ -9,6 +9,7 @@ This document defines the Phase 4C database release boundary. It does not begin 
 - Canonical history: `supabase/migrations`
 - Verification contract: `supabase/verification/release-contract.sql`
 - Workflow: `.github/workflows/supabase-release.yml`
+- Pinned Supabase CLI: `2.111.0` (stable)
 
 ## Release flow
 
