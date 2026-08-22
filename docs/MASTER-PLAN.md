@@ -39,13 +39,14 @@ feature/*  →  staging / Preview  →  main / Production
 
 ## Release state — 2026-08-22
 
-The repository has cached remote references from the last successful GitHub refresh, but a fresh remote fetch was unavailable during this remediation run. The cached refs are therefore evidence of the last observed state, not a new live verification:
+The latest successful GitHub refresh reports:
 
-- cached `origin/main` is `f098902f04cd25483c24bbc7f467d1023f1b7a79`;
-- cached `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`;
-- the cached comparison was `git rev-list --left-right --count origin/main...origin/staging` = `3 1`.
+- `origin/main` is `f098902f04cd25483c24bbc7f467d1023f1b7a79`;
+- `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`;
+- `git rev-list --left-right --count origin/main...origin/staging` is `3 1`;
+- `origin/main` and `origin/staging` are therefore not synchronized: they have diverged, with three commits unique to `main` and one commit unique to `staging`.
 
-The prior staging-to-main code merge is recorded in project history, but the current remote relationship must be refreshed before a baseline sign-off. No force reset or history rewrite is permitted. Git promotion proves code movement only; it does not prove Production Supabase migrations, rows, Auth configuration, Storage objects/policies, environment variables, or public runtime behavior.
+The remediation branch is based on the latest `origin/main` and is pushed for review. The safe reconciliation path is a normal pull request into `staging`, followed by staging verification; no force reset or history rewrite is permitted. Git promotion proves code movement only; it does not prove Production Supabase migrations, rows, Auth configuration, Storage objects/policies, environment variables, or public runtime behavior.
 
 ## Phase status at a glance
 
