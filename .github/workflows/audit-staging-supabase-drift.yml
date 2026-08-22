@@ -1,6 +1,9 @@
 name: Audit staging Supabase schema drift
 
 on:
+  push:
+    branches:
+      - staging
   workflow_dispatch:
 
 permissions:
@@ -20,6 +23,17 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Enforce staging-only execution
+        shell: bash
+        env:
+          ACTUAL_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [[ "$ACTUAL_REF" != "refs/heads/staging" ]]; then
+            echo "Refusing to run the staging drift audit outside refs/heads/staging (got $ACTUAL_REF)."
+            exit 1
+          fi
 
       - name: Verify staging audit configuration without exposing values
         shell: bash
