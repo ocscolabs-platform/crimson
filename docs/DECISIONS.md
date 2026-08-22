@@ -386,23 +386,23 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Reason:** A less obvious path reduces casual discovery and avoids presenting the CMS as a generic `/admin` endpoint. The path is not treated as a security boundary.
 - **Consequence:** Vercel/Supabase Auth reset URLs must use `/crimson-admin-control/auth/callback?next=/crimson-admin-control/reset-password`. The callback exchanges the one-time recovery code server-side before the reset form loads. Internal route rewrites continue to use the existing App Router implementation, and no data, role, or credential changes are introduced.
 
-## ADR-056 - Add Blog / Insights after structured page-content editing
+## ADR-056 - Add Insights after structured page-content editing
 
 - **Date:** 2026-08-22
-- **Status:** Accepted for roadmap planning; implementation not started
-- **Decision:** Add a first-party Blog / Insights system as Phase 6, after Phase 5 completes full structured body-content editing for Home, About, Services, and Contact. Use `/insights` and `/insights/[slug]` as the planned public routes unless a later naming decision approves `/blog`.
-- **Reason:** Blog publishing depends on the CMS's content, revision, media, SEO, preview, and public published-only boundaries. Building it before the page-content editor and Phase 4 release stabilization would repeat the current pattern of adding editorial features on top of an unresolved release contract.
+- **Status:** Owner-approved for roadmap planning; implementation not started
+- **Decision:** Add a first-party Insights system as Phase 6, after Phase 5 completes full structured body-content editing for Home, About, Services, and Contact. Use `Insights` as the navigation label, `/insights` and `/insights/[slug]` as the public routes, and `Insights / Articles` as the CMS area.
+- **Reason:** Insights publishing depends on the CMS's content, revision, media, SEO, preview, and public published-only boundaries. Building it before the page-content editor and Phase 4 release stabilization would repeat the current pattern of adding editorial features on top of an unresolved release contract.
 - **Scope:** Articles, categories, tags, article-to-tag relationships, authors, publication status/dates, featured/social media, SEO metadata, article editor, preview, public index, search/filtering, pagination/load-more, empty states, article detail, and related articles.
 - **Constraints:** Reuse the existing Supabase/Auth/RLS/revision/audit/media architecture. Do not add a third-party CMS, freeform page builder, or copied Cairnstack design. Draft and Review content must remain private.
-- **Consequence:** Blog migrations, routes, CMS controls, and nav placement remain intentionally absent until Phase 6. The Master Plan and Content Model now record the scope and dependencies. CRM remains a separate Phase 7 capability.
+- **Consequence:** Insights migrations, routes, CMS controls, and nav placement remain intentionally absent until Phase 6. The Master Plan and Content Model now record the scope and dependencies. CRM remains a separate Phase 7 capability.
 
 ## ADR-057 - Treat the staging-to-main merge as complete and stabilize the Production baseline
 
 - **Date:** 2026-08-22
-- **Status:** Accepted for roadmap reconciliation; post-merge verification in progress
-- **Decision:** Treat the prior staging-to-main merge as a repository-history fact and record the latest live remote comparison. `origin/main` is `f098902f04cd25483c24bbc7f467d1023f1b7a79`, `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`, and `git rev-list --left-right --count origin/main...origin/staging` returns `3 1`; the branches are divergent. The remediation branch is based on the latest `origin/main` and must be merged into `staging` through a normal pull request before staging verification. Phase 4C remains post-merge Production release verification and baseline stabilization. The next development phase must not begin until the remote refs, Production, and the code branches are verified against the criteria in `MASTER-PLAN.md` and `RELEASE-READINESS.md`.
+- **Status:** Accepted for roadmap reconciliation; Production release gate deferred by ADR-059
+- **Decision:** Treat the prior staging-to-main merge as a repository-history fact and record the latest live remote comparison. `origin/main` is `f098902f04cd25483c24bbc7f467d1023f1b7a79`, `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`, and `git rev-list --left-right --count origin/main...origin/staging` returns `3 1`; the branches are divergent. The remediation branch is based on the latest `origin/main` and must be merged into `staging` through a normal pull request before staging verification. Phase 4C staging baseline and QA are complete; the Production release/promotion verification remains a deferred gate tracked by ADR-059.
 - **Reason:** The previous pre-merge wording no longer describes the repository. Git promotion has happened, but a Git merge does not prove that Production Supabase migrations, runtime variables, Auth callbacks, RLS, Storage, or revision publication are configured correctly.
-- **Consequence:** No new Phase 5 or Blog implementation starts during this gate. Production is verified independently, temporary promotion infrastructure is retired only after the revision path is proven, and `staging` is synchronized to the approved `main` baseline before Phase 5.
+- **Consequence:** Production is verified independently, temporary promotion infrastructure is retired only after the revision path is proven, and `staging` is synchronized to the approved `main` baseline before Production CMS/schema promotion. Phase 5 development and QA may proceed in the isolated staging environment.
 
 ## ADR-058 - Use a dedicated implicit callback for administrator invitations
 
@@ -411,3 +411,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Keep the normal CMS browser client PKCE-based for login and password recovery, but use a dedicated implicit-flow client for administrator invitation acceptance at `/crimson-admin-control/invite`. The invite page explicitly consumes the invitation fragment, establishes the session, removes the fragment from browser history, and only then allows account setup and membership activation.
 - **Reason:** Supabase administrator invitations are created in one browser context and accepted in another. The callback therefore returns an implicit session fragment; the previous PKCE client rejected it as an invalid/expired PKCE flow on first click.
 - **Consequence:** Public signup remains disabled and owner invitations remain server-side. If membership assignment fails after Auth invite creation, the server performs compensating Auth-user cleanup and returns a recoverable error. No Production invitation test is permitted until a fresh staging first-click test passes.
+
+## ADR-059 - Close staging Phase 4C QA separately from the Production release gate
+
+- **Date:** 2026-08-23
+- **Status:** Owner-approved
+- **Decision:** Mark the `crimson-staging` Phase 4C baseline and QA complete after the owner-verified clean rebuild, migration parity, architecture checks, CMS workflow matrix, media lifecycle, inquiry persistence, route protection, metadata isolation, and runtime health pass. Track Production schema/configuration/Auth/promotion verification as a deferred release gate rather than blocking Phase 5 development and QA in staging.
+- **Reason:** The staging and Production environments are intentionally separate, and Phase 5 depends on the accepted CMS foundation and staging QA rather than on an already-promoted Production CMS. Production verification remains mandatory before Production CMS/schema promotion, but it is an operational release dependency rather than a prerequisite for continued isolated staging development.
+- **Consequence:** Phase 5 is ready to plan against the accepted staging baseline. The Production release gate preserves the requirements for Production migration dry-run/apply approval, schema/configuration/Auth verification, Production smoke testing, rollback/sign-off, staging synchronization, and the temporary promotion-bridge decision.

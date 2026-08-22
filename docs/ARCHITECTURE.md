@@ -40,7 +40,7 @@ These are plans, not claims that the systems already exist. Future architecture 
 
 ## Approved roadmap extensions
 
-The next CMS extension is full structured body-content editing for Home, About, Services, and Contact. After that foundation is stable, Blog / Insights will use the same Next.js application, Supabase data boundary, Auth membership roles, RLS, revision ledger, audit history, private media contract, SEO metadata conventions, and published-only public reads. It will not introduce a third-party CMS or a parallel publishing system. The CRM remains a separate internal capability with its own scope, permissions, and workflow; the public inquiry form is not itself a complete CRM.
+The next CMS extension is full structured body-content editing for Home, About, Services, and Contact. After that foundation is stable, Insights will use the same Next.js application, Supabase data boundary, Auth membership roles, RLS, revision ledger, audit history, private media contract, SEO metadata conventions, and published-only public reads. It will not introduce a third-party CMS or a parallel publishing system. The CRM remains a separate internal capability with its own scope, permissions, and workflow; the public inquiry form is not itself a complete CRM.
 
 The planned public Blog routes are `/insights` and `/insights/[slug]`. The Cairnstack URLs supplied as references define only a structural content expectation and must not drive copied design or implementation.
 

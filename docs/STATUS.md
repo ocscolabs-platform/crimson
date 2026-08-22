@@ -2,15 +2,16 @@
 
 ## Current Phase
 
-**Phase 4C — Post-Merge Release Verification and Baseline Stabilization**
+**Phase 4C staging baseline and QA — Complete**
+**Production release/promotion gate — Deferred release gate**
 
 The canonical roadmap is [`MASTER-PLAN.md`](./MASTER-PLAN.md). This file records the current implementation state; older detailed phase documents and early task entries are historical implementation records where their statuses conflict with later verified slices.
 
-Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4A and 4B are implemented for the approved CMS slices: schema, published-only public read boundary, role authorization, revision-based publishing, media workflow, relationships, audit history, and canonical `/crimson-admin-control` route. The staging-to-main code merge has already occurred; the current release audit verifies the resulting Production deployment/data boundary and establishes a clean synchronized baseline before Phase 5.
+Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4A and 4B are complete for the approved staging CMS slices: schema, published-only public read boundary, role authorization, revision-based publishing, media workflow, relationships, audit history, and canonical `/crimson-admin-control` route. Owner-approved staging Phase 4C baseline and QA are complete. Production deployment, configuration, Auth, database, and promotion verification remain a deferred release gate and do not block Phase 5 development in staging.
 
-The current CMS is not yet a complete body-content editor for Home, About, Services, and Contact. It currently manages global metadata/settings, navigation, fixed approved section visibility/order, services, case-study editorial data, media, relationships, and revisions. Full page-body editing is Phase 5. Blog / Insights is approved for Phase 6 and has not been implemented. CRM remains Phase 7 and is not implemented beyond inquiry intake.
+The current CMS is not yet a complete body-content editor for Home, About, Services, and Contact. It currently manages global metadata/settings, navigation, fixed approved section visibility/order, services, case-study editorial data, media, relationships, and revisions. Full page-body editing is Phase 5. Insights is approved for Phase 6 and has not been implemented. CRM remains Phase 7 and is not implemented beyond inquiry intake.
 
-The current Phase 4C work includes the invitation-flow remediation: Supabase administrator invitations must establish an implicit callback session at `/crimson-admin-control/invite` before the CMS membership is activated. Public signup remains disabled. Staging verification must pass before any Production invitation test or Phase 5 work.
+The deferred Production gate still includes the invitation-flow remediation: Supabase administrator invitations must establish an implicit callback session at `/crimson-admin-control/invite` before the CMS membership is activated. Public signup remains disabled.
 
 ## Completed
 
@@ -59,15 +60,17 @@ The current Phase 4C work includes the invitation-flow remediation: Supabase adm
 - Added the canonical Supabase CLI configuration, migration-history validator, read-only parity contract, and approval-gated staging/Production migration workflow. Local lint, typecheck, migration validation, production build, and diff checks pass; no automated application test suite is configured in the repository.
 - The CMS row-copy promotion workflow remains transitional and separate from the database migration pipeline. Production database changes require explicit owner approval through the protected `production-supabase` environment.
 - Verified the Production public route smoke matrix: the public pages and published Cairnstack route return successfully, `/crimson-admin-control` is session-gated, and `/admin` plus `/admin/*` return normal `404` responses.
+- Closed the owner-approved staging Phase 4C baseline and QA acceptance: clean rebuild, migration parity, CMS workflows, media, inquiry persistence, route protection, metadata isolation, Production endpoint/domain isolation, and browser/runtime health all passed.
 
-## In Progress
+## Deferred Release Gate / Requires Owner Action
 
-- Complete the owner-controlled Production Supabase inspection for migrations, RLS, grants, functions, triggers, Storage policies, and the exact Vercel environment mapping.
+- Complete the owner-controlled Production Supabase inspection for migrations, RLS, grants, functions, triggers, Storage policies, and the exact Vercel environment mapping before Production promotion.
 - Configure and verify the GitHub `staging-supabase` and `production-supabase` environments required by the canonical migration workflow; no secret values belong in Git.
 - Complete fresh authenticated Production smoke tests for login, logout, password recovery, invitation acceptance, revision save/review/publish/restore, audit, media, relationships, and inquiry behavior.
 - Confirm the public published-only read boundary against an intentionally unpublished or review record and verify the approved media contract in Production.
 - Resolve or retire the temporary row-copy promotion bridge after the Production revision workflow and rollback path are proven.
-- Record the Production release sign-off and keep `staging` synchronized to the approved `main` baseline for the next feature cycle.
+- Record the Production release sign-off and keep `staging` synchronized to the approved `main` baseline before Production promotion.
+- After Phase 4C QA, remove or set the Preview/staging `INQUIRY_SUBMISSIONS_ENABLED` override to `false` unless an owner-approved staging inquiry test is actively required. Production remains independently configured.
 
 ## Blocked / Requires Owner Action
 
@@ -83,4 +86,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Execute the remaining owner-controlled checks in the post-merge Phase 4C checklist in [`docs/MASTER-PLAN.md`](./MASTER-PLAN.md) and [`docs/RELEASE-READINESS.md`](./RELEASE-READINESS.md) in order. Do not begin Phase 5 or Phase 6 until those checks are signed off and `staging` remains synchronized to the approved `main` baseline.
+Create the focused Phase 5 planning package against the accepted staging baseline. Keep the deferred Production release gate visible and complete it before any future Production CMS/schema promotion.

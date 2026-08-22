@@ -16,7 +16,7 @@ The `main` branch is connected to Vercel and the production deployment is public
 
 ## Environment separation
 
-Preview/Staging and Production must remain separate environment configurations. Production secrets must not be shared indiscriminately with preview or staging deployments. Supabase projects, keys, storage policies, authentication settings, and other external resources must be selected explicitly for the environment being deployed. Phase 4C verifies that the Production deployment is using the Production resources rather than staging values.
+Preview/Staging and Production must remain separate environment configurations. Production secrets must not be shared indiscriminately with preview or staging deployments. Supabase projects, keys, storage policies, authentication settings, and other external resources must be selected explicitly for the environment being deployed. The deferred Production release gate verifies that the Production deployment is using the Production resources rather than staging values.
 
 The repository intentionally does not contain account IDs, deployment URLs, domains, credentials, or environment values. Human owners will need to supply those values through GitHub/Vercel/Supabase configuration when the integrations are approved.
 
@@ -34,13 +34,13 @@ feature/* → CI validation → staging → owner QA → main → Production mig
 
 `.github/workflows/supabase-release.yml` validates lint, typecheck, migration filenames, and the production build. A push to `staging` applies the same versioned migrations to the staging project after a dry run. A push to `main` only plans and reports pending Production migrations; Production changes require a manual workflow dispatch with `apply=true` and approval from the protected `production-supabase` GitHub Environment. This is intentionally separate from Vercel deployment and from CMS content promotion.
 
-The read-only contract in [`../supabase/verification/release-contract.sql`](../supabase/verification/release-contract.sql) checks the expected schema, RLS, functions, triggers, grants, Storage bucket, and Storage policies. It must be run against both projects during Phase 4C verification. The row-copy CMS bridge remains transitional and must not be used as a substitute for migration application.
+The read-only contract in [`../supabase/verification/release-contract.sql`](../supabase/verification/release-contract.sql) checks the expected schema, RLS, functions, triggers, grants, Storage bucket, and Storage policies. It must be run against both projects during the deferred Production release gate. The row-copy CMS bridge remains transitional and must not be used as a substitute for migration application.
 
 ## CMS publication boundary
 
-The staging CMS and the Production public website use separate Supabase projects. Git promotion moves code only; it does not move CMS rows, Auth users, Storage objects, or database IDs. The one-time Production CMS boundary is defined in [`CMS-PROMOTION.md`](./CMS-PROMOTION.md) and [`20260821000000_create_production_cms_boundary.sql`](../supabase/migrations/20260821000000_create_production_cms_boundary.sql). Phase 4C verifies the Production revision-based CMS boundary before the bridge is retired.
+The staging CMS and the Production public website use separate Supabase projects. Git promotion moves code only; it does not move CMS rows, Auth users, Storage objects, or database IDs. The one-time Production CMS boundary is defined in [`CMS-PROMOTION.md`](./CMS-PROMOTION.md) and [`20260821000000_create_production_cms_boundary.sql`](../supabase/migrations/20260821000000_create_production_cms_boundary.sql). The deferred Production release gate verifies the Production revision-based CMS boundary before the bridge is retired.
 
-The guarded GitHub `production-cms` workflow and `scripts/cms-promote.mjs` remain only as a transitional migration/rollback bridge. They are dry-run by default and require an explicit apply input. They are not the steady-state content release process and will be retired after Phase 4C verifies Production revision publishing. Production service-role credentials must remain server-side and must never be placed in browser variables or the repository.
+The guarded GitHub `production-cms` workflow and `scripts/cms-promote.mjs` remain only as a transitional migration/rollback bridge. They are dry-run by default and require an explicit apply input. They are not the steady-state content release process and will be retired after the deferred Production release gate verifies Production revision publishing. Production service-role credentials must remain server-side and must never be placed in browser variables or the repository.
 
 ## Remaining owner configuration
 
@@ -60,6 +60,7 @@ The staging `/contact` form writes validated submissions to the `public.inquirie
 - `RESEND_API_KEY` — server-only; use a sending-only key where available
 - `INQUIRY_NOTIFICATION_EMAIL` — owner inbox for new inquiry notifications
 - `INQUIRY_NOTIFICATION_FROM` — verified sender, or `OCSCO inquiries <onboarding@resend.dev>` for the initial Resend account-owner test
+- `INQUIRY_SUBMISSIONS_ENABLED` — optional Preview-only QA override; omit it or set it to `false` after the approved staging inquiry test is complete
 
 Do not add these values to the repository. Production uses separate values from Preview/Staging.
 
