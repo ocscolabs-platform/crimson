@@ -144,8 +144,8 @@ function normalize(value) {
 
 function connectionFromEnvironment(source) {
   if (source === "expected") {
-    const url = process.env.DATABASE_URL || process.env.DB_URL;
-    assert(url, "DATABASE_URL or DB_URL is required for the expected-state database.");
+    const url = process.env.EXPECTED_DATABASE_URL;
+    assert(url, "EXPECTED_DATABASE_URL is required for the expected-state database.");
     return { url, env: { ...process.env } };
   }
 
@@ -166,8 +166,9 @@ function connectionFromEnvironment(source) {
 function runPsql(connection, sql) {
   const query = sql.trim().replace(/;+\s*$/, "");
   const wrapped = `begin; set transaction read only; select coalesce(json_agg(row_to_json(result)), '[]'::json)::text from (${query}) result; commit;`;
-  const args = ["-q", "-X", "-v", "ON_ERROR_STOP=1", "-t", "-A", "-c", wrapped];
-  if (connection.url) args.unshift(connection.url);
+  const args = ["-q", "-X", "-v", "ON_ERROR_STOP=1", "-t", "-A"];
+  if (connection.url) args.push("--dbname", connection.url);
+  args.push("-c", wrapped);
   const result = spawnSync("psql", args, { encoding: "utf8", env: connection.env });
   if (result.status !== 0) {
     throw new Error((result.stderr || result.stdout || "psql failed").trim());
