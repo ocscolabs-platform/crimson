@@ -369,7 +369,7 @@ The current gate is **PH4-017 — Post-merge release verification and baseline s
 - Each published case study has an explicit identity, media, claims, testimonial, external-link, and related-capability decision.
 - Contact form field language, privacy/consent copy, response-time expectation, inquiry owner, and retention expectation are approved.
 - Desktop, tablet/mobile, keyboard, focus, and screen-reader review is completed or exceptions are documented and accepted.
-- The owner explicitly authorized promotion to `main` on 2026-08-21; the live remote refs now confirm that the code merge occurred. Supabase data/configuration promotion remains a separate verification boundary.
+- The owner explicitly authorized promotion to `main` on 2026-08-21 and the repository history records that code merge. A fresh remote comparison still requires a successful fetch; Supabase data/configuration promotion remains a separate verification boundary handled by the approval-gated migration pipeline.
 
 ### Approval record
 

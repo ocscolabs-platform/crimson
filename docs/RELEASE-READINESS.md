@@ -19,6 +19,15 @@ The previous staging-to-main code merge has completed. The release is not baseli
 - Staging and Production use separate runtime configuration and Supabase projects.
 - The staging-to-Production row-copy workflow is temporary migration infrastructure. It is not the steady-state content release mechanism and must be retired after revision publishing is proven in Production.
 
+## Database release pipeline
+
+- `supabase/migrations` is the canonical, ordered, environment-neutral database history. Existing migration filenames are historical records and must not be renamed, deleted, or rewritten merely for cleanup.
+- CI runs `npm run validate:migrations`, lint, typecheck, and the production build before a database workflow can proceed.
+- A `staging` push runs a linked Supabase dry run and applies pending canonical migrations to `crimson-staging`.
+- A `main` push runs a linked Production dry run only. It does not apply Production migrations.
+- Production application is an explicit, owner-approved GitHub workflow dispatch using the protected `production-supabase` environment. The same commit and migration files that passed in staging are applied; Production schema/data are never recreated manually from memory.
+- `supabase/verification/release-contract.sql` is a read-only parity check for tables, RLS policies, functions, triggers, grants, Storage, and Storage policies. It does not mutate either project.
+
 ## Required post-merge verification order
 
 1. Confirm the exact migration state, grants, RLS policies, functions, triggers, and Storage policies in Production; compare them with the approved staging baseline.

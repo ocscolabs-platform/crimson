@@ -10,6 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "validate:migrations": "node scripts/validate-migrations.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
   },
   "dependencies": {

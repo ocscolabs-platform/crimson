@@ -37,15 +37,15 @@ feature/*  →  staging / Preview  →  main / Production
 - **Planned:** approved scope not yet implemented.
 - **Future:** intentionally deferred enhancement, not required for the MVP gate.
 
-## Verified release state — 2026-08-22
+## Release state — 2026-08-22
 
-The live remote refs were fetched and compared on 2026-08-22 before this plan was finalized:
+The repository has cached remote references from the last successful GitHub refresh, but a fresh remote fetch was unavailable during this remediation run. The cached refs are therefore evidence of the last observed state, not a new live verification:
 
-- `origin/main` is `0b58c0351afa8a022c7c633592a829a02039ebc9`.
-- `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`.
-- `origin/main` is the merge base of `origin/staging`; `git rev-list --left-right --count origin/main...origin/staging` returns `0 9`.
-- Therefore, the approved application baseline is already in `main`, while `staging` is nine commits ahead with documentation/reconciliation and merge-history commits. The only non-documentation file difference is a comment-only clarification in the existing Production CMS migration; there is no unreviewed application-code divergence. Staging is not behind main and does not need a forced reset or history rewrite. The next feature cycle should start from a deliberate sync decision after Phase 4C sign-off.
-- This Git result proves code promotion only. It does not prove that Production Supabase migrations, rows, Auth configuration, Storage objects/policies, environment variables, or public runtime behavior are correct.
+- cached `origin/main` is `f098902f04cd25483c24bbc7f467d1023f1b7a79`;
+- cached `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`;
+- the cached comparison was `git rev-list --left-right --count origin/main...origin/staging` = `3 1`.
+
+The prior staging-to-main code merge is recorded in project history, but the current remote relationship must be refreshed before a baseline sign-off. No force reset or history rewrite is permitted. Git promotion proves code movement only; it does not prove Production Supabase migrations, rows, Auth configuration, Storage objects/policies, environment variables, or public runtime behavior.
 
 ## Phase status at a glance
 
