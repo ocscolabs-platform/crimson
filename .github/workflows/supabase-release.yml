@@ -83,7 +83,9 @@ jobs:
         run: supabase db push --linked --dry-run
 
       - name: Apply staging migrations
-        if: ${{ github.event_name == 'push' || inputs.apply == true }}
+        # Staging pushes validate and dry-run only. Applying migrations requires
+        # an explicit workflow dispatch with target=staging and apply=true.
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'staging' && inputs.apply == true }}
         run: supabase db push --linked --yes
 
   production:
