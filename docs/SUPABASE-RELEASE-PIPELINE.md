@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document defines the Phase 4C database release boundary. It does not begin Phase 5 and it does not replace the CMS content workflow.
+This document defines the Phase 4C database release boundary and the deferred Production release gate. It does not replace the CMS content workflow.
 
 - Staging project: `crimson-staging`
 - Production project: `ocscolabs-platform-website-crm`
@@ -92,6 +92,8 @@ The guarded row-copy workflow remains transitional. It may be used only for the 
 - Any required data repair or reverse migration must be a separately reviewed owner-approved migration.
 - Record the migration version, deployment commit, approval, and verification result in the release record.
 
-## Phase 4C exit condition
+## Phase 4C staging closure and deferred Production gate
 
-Phase 4C can close only after the workflow is configured and exercised in staging, the Production dry run and parity contract are verified, the owner approves the first Production apply, and the branch/deployment/auth/public-route/revision checks in `docs/RELEASE-READINESS.md` pass. No Phase 5 work starts before that sign-off.
+The staging portion of Phase 4C is complete after the clean staging rebuild, canonical migration parity, release contract, architecture assertions, application QA, and owner acceptance pass.
+
+The Production dry run, parity contract, first Production apply approval, branch/deployment/Auth/public-route/revision checks, rollback/sign-off, and staging synchronization remain a deferred release gate. They must pass before a future Production CMS/schema promotion, but do not block Phase 5 development and QA in staging.

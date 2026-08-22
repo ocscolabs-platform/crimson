@@ -118,9 +118,9 @@ Case Study ── may include ── Testimonial
 
 The original Page model intentionally describes structured content sections, but the current Phase 4 CMS does not yet expose full page-body editing. It currently supports global settings, navigation, page metadata, and a fixed registry of approved section visibility/order. Home, About, Services, and Contact body copy and section fields are a Phase 5 requirement. The implementation must remain structured and constrained; it must not become a freeform page builder by accident.
 
-## Approved Blog / Insights extension — Phase 6
+## Approved Insights extension — Phase 6
 
-Blog / Insights is now approved for the roadmap but is not implemented in the current schema, routes, or CMS. It should reuse the current Supabase, Auth, RLS, revision, audit, media, and published-only read boundaries.
+Insights is now approved for the roadmap but is not implemented in the current schema, routes, or CMS. It should reuse the current Supabase, Auth, RLS, revision, audit, media, and published-only read boundaries.
 
 ### Article
 
@@ -160,13 +160,13 @@ Blog / Insights is now approved for the roadmap but is not implemented in the cu
 - Article revisions reuse the current revision/publish boundary rather than writing unpublished content directly to the public base record.
 - Media references reuse the private media contract, file limits, WebP normalization, alt-text validation, and signed/public delivery rules appropriate to articles.
 
-### Blog editorial rules
+### Insights editorial rules
 
 - Draft and Review articles never appear on public routes, search, filters, related articles, metadata, or feeds.
 - Slugs are unique and must be validated before publication.
 - The CMS must support create, edit, draft, review, publish, unpublish, preview, category/tag assignment, author assignment, media, and SEO metadata.
-- The public index and article route use `/insights` and `/insights/[slug]` unless a later owner decision approves `/blog` naming.
-- The Cairnstack Blog reference is structural only; its design, visual system, branding, and implementation must not be copied.
+- The public index and article route use `/insights` and `/insights/[slug]`, with `Insights` as the navigation label and `Insights / Articles` as the CMS area.
+- The Cairnstack reference is structural only; its design, visual system, branding, and implementation must not be copied.
 
 ## Editorial rules
 
@@ -181,7 +181,7 @@ Blog / Insights is now approved for the roadmap but is not implemented in the cu
 
 - CRM contacts, companies, opportunities, activities, and pipeline stages
 - Authenticated users, roles, permissions, and audit logs
-- Blog/Insight articles — approved for Phase 6; not implemented yet
+- Insights articles — approved for Phase 6; not implemented yet
 - Media library and asset transformations
 - Form submissions and notification workflows
 

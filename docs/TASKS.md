@@ -2,11 +2,11 @@
 
 This queue records approved next-step work before implementation. Tasks in this file are not production changes until they are implemented, reviewed in staging, and explicitly promoted to `main`.
 
-## Current roadmap overlay — 2026-08-22
+## Current roadmap overlay — 2026-08-23
 
 `docs/MASTER-PLAN.md` is now the canonical source of truth for phase order and release readiness. The detailed `PH4-001` through `PH4-016` entries below preserve the implementation history and acceptance criteria of the original CMS slices; some early entries retain their historical “pending” wording even though later entries document the verified staging implementation. Use the master plan and `STATUS.md` for the current state.
 
-The current gate is **PH4-017 — Post-merge release verification and baseline stabilization**. The staging-to-main code merge has already occurred; this task now verifies the Production boundary and synchronizes staging to the approved main baseline. No Blog implementation is authorized by this roadmap update. Full page-body editing is Phase 5, Blog / Insights is Phase 6, and CRM is Phase 7.
+Owner approval closes the staging portion of **PH4-017 — Post-merge release verification and baseline stabilization**. The clean `crimson-staging` rebuild and Phase 4C QA evidence are complete. The Production boundary, promotion, and baseline checks remain a deferred release gate. Full Page Content CMS is Phase 5, Insights is Phase 6, CRM is Phase 7, and hardening/reusable-platform work is Phase 8.
 
 ## PH4-018 — Remediate the administrator invitation callback
 
@@ -18,8 +18,8 @@ The current gate is **PH4-017 — Post-merge release verification and baseline s
 
 ## PH4-017 — Verify the post-merge CMS release boundary
 
-- **Status:** In progress / current post-merge release gate
-- **Goal:** Verify the merged Production code/data boundary, retire or explicitly retain temporary promotion infrastructure, and establish a clean synchronized baseline before adding new product features.
+- **Status:** Staging baseline and QA complete; Production release gate deferred
+- **Goal:** Record the completed staging baseline while preserving the owner-controlled Production verification and promotion requirements.
 - **Reference:** `docs/MASTER-PLAN.md` and `docs/RELEASE-READINESS.md`
 
 ### Acceptance criteria
@@ -35,22 +35,22 @@ The current gate is **PH4-017 — Post-merge release verification and baseline s
 - `/crimson-admin-control` remains protected and `/admin` plus `/admin/*` return normal `404` responses.
 - The temporary promotion bridge is retired or retained with an explicit owner-approved runbook and rollback path.
 - Remote `staging` is synchronized to the approved `main` baseline.
-- Final owner sign-off, verified commit/configuration baseline, and rollback steps are recorded before Phase 5 begins.
+- The staging baseline acceptance is recorded; Production owner sign-off, verified commit/configuration baseline, and rollback steps remain required before Production CMS/schema promotion.
 
-## PH5-001 — Complete the page-content editor
+## PH5-001 — Complete the Full Page Content CMS
 
-- **Status:** Planned / not started
+- **Status:** Ready to plan / not started
 - **Goal:** Make Home, About, Services, and Contact body content editable through approved structured CMS sections.
 - **Scope:** Copy, headings, supporting text, CTAs, approved section variants, SEO metadata, Open Graph image, preview, draft/review/published revisions, validation, responsive/public QA.
 - **Constraint:** Do not introduce a freeform page builder or arbitrary component creation.
 
-## PH6-001 — Add the Blog / Insights data model
+## PH6-001 — Add the Insights data model
 
 - **Status:** Planned / not started
 - **Goal:** Add articles, categories, tags, article-to-tag relationships, authors, publication state/dates, SEO metadata, and revision/media references using the existing CMS architecture.
 - **Acceptance criteria:** Stable slugs, unique category/tag relationships, author ownership rules, draft/review/published boundary, published-only public reads, and RLS/audit coverage.
 
-## PH6-002 — Add the Blog / Insights CMS editor
+## PH6-002 — Add the Insights CMS editor
 
 - **Status:** Planned / not started
 - **Goal:** Let authorized users create/edit articles, save drafts, assign category/tags/author, manage featured/social media, edit content, manage SEO fields, preview, publish, and unpublish through the existing revision workflow.
@@ -67,7 +67,7 @@ The current gate is **PH4-017 — Post-merge release verification and baseline s
 - **Status:** Planned / not started
 - **Goal:** Provide `/insights/[slug]` with title, excerpt, featured image, author, dates, category, tags, formatted content, SEO metadata, Open Graph image, related articles, accessible media, and draft privacy.
 
-## PH6-005 — Blog QA and release gate
+## PH6-005 — Insights QA and release gate
 
 - **Status:** Planned / not started
 - **Goal:** Verify editor permissions, revisions, preview, slug conflicts, media constraints, public published-only behavior, search/filter/pagination, responsive/accessibility behavior, SEO output, and deployment configuration before publication.

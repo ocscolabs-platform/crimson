@@ -2,20 +2,19 @@
 
 ## Purpose
 
-The workflow `.github/workflows/audit-staging-supabase-drift.yml` is a read-only Phase 4C audit. It compares the final schema produced by the canonical migrations in `supabase/migrations/` with catalog metadata from the separate `crimson-staging` Supabase project.
+The temporary workflow `.github/workflows/audit-staging-supabase-drift.yml` was a read-only Phase 4C audit and has been retired after staging baseline closure. The reusable `scripts/audit-supabase-drift.mjs` command remains available for an explicitly requested local or owner-run read-only comparison of the final schema produced by the canonical migrations in `supabase/migrations/` with catalog metadata from the separate `crimson-staging` Supabase project.
 
-It does not apply migrations, repair the Supabase migration ledger, modify staging, query Production, or create a permanent database. The expected state is built in the disposable PostgreSQL/Supabase services provided by the GitHub Actions runner and is destroyed at the end of the run.
+It does not apply migrations, repair the Supabase migration ledger, modify staging, query Production, or create a permanent database. When the retained script is run, the expected state is built in a disposable local PostgreSQL/Supabase service and stopped after the comparison.
 
-## Run procedure
+## Retired workflow / retained read-only logic
 
-1. Open GitHub Actions for `ocscolabs-platform/crimson`.
-2. Select **Audit staging Supabase schema drift**.
-3. Choose **Run workflow** from the `staging` branch after the workflow has been merged there.
-4. Confirm that the `staging-supabase` environment contains only the existing owner-managed configuration:
+The retired GitHub workflow is not an active release gate. If a future owner-approved audit is needed, use the retained script with the existing repository documentation and owner-managed staging configuration:
+
+1. Confirm that the `staging-supabase` environment contains only the existing owner-managed configuration:
    - Secret `SUPABASE_ACCESS_TOKEN`.
    - Secret `SUPABASE_DB_PASSWORD`.
    - Variable `SUPABASE_PROJECT_REF` for `crimson-staging`.
-5. Download the `staging-supabase-drift-inventory` artifact after the run.
+2. Run the script locally or through a separately approved read-only mechanism and retain the generated inventory for review.
 
 The preflight prints only `PRESENT` or `MISSING`. Secret values are never printed. The staging snapshot uses PostgreSQL read-only transactions. A non-zero result must be investigated before any reconciliation is designed or applied.
 
@@ -35,9 +34,9 @@ Each mismatch includes migration evidence based on the canonical migration conte
 
 The report also identifies nullable-column and constraint changes that may require existing staging data validation. It does not expose row values.
 
-## Permanent pre-apply gate
+## Relationship to the permanent release pipeline
 
-The drift audit must run before any future staging or Production `supabase db push`. A migration release should be blocked when the live schema is not the expected predecessor state, except where an explicitly reviewed reconciliation migration accounts for the difference. The current migration apply workflow remains separate and must not be changed to repair or overwrite an unknown baseline automatically.
+The canonical `.github/workflows/supabase-release.yml` workflow and `supabase/verification/release-contract.sql` remain the permanent migration/release infrastructure. The retained drift script is diagnostic only; it does not replace the canonical migration ledger or release contract and must not repair or overwrite an unknown baseline automatically.
 
 ## Safety boundary
 

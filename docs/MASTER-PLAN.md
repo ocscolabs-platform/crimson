@@ -1,7 +1,7 @@
 # OCSCO Project Crimson — Master Plan
 
-**Plan version:** 2026-08-22
-**Status:** Roadmap reconciliation complete; Phase 4C post-merge release verification is the current gate.
+**Plan version:** 2026-08-23
+**Status:** Owner-approved roadmap; Phase 4C staging baseline and QA are complete, and the Production release/promotion gate is deferred.
 **Canonical roadmap:** This document is the source of truth for phase order, scope, dependencies, and release gates. Detailed phase documents remain implementation records and may contain historical statuses.
 
 ## Product objective
@@ -10,7 +10,7 @@ Project Crimson is OCSCO's integrated platform for:
 
 1. A high-quality public OCSCO website.
 2. A first-party CMS for structured public content and controlled publishing.
-3. A Blog / Insights publishing system managed by the CMS.
+3. An Insights publishing system managed by the CMS.
 4. A first-party CRM for inquiries and business relationships.
 
 The system uses one application repository and a shared platform boundary, while keeping development, staging, and Production data, authentication, storage, secrets, and deployments separate.
@@ -53,14 +53,14 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 | Phase | Scope | Status | Current boundary |
 | --- | --- | --- | --- |
 | 0 | Platform foundation | Complete | Repository, deployment shell, operating contract, and environment separation baseline. |
-| 1 | Information architecture and content model | Complete as baseline | Public sitemap and structured content model; Blog was deferred at the time and is now approved for Phase 6. |
+| 1 | Information architecture and content model | Complete as baseline | Public sitemap and structured content model; Insights was deferred at the time and is now approved for Phase 6. |
 | 2 | Brand, visual, and interaction direction | Complete | OCSCO Design System v1.0 / 2026 and the implemented public visual system. |
 | 3 | Public website and contact workflow | Complete | Public routes, service details, Work library/detail, About, Contact, inquiry storage/notification, SEO foundations, domain deployment. |
-| 4A | CMS foundation, auth, roles, and read boundary | Complete in staging; Production verification pending | Supabase schema, RLS, Auth, membership roles, published-only public reads, canonical CMS route. |
+| 4A | CMS foundation, auth, roles, and read boundary | Complete in staging; Production release gate deferred | Supabase schema, RLS, Auth, membership roles, published-only public reads, canonical CMS route. |
 | 4B | Staging editorial surfaces | Complete in staging for approved slices | Services, global metadata/navigation, fixed page-section controls, case studies, media, relationships, audit history, revisions, publish/restore controls, admin UX. |
-| 4C | Post-merge release verification and baseline stabilization | **Current** | Production deployment/configuration verification, Auth and database boundary checks, public/admin route checks, temporary bridge retirement decision, automated validation, and staging synchronization. |
-| 5 | Full page-content CMS | Planned | Actual editable content for Home, About, Services, and Contact, using approved structured sections; not a freeform page builder. |
-| 6 | Blog / Insights CMS and public experience | Planned | Article model, CMS editor, public listing, article detail, search/filtering, SEO, media, preview, and publishing. |
+| 4C | Staging baseline and QA | **Complete** | Clean rebuild, canonical migration parity, CMS workflow acceptance, media, inquiry, route, runtime, and staging/Production isolation checks. The Production release/promotion gate is tracked separately as deferred. |
+| 5 | Full Page Content CMS | **Ready to plan** | Actual editable content for Home, About, Services, and Contact, using approved structured sections; not a freeform page builder. |
+| 6 | Insights CMS and public experience | Planned | `/insights`, `/insights/[slug]`, article model, CMS editor, public listing, search/filtering, SEO, media, preview, and publishing. |
 | 7 | CRM foundation and workflows | Planned | Inquiry/contacts and the approved business relationship workflow; scope must be finalized before implementation. |
 | 8 | Product hardening and reusable-platform work | Future | Automation, richer media, scheduled publishing, analytics/integrations, multi-tenant concerns, and other explicitly approved extensions. |
 
@@ -80,7 +80,7 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 
 - Defined the public sitemap, audiences, primary navigation, content relationships, and proof/content approval rules.
 - Defined structured entities for site settings, navigation, pages, services, case studies, and optional testimonials.
-- Recorded Blog/Insights and CRM as intentionally deferred at that time. Blog is now approved for Phase 6; CRM remains Phase 7.
+- Recorded Insights and CRM as intentionally deferred at that time. Insights is now approved for Phase 6; CRM remains Phase 7.
 
 ### Phase 2 — Brand and visual system
 
@@ -117,25 +117,25 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 - Case-study review/editor surface, fixed media package, WebP normalization, 2 MB final limit, one featured 16:9 slot, two supporting 4:3 slots, relationships, audit history, revisions, and owner-only publish/restore actions.
 - Admin UX and accessibility hardening, including responsive controls, action hierarchy, disclosure groups, pagination, status feedback, and direct generic-admin 404 behavior.
 
-#### 4C — Post-merge release verification and baseline stabilization
+#### 4C — Staging baseline and QA
 
-**Status: Current. The staging-to-main code merge is complete; no Phase 5 feature work begins until this post-merge baseline gate is closed.**
+**Status: Complete.** Owner-approved `crimson-staging` acceptance verified the clean rebuild, 21 canonical migrations and ledger parity, RLS/functions/triggers/grants/Storage, owner authentication and membership, Services, Global Content, case-study revisions and publication, published-only reads, relationships, audit history, media lifecycle, inquiry persistence, route protection, metadata isolation, Production endpoint/domain isolation, and browser/runtime health.
 
-1. Verify the Production Vercel deployment is running the approved `origin/main` commit and that the public site is healthy.
-2. Verify Production environment variables point to the Production Supabase/Auth/Resend boundaries; no staging URL, key, user, or secret is present in Production.
-3. Inventory and verify Production migrations, RLS policies, grants, functions, triggers, revision RPCs, and Storage policies.
-4. Verify Production Auth Site URL, redirect allow-list, invitation flow, password recovery, callback exchange, logout, and session behavior for `/crimson-admin-control`.
-5. Verify the revision-based publishing workflow in Production: save Draft, move to Review, owner-only Publish/Restore, published-only public reads, and audit history.
-6. Verify the canonical CMS path is protected, `/admin` and `/admin/*` return normal `404` responses, and the uncommon path is not treated as the security boundary.
-7. Verify media lifecycle, public/private delivery, relationships, inquiry routing, and the absence of staging-only editorial data in Production.
-8. Resolve or retire the temporary row-copy promotion mechanism only after the Production revision workflow is proven; record the decision and rollback path.
-9. Confirm automated lint/build/type/deployment validation and document any remaining non-blocking warnings.
-10. Synchronize remote `staging` to the latest approved `main` baseline after this verification gate; do not merge stale staging back into `main`.
-11. Record owner sign-off, the verified commit/configuration baseline, and the rollback procedure. Only then open Phase 5.
+#### Deferred Production release/promotion gate
 
-### Phase 5 — Full page-content CMS
+**Status: Deferred release gate.** This gate must be completed before a future Production CMS/schema promotion, but it does not block Phase 5 development in staging.
 
-**Status: Planned; starts after Phase 4C is stable.**
+1. Verify the Production Vercel deployment and environment variables use only the Production Supabase/Auth/Resend boundaries.
+2. Inventory and verify Production migrations, RLS policies, grants, functions, triggers, revision RPCs, and Storage policies.
+3. Verify Production Auth URLs, callbacks, invitation flow, password recovery, logout, and session behavior.
+4. Verify the Production revision workflow, media, relationships, audit history, inquiry routing, and published-only reads.
+5. Confirm branch protection, required checks, required reviewers, and Production approval environments.
+6. Retire or explicitly retain the temporary row-copy promotion bridge with an owner-approved rollback path.
+7. Synchronize `staging` to the approved `main` baseline and record Production owner sign-off before Production promotion.
+
+### Phase 5 — Full Page Content CMS
+
+**Status: Ready to plan.** Development may proceed against the accepted staging baseline; the deferred Production release gate remains required before Production promotion.
 
 The current CMS can edit global metadata and a fixed section registry, but it does not yet provide complete body-content editing for Home, About, Services, or Contact. This phase closes that gap without introducing an arbitrary page builder.
 
@@ -146,11 +146,11 @@ The current CMS can edit global metadata and a fixed section registry, but it do
 - Keep the section registry constrained to approved components; no arbitrary component or layout creation.
 - Validate every edited page at desktop/mobile, public published-only output, keyboard/focus, and screen-reader levels.
 
-### Phase 6 — Blog / Insights
+### Phase 6 — Insights
 
 **Status: Planned; not implemented.**
 
-The public route names should be `/insights` and `/insights/[slug]` unless a later naming decision approves `/blog`. The Cairnstack references are structural references only; they must not be copied visually, stylistically, or technically.
+The owner-approved public route names are `/insights` and `/insights/[slug]`. The CMS area is `Insights / Articles`. The Cairnstack references are structural references only; they must not be copied visually, stylistically, or technically.
 
 #### Public Insights index
 
@@ -201,8 +201,8 @@ Potential future work includes scheduled publishing, richer media library manage
 - Public OCSCO website and contact workflow.
 - Stable CMS authentication, role boundaries, revisions, media, relationships, audit, and published-only reads.
 - Complete page-content editing for existing public pages.
-- Blog/Insights listing and article detail.
-- Blog CMS article creation/editing, draft/review/publish, categories, tags, media, SEO, preview, and related articles.
+- Insights listing and article detail.
+- Insights article creation/editing, draft/review/publish, categories, tags, media, SEO, preview, and related articles.
 - Minimum CRM intake and relationship scope once the owner approves the CRM requirements.
 - Repeatable staging-to-Production release and rollback gates.
 
@@ -220,7 +220,7 @@ Potential future work includes scheduled publishing, richer media library manage
 | Public website | Next.js routes, published CMS reads, Production data/config | Published-only behavior, SEO, accessibility, build, and deployment checks pass. |
 | CMS | Supabase schema/RLS/Auth, server actions, revisions, audit | Roles, save/review/publish/restore, recovery, media, relationships, and 404 boundary pass QA. |
 | Full page editor | Approved page-section contract and revision model | Home/About/Services/Contact body fields are defined and previewable without a freeform builder. |
-| Blog / Insights | Phase 5 page-content patterns, article schema, tags/categories, media, revisions, public routes | Article privacy, slug/SEO rules, media validation, editor permissions, preview, index/search/filter, and detail QA pass. |
+| Insights | Phase 5 page-content patterns, article schema, tags/categories, media, revisions, public routes | Article privacy, slug/SEO rules, media validation, editor permissions, preview, index/search/filter, and detail QA pass. |
 | CRM | Inquiry intake decision, contacts/companies model, role/audit requirements | CRM scope and ownership are approved; CMS and CRM permissions remain separate. |
 | Production release | Equivalent Production migration/config, branch protection, owner approval | No unresolved critical checks, no stale bridge dependency, and rollback path documented. |
 
@@ -229,9 +229,9 @@ Potential future work includes scheduled publishing, richer media library manage
 1. There was no single master roadmap; phase status was distributed across historical documents.
 2. Several early Phase 4 task entries still say “pending” even though later entries document the implemented staging slices. The task queue needs a current overlay and must not be read as a single chronological status source.
 3. The original Page model describes flexible structured sections, but the current CMS implementation only edits metadata and a fixed section registry. Full page body editing is therefore a real Phase 5 requirement, not an assumed completion.
-4. Blog/Insights was explicitly deferred in the original content model and IA; it is now approved for Phase 6 but has no migrations, routes, CMS editor, or nav entry yet.
+4. Insights was explicitly deferred in the original content model and IA; it is now approved for Phase 6 but has no migrations, routes, CMS editor, or nav entry yet.
 5. CRM remains a product intention plus a public inquiry intake; it is not a functioning CRM and must not be represented as complete.
-6. The Production CMS release path is still transitional until the revision-based workflow is verified in Production and the row-copy bridge is retired.
+6. The Production CMS release path remains a deferred release gate until the revision-based workflow is verified in Production and the row-copy bridge is retired or explicitly retained.
 7. The repository has lint/build validation but no dedicated automated type-check, unit, integration, or end-to-end test script. This is an important merge-readiness gap to address in Phase 4C without adding unrelated test infrastructure.
 
 ## Merge readiness criteria
