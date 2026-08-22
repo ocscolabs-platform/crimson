@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { getSiteOrigin } from "@/lib/site-origin";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ocsco.io"),
+  metadataBase: getSiteOrigin(),
   title: {
     default: "OCSCO — Strategy, design, and technology",
     template: "%s — OCSCO",
