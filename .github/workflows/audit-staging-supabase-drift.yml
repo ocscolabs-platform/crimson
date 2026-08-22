@@ -78,7 +78,15 @@ jobs:
           supabase start
           supabase db reset --local --no-seed
           supabase status -o env > "$RUNNER_TEMP/supabase-env"
-          grep '^DB_URL=' "$RUNNER_TEMP/supabase-env" >> "$GITHUB_ENV"
+          expected_db_url="$(sed -n 's/^DB_URL=//p' "$RUNNER_TEMP/supabase-env" | head -n 1)"
+          expected_db_url="${expected_db_url#\"}"
+          expected_db_url="${expected_db_url%\"}"
+          if [[ -z "$expected_db_url" ]]; then
+            echo "Supabase local status did not provide DB_URL for the expected database."
+            exit 1
+          fi
+          echo "EXPECTED_DATABASE_URL=$expected_db_url" >> "$GITHUB_ENV"
+          echo "Disposable expected database connection target captured from Supabase local status."
 
       - name: Snapshot expected schema metadata
         run: |
