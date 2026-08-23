@@ -21,13 +21,13 @@ The database prevents an owner from hiding the last visible section on a page. E
 ## Staging rollout
 
 1. Apply `supabase/migrations/20260820110000_add_staging_page_sections.sql` in `crimson-staging` after the global-content editor migration.
-2. Run the explicit staging global-content seed so the `pages` rows exist.
-3. Dispatch `.github/workflows/bootstrap-crimson-staging-page-sections.yml` on the `staging` branch and enter `APPLY_STAGING_PAGE_SECTIONS` when the owner approves the staging-only repair/bootstrap.
+2. Run `supabase/seeds/20260820030000_seed_staging_global_content.sql` through the staging seed/bootstrap process. It creates the required `pages` rows first, then includes the guarded Phase 5 section seed.
+3. A merge to `staging` that changes the tightly scoped bootstrap workflow or either referenced staging seed triggers `.github/workflows/bootstrap-crimson-staging-page-sections.yml`. The workflow performs the exact staging identity and legacy-array preflight before the seed can write.
 4. Confirm the workflow reports exactly five Home rows, one Services row, two About rows, and two Contact rows. Work is excluded.
 5. Open `/crimson-admin-control/content` as the staging owner and confirm each page shows its approved section list.
 6. Change one non-sensitive section order or visibility setting and confirm the success toast and the public staging route.
 7. Confirm the public route follows the saved order and that hiding a section removes only that section.
 8. Do not apply this migration or the staging bootstrap to another environment or promote staging-only content to `main` until the relevant release boundary is separately reviewed.
 
-The historical migration creates the fixed table and attempts its initial inserts at migration time. Because the clean staging reset intentionally runs with Supabase seeding disabled, page rows may be created later by the explicit staging global-content seed. The repository-backed bootstrap workflow therefore materializes the same ten rows only after those pages exist. The seed is idempotent, rejects unexpected or conflicting target rows, preserves page content, and never creates a Work row.
+The historical migration creates the fixed table and attempts its initial inserts at migration time. Because the clean staging reset intentionally runs with Supabase seeding disabled, the staging bootstrap sequence must execute the global-content seed after schema creation. That seed creates the four Phase 5 pages and includes the guarded section seed only after those rows exist. The repository-backed push-triggered workflow provides the current owner-approved repair path; its path filter is limited to the bootstrap workflow and the two staging seed definitions. The section seed is idempotent, rejects unexpected or conflicting target rows, preserves page content, and never creates a Work row.
 
