@@ -2,6 +2,7 @@
 
 ## Current Phase
 
+**Phase 5B Slice 4A — Shared PageDocument public loader and renderer foundation — In progress**
 **Phase 4C staging baseline and QA — Complete**
 **Production release/promotion gate — Deferred release gate**
 
@@ -19,7 +20,11 @@ The owner-approved Slice 3 backfill is complete in `crimson-staging`. The four P
 
 The active read-only staging verifier now checks post-Slice-3 migration state structurally: canonical local and remote ledgers must match with no pending versions, the Slice 3 version must be recorded exactly once, and the linked Supabase dry-run must exit successfully without applying anything. The temporary one-shot Slice 3 execution workflow was retired after the successful staging apply. Its post-apply false negative was caused by an alias typo in its temporary guard query (`pg_trigger` was aliased as `trg` but referenced as `trigger`); this was verification infrastructure only and did not indicate a database or migration failure. The Phase 5B staging bootstrap correction remains in place, with global content seeded before the Phase 5 page-section seed and registry verification.
 
-Production release and promotion remain a deferred release gate. Slice 4 public-loader cutover has not begun.
+Production release and promotion remain a deferred release gate. Slice 4A foundation work is in progress; public route cutover has not begun. Phase 6 Insights remains not started.
+
+## Phase 5B Slice 4A — Shared loader and renderer foundation
+
+The approved Slice 4A foundation adds a typed published PageDocument loader for Home, Services, About, and Contact, a static code-owned section renderer registry, deterministic enabled-section render plans, and runtime Service-reference resolution. It does not change public route rendering authority, metadata authority, Work, PageDocument rows, `page_sections`, migrations, or Supabase data. Legacy section controls for migrated pages are presented as read-only during the transition; Work controls remain unchanged.
 
 ## Completed
 
@@ -94,4 +99,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Create the focused Phase 5 planning package against the accepted staging baseline. Keep the deferred Production release gate visible and complete it before any future Production CMS/schema promotion.
+After Slice 4A is merged and staging-verified, proceed with the approved Slice 4B About public PageDocument cutover. Keep the deferred Production release gate visible, and keep Phase 6 Insights unstarted until the remaining Phase 5B slices are complete.

@@ -1,7 +1,7 @@
 # OCSCO Project Crimson — Master Plan
 
 **Plan version:** 2026-08-23
-**Status:** Owner-approved roadmap; Phase 4C staging baseline and QA are complete, and the Production release/promotion gate is deferred.
+**Status:** Owner-approved roadmap; Phase 4C staging baseline and QA are complete, Phase 5B Slice 4A implementation is in progress, and the Production release/promotion gate is deferred.
 **Canonical roadmap:** This document is the source of truth for phase order, scope, dependencies, and release gates. Detailed phase documents remain implementation records and may contain historical statuses.
 
 ## Product objective
@@ -59,7 +59,7 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 | 4A | CMS foundation, auth, roles, and read boundary | Complete in staging; Production release gate deferred | Supabase schema, RLS, Auth, membership roles, published-only public reads, canonical CMS route. |
 | 4B | Staging editorial surfaces | Complete in staging for approved slices | Services, global metadata/navigation, fixed page-section controls, case studies, media, relationships, audit history, revisions, publish/restore controls, admin UX. |
 | 4C | Staging baseline and QA | **Complete** | Clean rebuild, canonical migration parity, CMS workflow acceptance, media, inquiry, route, runtime, and staging/Production isolation checks. The Production release/promotion gate is tracked separately as deferred. |
-| 5 | Full Page Content CMS | **Ready to plan** | Actual editable content for Home, About, Services, and Contact, using approved structured sections; not a freeform page builder. |
+| 5 | Full Page Content CMS | **In progress** | Slice 4A is implementing the shared PageDocument public-loader and renderer foundation; route cutovers remain later focused slices. |
 | 6 | Insights CMS and public experience | Planned | `/insights`, `/insights/[slug]`, article model, CMS editor, public listing, search/filtering, SEO, media, preview, and publishing. |
 | 7 | CRM foundation and workflows | Planned | Inquiry/contacts and the approved business relationship workflow; scope must be finalized before implementation. |
 | 8 | Product hardening and reusable-platform work | Future | Automation, richer media, scheduled publishing, analytics/integrations, multi-tenant concerns, and other explicitly approved extensions. |
@@ -135,7 +135,9 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 
 ### Phase 5 — Full Page Content CMS
 
-**Status: Ready to plan.** Development may proceed against the accepted staging baseline; the deferred Production release gate remains required before Production promotion.
+**Status: In progress.** Development is proceeding against the accepted staging baseline; the deferred Production release gate remains required before Production promotion.
+
+Phase 5B Slice 3 is closed. Phase 5B Slice 4A is the current approved implementation slice for the shared typed PageDocument public loader and static renderer foundation. No public route cutover has begun. Phase 6 Insights remains not started.
 
 The current CMS can edit global metadata and a fixed section registry, but it does not yet provide complete body-content editing for Home, About, Services, or Contact. This phase closes that gap without introducing an arbitrary page builder.
 
