@@ -243,13 +243,16 @@ jobs:
             exit 1
           fi
 
-          page_sections_table="$({
+          page_sections_table="$(
             PGPASSWORD="$SUPABASE_DB_PASSWORD" \
             psql -Atqc "
-              select to_regclass('public.page_sections')
+              select count(*)
+              from information_schema.tables
+              where table_schema = 'public'
+                and table_name = 'page_sections'
             "
-          })"
-          if [[ "$page_sections_table" != "public.page_sections" ]]; then
+          )"
+          if [[ "$page_sections_table" != "1" ]]; then
             echo "The legacy page_sections table is missing."
             exit 1
           fi
