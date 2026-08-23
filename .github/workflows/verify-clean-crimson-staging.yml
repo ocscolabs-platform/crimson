@@ -22,8 +22,7 @@ jobs:
       SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
       EXPECTED_STAGING_REF: sdfbcgctquagfcrkvoyw
       EXPECTED_STAGING_NAME: crimson-staging
-      EXPECTED_MIGRATION: 20260823000000_expand_pages_content_compatibility.sql
-      EXPECTED_MIGRATION_COUNT: "22"
+      REQUIRED_MIGRATION: 20260823020000_align_phase5_page_document_contract.sql
       PGHOST: aws-0-ap-northeast-1.pooler.supabase.com
       PGPORT: "5432"
       PGDATABASE: postgres
@@ -66,13 +65,13 @@ jobs:
 
           mapfile -t migrations < <(find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sort)
 
-          if [[ "${#migrations[@]}" -ne "$EXPECTED_MIGRATION_COUNT" ]]; then
-            echo "Refusing verification: expected exactly $EXPECTED_MIGRATION_COUNT canonical SQL migrations, found ${#migrations[@]}."
+          if [[ "${#migrations[@]}" -eq 0 ]]; then
+            echo "Refusing verification: no canonical SQL migrations were found."
             exit 1
           fi
 
-          if ! printf '%s\n' "${migrations[@]}" | grep -Fxq "$EXPECTED_MIGRATION"; then
-            echo "Refusing verification: required corrective migration is missing."
+          if ! printf '%s\n' "${migrations[@]}" | grep -Fxq "$REQUIRED_MIGRATION"; then
+            echo "Refusing verification: required Phase 5 contract-alignment migration is missing."
             exit 1
           fi
 
@@ -115,19 +114,30 @@ jobs:
           set -euo pipefail
           supabase migration list --linked
 
+      - name: Install PostgreSQL client
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
       - name: Verify migration ledger exactly once
         shell: bash
         run: |
           set -euo pipefail
 
-          mapfile -t expected_versions < <(find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sed -E 's/^([0-9]{14})_.+\.sql$/\1/' | sort)
+          mapfile -t expected_versions < <(
+            find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' \
+              | sed -E 's/^([0-9]{14})_.+\.sql$/\1/' \
+              | sort
+          )
           mapfile -t recorded_versions < <(
             PGPASSWORD="$SUPABASE_DB_PASSWORD" \
             psql -Atqc "select version from supabase_migrations.schema_migrations order by version"
           )
 
-          if [[ "${#recorded_versions[@]}" -ne "$EXPECTED_MIGRATION_COUNT" ]]; then
-            echo "Migration ledger does not contain exactly $EXPECTED_MIGRATION_COUNT remote versions."
+          if [[ "${#expected_versions[@]}" -eq 0 ]]; then
+            echo "Canonical migration version extraction returned no versions."
             exit 1
           fi
 
@@ -137,7 +147,7 @@ jobs:
           printf '%s\n' "${recorded_versions[@]}" > "$recorded_file"
 
           if ! diff -u "$expected_file" "$recorded_file"; then
-            echo "Remote migration versions do not exactly match the $EXPECTED_MIGRATION_COUNT canonical Git timestamps."
+            echo "Remote migration versions do not exactly match the ordered canonical Git timestamps."
             exit 1
           fi
 
@@ -150,6 +160,8 @@ jobs:
             exit 1
           fi
 
+          echo "Migration ledger matches ${#expected_versions[@]} canonical versions exactly once."
+
       - name: Confirm no migrations remain pending
         shell: bash
         run: |
@@ -160,13 +172,6 @@ jobs:
             echo "Pending migrations remain or the dry-run result was not understood."
             exit 1
           fi
-
-      - name: Install PostgreSQL client
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install --yes postgresql-client
 
       - name: Verify PageDocument compatibility and legacy rows
         shell: bash
@@ -261,6 +266,41 @@ jobs:
           printf 'Legacy page rows:\n%s\n' "${page_rows[*]}"
           echo "No Phase 5 PageDocument objects or backfill rows detected."
           echo "page_sections remains present; existing fallback/legacy authority is unchanged."
+
+      - name: Verify deployed Phase 5 contract and legacy state
+        shell: bash
+        run: |
+          set -euo pipefail
+          PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+          psql -v ON_ERROR_STOP=1 -f supabase/verification/phase5-contract-alignment.sql
+
+      - name: Verify legacy page-sections authority in source
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for route in src/app/page.tsx src/app/services/page.tsx src/app/about/page.tsx src/app/contact/page.tsx src/app/work/page.tsx; do
+            if ! grep -Fq 'getPublishedPageSections' "$route"; then
+              echo "Expected legacy page_sections reader in $route."
+              exit 1
+            fi
+            if grep -Eq 'readPageContent|PageDocument' "$route"; then
+              echo "Unexpected PageDocument renderer dependency in $route."
+              exit 1
+            fi
+          done
+
+          if ! grep -Fq '.from("page_sections")' src/lib/page-sections.ts; then
+            echo "The shared legacy page_sections reader is missing."
+            exit 1
+          fi
+
+          if rg -n -i 'page_sections.*freeze|freeze.*page_sections' src supabase; then
+            echo "Unexpected page_sections freeze implementation found."
+            exit 1
+          fi
+
+          echo "All five public page routes remain on the legacy page_sections reader; no PageDocument cutover or freeze was found."
 
       - name: Run read-only release contract
         shell: bash
