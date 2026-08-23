@@ -6,6 +6,8 @@ declare
   rejected boolean;
   document_revision_count integer;
   page_sections_count integer;
+  phase5_slice3_applied boolean;
+  page_record record;
 begin
   -- The approved about_people contract has exactly eyebrow, heading, and cta.
   perform public.cms_phase5_validate_section_content(
@@ -118,6 +120,15 @@ begin
     raise exception 'contact_process unexpectedly accepted fewer than three items';
   end if;
 
+  -- Support both the verified pre-apply baseline and the intentional Slice 3
+  -- post-apply state. This keeps the read-only verifier useful while the
+  -- owner-controlled migration apply is a separate step.
+  select exists (
+    select 1
+    from supabase_migrations.schema_migrations
+    where version = '20260823030000'
+  ) into phase5_slice3_applied;
+
   -- Directly query the current staging rows; no content conversion is inferred.
   select count(*)
     into page_sections_count
@@ -128,25 +139,82 @@ begin
     raise exception 'page_sections table is missing';
   end if;
 
-  if exists (
-    select 1
-    from public.pages
-    where slug in ('home', 'services', 'about', 'contact', 'work')
-      and jsonb_typeof(content) <> 'array'
-  ) then
-    raise exception 'One or more required pages are no longer legacy arrays';
-  end if;
+  if not phase5_slice3_applied then
+    if exists (
+      select 1
+      from public.pages
+      where slug in ('home', 'services', 'about', 'contact', 'work')
+        and jsonb_typeof(content) <> 'array'
+    ) then
+      raise exception 'One or more required pages are no longer legacy arrays before Slice 3 apply';
+    end if;
 
-  select count(*)
-    into document_revision_count
-  from public.cms_revisions revision
-  join public.pages page
-    on revision.entity_type = 'page'
-   and revision.entity_key = page.id::text
-  where page.slug in ('home', 'services', 'about', 'contact', 'work')
-    and jsonb_typeof(revision.payload->'content') = 'object';
-  if document_revision_count <> 0 then
-    raise exception 'PageDocument revisions already exist: %', document_revision_count;
+    select count(*)
+      into document_revision_count
+    from public.cms_revisions revision
+    join public.pages page
+      on revision.entity_type = 'page'
+     and revision.entity_key = page.id::text
+    where page.slug in ('home', 'services', 'about', 'contact', 'work')
+      and jsonb_typeof(revision.payload->'content') = 'object';
+    if document_revision_count <> 0 then
+      raise exception 'PageDocument revisions already exist before Slice 3 apply: %', document_revision_count;
+    end if;
+  else
+    if exists (
+      select 1
+      from public.pages
+      where slug in ('home', 'services', 'about', 'contact')
+        and jsonb_typeof(content) <> 'object'
+    ) then
+      raise exception 'A Phase 5 target page is not a PageDocument after Slice 3 apply';
+    end if;
+
+    if jsonb_typeof((select content from public.pages where slug = 'work')) <> 'array' then
+      raise exception 'Work is no longer a legacy array after Slice 3 apply';
+    end if;
+
+    select count(*)
+      into document_revision_count
+    from public.cms_revisions revision
+    join public.pages page
+      on revision.entity_type = 'page'
+     and revision.entity_key = page.id::text
+    where page.slug in ('home', 'services', 'about', 'contact')
+      and revision.status = 'published'
+      and jsonb_typeof(revision.payload->'content') = 'object';
+    if document_revision_count <> 4 then
+      raise exception 'Expected four Published PageDocument snapshots after Slice 3 apply; found %', document_revision_count;
+    end if;
+
+    for page_record in
+      select slug, title, page_purpose, audience, content
+      from public.pages
+      where slug in ('home', 'services', 'about', 'contact')
+    loop
+      perform public.cms_validate_phase5_page_revision_payload(
+        page_record.slug,
+        jsonb_build_object(
+          'title', page_record.title,
+          'page_purpose', page_record.page_purpose,
+          'audience', page_record.audience,
+          'content', page_record.content
+        ),
+        true
+      );
+    end loop;
+
+    if not exists (
+      select 1 from information_schema.triggers
+      where trigger_schema = 'public'
+        and trigger_name = 'page_sections_freeze_phase5_updates'
+    ) or not exists (
+      select 1 from information_schema.triggers
+      where trigger_schema = 'public'
+        and trigger_name = 'cms_revisions_freeze_phase5_page_sections'
+    ) then
+      raise exception 'Slice 3 legacy page-section mutation guards are missing';
+    end if;
   end if;
 
   -- Query the deployed RPC definitions to ensure Slice 2 behavior remains live.
@@ -233,7 +301,13 @@ begin
 end;
 $$;
 
-select slug, jsonb_typeof(content) as content_type, status
+select
+  case when exists (
+    select 1 from supabase_migrations.schema_migrations where version = '20260823030000'
+  ) then 'slice3-applied' else 'pre-slice3-baseline' end as phase5_state,
+  slug,
+  jsonb_typeof(content) as content_type,
+  status
 from public.pages
 where slug in ('home', 'services', 'about', 'contact', 'work')
 order by array_position(array['home', 'services', 'about', 'contact', 'work'], slug);

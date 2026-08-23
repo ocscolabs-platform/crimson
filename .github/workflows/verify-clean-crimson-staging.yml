@@ -25,6 +25,7 @@ jobs:
       EXPECTED_STAGING_REF: sdfbcgctquagfcrkvoyw
       EXPECTED_STAGING_NAME: crimson-staging
       REQUIRED_MIGRATION: 20260823020000_align_phase5_page_document_contract.sql
+      PHASE5_SLICE3_MIGRATION: 20260823030000_backfill_phase5_page_documents.sql
       PGHOST: aws-0-ap-northeast-1.pooler.supabase.com
       PGPORT: "5432"
       PGDATABASE: postgres
@@ -145,7 +146,24 @@ jobs:
 
           expected_file="$RUNNER_TEMP/expected-versions.txt"
           recorded_file="$RUNNER_TEMP/recorded-versions.txt"
-          printf '%s\n' "${expected_versions[@]}" > "$expected_file"
+          slice3_version="${PHASE5_SLICE3_MIGRATION%%_*}"
+          slice3_recorded="$({
+            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql -Atqc "
+              select count(*)
+              from supabase_migrations.schema_migrations
+              where version = '$slice3_version'
+            "
+          })"
+          if [[ "$slice3_recorded" == "0" ]]; then
+            printf '%s\n' "${expected_versions[@]}" | grep -Fxv "$slice3_version" > "$expected_file"
+            echo "Pre-apply state: allowing the single owner-controlled pending Slice 3 migration."
+          elif [[ "$slice3_recorded" == "1" ]]; then
+            printf '%s\n' "${expected_versions[@]}" > "$expected_file"
+          else
+            echo "Slice 3 migration ledger contains an unexpected duplicate count: $slice3_recorded"
+            exit 1
+          fi
           printf '%s\n' "${recorded_versions[@]}" > "$recorded_file"
 
           if ! diff -u "$expected_file" "$recorded_file"; then
@@ -162,7 +180,7 @@ jobs:
             exit 1
           fi
 
-          echo "Migration ledger matches ${#expected_versions[@]} canonical versions exactly once."
+          echo "Migration ledger matches the expected canonical versions exactly once."
 
       - name: Confirm no migrations remain pending
         shell: bash
@@ -170,8 +188,30 @@ jobs:
           set -euo pipefail
           dry_run_output="$(supabase db push --linked --dry-run)"
           printf '%s\n' "$dry_run_output"
-          if ! grep -qi 'up to date' <<< "$dry_run_output"; then
-            echo "Pending migrations remain or the dry-run result was not understood."
+          slice3_version="${PHASE5_SLICE3_MIGRATION%%_*}"
+          slice3_recorded="$({
+            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql -Atqc "
+              select count(*)
+              from supabase_migrations.schema_migrations
+              where version = '$slice3_version'
+            "
+          })"
+          if [[ "$slice3_recorded" == "0" ]]; then
+            if grep -qi 'up to date' <<< "$dry_run_output" \
+              || { ! grep -Fq "$slice3_version" <<< "$dry_run_output" && ! grep -Fq "$PHASE5_SLICE3_MIGRATION" <<< "$dry_run_output"; }; then
+              echo "Pre-apply dry-run did not show the expected single pending Slice 3 migration."
+              exit 1
+            fi
+            echo "Dry-run shows the expected pending Slice 3 migration only; no apply was performed."
+          elif [[ "$slice3_recorded" == "1" ]]; then
+            if ! grep -qi 'up to date' <<< "$dry_run_output"; then
+              echo "Pending migrations remain after Slice 3 apply."
+              exit 1
+            fi
+            echo "No migrations remain pending."
+          else
+            echo "Slice 3 migration ledger contains an unexpected duplicate count: $slice3_recorded"
             exit 1
           fi
 
@@ -214,6 +254,17 @@ jobs:
             exit 1
           fi
 
+          slice3_state="$(
+            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql -Atqc "
+              select case when exists (
+                select 1
+                from supabase_migrations.schema_migrations
+                where version = '${PHASE5_SLICE3_MIGRATION%%_*}'
+              ) then 'slice3-applied' else 'pre-slice3-baseline' end
+            "
+          )"
+
           mapfile -t page_rows < <(
             PGPASSWORD="$SUPABASE_DB_PASSWORD" \
             psql -AtF '|' -c "
@@ -228,25 +279,78 @@ jobs:
             exit 1
           fi
 
-          for expected_slug in home services about contact work; do
-            if ! printf '%s\n' "${page_rows[@]}" | grep -Eq "^${expected_slug}\|array\|"; then
-              echo "Expected legacy array content for $expected_slug."
+          if [[ "$slice3_state" == "pre-slice3-baseline" ]]; then
+            for expected_slug in home services about contact work; do
+              if ! printf '%s\n' "${page_rows[@]}" | grep -Eq "^${expected_slug}\|array\|"; then
+                echo "Expected legacy array content for $expected_slug before Slice 3 apply."
+                printf '%s\n' "${page_rows[@]}"
+                exit 1
+              fi
+            done
+          elif [[ "$slice3_state" == "slice3-applied" ]]; then
+            for expected_slug in home services about contact; do
+              if ! printf '%s\n' "${page_rows[@]}" | grep -Eq "^${expected_slug}\|object\|"; then
+                echo "Expected PageDocument object content for $expected_slug after Slice 3 apply."
+                printf '%s\n' "${page_rows[@]}"
+                exit 1
+              fi
+            done
+            if ! printf '%s\n' "${page_rows[@]}" | grep -Eq '^work\|array\|'; then
+              echo "Expected legacy array content for Work after Slice 3 apply."
               printf '%s\n' "${page_rows[@]}"
               exit 1
             fi
-          done
 
-          phase5_objects="$({
-            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
-            psql -Atqc "
-              select count(*)
-              from public.pages
-              where slug in ('home', 'services', 'about', 'contact')
-                and jsonb_typeof(content) = 'object'
-            "
-          })"
-          if [[ "$phase5_objects" != "0" ]]; then
-            echo "Phase 5 PageDocument objects already exist: $phase5_objects"
+            phase5_objects="$(
+              PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+              psql -Atqc "
+                select count(*)
+                from public.pages
+                where slug in ('home', 'services', 'about', 'contact')
+                  and jsonb_typeof(content) = 'object'
+              "
+            )"
+            if [[ "$phase5_objects" != "4" ]]; then
+              echo "Expected four Phase 5 PageDocument objects after Slice 3 apply; found $phase5_objects."
+              exit 1
+            fi
+
+            snapshot_count="$(
+              PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+              psql -Atqc "
+                select count(*)
+                from public.cms_revisions revision
+                join public.pages page
+                  on revision.entity_type = 'page'
+                 and revision.entity_key = page.id::text
+                where page.slug in ('home', 'services', 'about', 'contact')
+                  and revision.status = 'published'
+                  and jsonb_typeof(revision.payload->'content') = 'object'
+              "
+            )"
+            if [[ "$snapshot_count" != "4" ]]; then
+              echo "Expected four Published PageDocument snapshots after Slice 3 apply; found $snapshot_count."
+              exit 1
+            fi
+
+            guard_count="$(
+              PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+              psql -Atqc "
+                select count(*)
+                from information_schema.triggers
+                where trigger_schema = 'public'
+                  and trigger_name in (
+                    'page_sections_freeze_phase5_updates',
+                    'cms_revisions_freeze_phase5_page_sections'
+                  )
+              "
+            )"
+            if [[ "$guard_count" != "2" ]]; then
+              echo "Expected both Slice 3 legacy mutation guards after apply; found $guard_count."
+              exit 1
+            fi
+          else
+            echo "Unexpected Slice 3 migration state: $slice3_state"
             exit 1
           fi
 
@@ -265,11 +369,11 @@ jobs:
           fi
 
           echo "pages.content is jsonb NOT NULL and permits array/object values."
-          printf 'Legacy page rows:\n%s\n' "${page_rows[*]}"
-          echo "No Phase 5 PageDocument objects or backfill rows detected."
-          echo "page_sections remains present; existing fallback/legacy authority is unchanged."
+          printf 'Page rows:\n%s\n' "${page_rows[*]}"
+          echo "Verified state: $slice3_state"
+          echo "page_sections remains present; public legacy rendering authority is unchanged."
 
-      - name: Verify deployed Phase 5 contract and legacy state
+      - name: Verify deployed Phase 5 contract and Slice 3 state
         shell: bash
         run: |
           set -euo pipefail
@@ -297,12 +401,12 @@ jobs:
             exit 1
           fi
 
-          if rg -n -i 'page_sections.*freeze|freeze.*page_sections' src supabase; then
-            echo "Unexpected page_sections freeze implementation found."
+          if ! grep -R -n -i -E 'cms_freeze_phase5_page_section_update|cms_freeze_phase5_page_section_revision' supabase/migrations; then
+            echo "Expected Slice 3 page_sections transition guards are missing."
             exit 1
           fi
 
-          echo "All five public page routes remain on the legacy page_sections reader; no PageDocument cutover or freeze was found."
+          echo "All five public page routes remain on the legacy page_sections reader; no public PageDocument cutover was found."
 
       - name: Run read-only release contract
         shell: bash
