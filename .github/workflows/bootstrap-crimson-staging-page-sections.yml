@@ -1,6 +1,13 @@
 name: Bootstrap crimson-staging page sections
 
 on:
+  push:
+    branches:
+      - staging
+    paths:
+      - .github/workflows/bootstrap-crimson-staging-page-sections.yml
+      - supabase/seeds/20260820030000_seed_staging_global_content.sql
+      - supabase/seeds/20260823040000_seed_staging_phase5_page_sections.sql
   workflow_dispatch:
     inputs:
       confirm:
@@ -50,7 +57,7 @@ jobs:
             echo "Refusing bootstrap: project ref is not the approved staging ref."
             exit 1
           fi
-          if [[ "$CONFIRM" != "APPLY_STAGING_PAGE_SECTIONS" ]]; then
+          if [[ "${GITHUB_EVENT_NAME:-}" == "workflow_dispatch" && "$CONFIRM" != "APPLY_STAGING_PAGE_SECTIONS" ]]; then
             echo "Refusing bootstrap: explicit staging confirmation was not provided."
             exit 1
           fi
@@ -101,6 +108,17 @@ jobs:
           ")"
           if [[ "$target_page_count" != "4" ]]; then
             echo "Refusing bootstrap: exactly four target pages are required."
+            exit 1
+          fi
+
+          target_array_count="$(PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -Atqc "
+            select count(*)
+            from public.pages
+            where slug in ('home', 'services', 'about', 'contact')
+              and jsonb_typeof(content) = 'array';
+          ")"
+          if [[ "$target_array_count" != "4" ]]; then
+            echo "Refusing bootstrap: all four target pages must remain legacy array-valued."
             exit 1
           fi
 
