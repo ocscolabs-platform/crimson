@@ -393,22 +393,67 @@ jobs:
               exit 1
             fi
 
-            guard_count="$(
+            guard_state="$(
               PGPASSWORD="$SUPABASE_DB_PASSWORD" \
               psql -Atqc "
-                select count(*)
-                from information_schema.triggers
-                where trigger_schema = 'public'
-                  and trigger_name in (
-                    'page_sections_freeze_phase5_updates',
-                    'cms_revisions_freeze_phase5_page_sections'
+                with expected(trigger_name, table_name, events) as (
+                  values
+                    ('page_sections_freeze_phase5_updates', 'page_sections', array['UPDATE']::text[]),
+                    ('cms_revisions_freeze_phase5_page_sections', 'cms_revisions', array['INSERT', 'UPDATE']::text[])
+                ), actual as (
+                  select
+                    trg.tgname as trigger_name,
+                    relation.relname as table_name,
+                    coalesce(
+                      array_agg(distinct info.event_manipulation::text order by info.event_manipulation::text)
+                        filter (where info.event_manipulation is not null),
+                      array[]::text[]
+                    ) as events
+                  from pg_catalog.pg_trigger trg
+                  join pg_catalog.pg_class relation on relation.oid = trg.tgrelid
+                  join pg_catalog.pg_namespace namespace on namespace.oid = relation.relnamespace
+                  left join information_schema.triggers info
+                    on info.trigger_schema = 'public'
+                   and info.trigger_name = trg.tgname
+                   and info.event_object_table = relation.relname
+                  where not trg.tgisinternal
+                    and namespace.nspname = 'public'
+                    and trg.tgname ilike '%phase5%'
+                  group by trg.oid, trg.tgname, relation.relname
+                )
+                select case when
+                  (select count(*) from actual) = 2
+                  and not exists (
+                    select 1
+                    from expected expected_guard
+                    where not exists (
+                      select 1
+                      from actual actual_guard
+                      where actual_guard.trigger_name = expected_guard.trigger_name
+                        and actual_guard.table_name = expected_guard.table_name
+                        and actual_guard.events = expected_guard.events
+                    )
                   )
+                  and not exists (
+                    select 1
+                    from actual actual_guard
+                    where not exists (
+                      select 1
+                      from expected expected_guard
+                      where expected_guard.trigger_name = actual_guard.trigger_name
+                        and expected_guard.table_name = actual_guard.table_name
+                        and expected_guard.events = actual_guard.events
+                    )
+                  )
+                then 'true' else 'false' end
               "
             )"
-            if [[ "$guard_count" != "2" ]]; then
-              echo "Expected both Slice 3 legacy mutation guards after apply; found $guard_count."
+            if [[ "$guard_state" != "true" ]]; then
+              echo "Expected exactly the two approved Slice 3 guard objects with their approved event coverage."
+              echo "Guard assertion result: $guard_state"
               exit 1
             fi
+            echo "Verified exactly two distinct Slice 3 guard objects and approved event coverage."
           else
             echo "Unexpected Slice 3 migration state: $slice3_state"
             exit 1
