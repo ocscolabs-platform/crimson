@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { getLocalPage, type PageHero, type PublicPage } from "@/lib/page-content";
+import { getPageDocumentHero, readPageContent } from "@/lib/page-document";
+import { isPageKey } from "@/lib/page-registry";
 import { defaultPrimaryNavigation, type NavigationItem } from "@/lib/site-navigation";
 import { services as localServices, type Service } from "@/lib/site-content";
 import { workProjects as localWorkProjects, type WorkProject } from "@/lib/work-content";
@@ -111,12 +113,22 @@ function getPublicCmsClient() {
   });
 }
 
-function getPageHero(content: unknown): Partial<PageHero> {
-  if (!Array.isArray(content)) {
+function getPageHero(content: unknown, slug: string): Partial<PageHero> {
+  const pageKey = isPageKey(slug) ? slug : undefined;
+  if (!pageKey && !Array.isArray(content)) {
+    console.error(`[cms-content] Non-legacy page content is unsupported for ${slug}`);
+    return {};
+  }
+  const result = readPageContent(content, pageKey);
+  if (result.kind === "page-document") {
+    return getPageDocumentHero(result.document);
+  }
+  if (result.kind === "invalid") {
+    console.error(`[cms-content] Invalid PageDocument for ${slug}: ${result.issues.join("; ")}`);
     return {};
   }
 
-  const hero = content.find((block) => {
+  const hero = result.content.find((block) => {
     if (!block || typeof block !== "object" || Array.isArray(block)) {
       return false;
     }
@@ -215,7 +227,7 @@ export async function getPublishedPage(slug: string): Promise<PublicPage | undef
   }
 
   const localHero = fallback?.hero;
-  const cmsHero = getPageHero(data.content);
+  const cmsHero = getPageHero(data.content, slug);
 
   return {
     slug: data.slug,
