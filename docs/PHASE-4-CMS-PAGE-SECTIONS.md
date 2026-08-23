@@ -31,7 +31,7 @@ The database prevents an owner from hiding the last visible section on a page. E
 
 The historical migration creates the fixed table and attempts its initial inserts at migration time. Because the clean staging reset intentionally runs with Supabase seeding disabled, the staging bootstrap sequence must execute the global-content seed after schema creation. That seed creates the four Phase 5 pages and includes the guarded section seed only after those rows exist. The repository-backed push-triggered workflow provides the current owner-approved repair path; its path filter is limited to the bootstrap workflow and the two staging seed definitions. The section seed is idempotent, rejects unexpected or conflicting target rows, preserves page content, and never creates a Work row.
 
-## Temporary Slice 3 execution bridge
+## Retired Slice 3 execution bridge
 
-`.github/workflows/apply-phase5b-slice3-staging.yml` is a temporary, staging-only execution bridge for the single pending `20260823030000_backfill_phase5_page_documents.sql` migration. Its `staging` push trigger makes an owner-approved merge the execution authorization while keeping the workflow unavailable as a Production or generic migration path. Remove this workflow only in a later Slice 3 closure cleanup PR after the staging apply, verifier run, and execution record have been retained.
+`.github/workflows/apply-phase5b-slice3-staging.yml` was the temporary, staging-only execution bridge for the single `20260823030000_backfill_phase5_page_documents.sql` migration. The migration has now applied successfully to `crimson-staging`, the execution record has been retained, and the one-shot workflow has been removed. Normal migration tooling, the hardened read-only staging verifier, and the reusable page-sections bootstrap remain active.
 

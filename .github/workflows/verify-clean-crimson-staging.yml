@@ -182,6 +182,8 @@ jobs:
 
           echo "Migration ledger matches the expected canonical versions exactly once."
 
+      # Use the local/remote ledger comparison as the authoritative pending-state
+      # check; dry-run presentation text is diagnostic only and never proves parity.
       - name: Verify structured migration state
         shell: bash
         run: |

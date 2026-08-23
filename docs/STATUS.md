@@ -13,6 +13,14 @@ The current CMS is not yet a complete body-content editor for Home, About, Servi
 
 The deferred Production gate still includes the invitation-flow remediation: Supabase administrator invitations must establish an implicit callback session at `/crimson-admin-control/invite` before the CMS membership is activated. Public signup remains disabled.
 
+## Phase 5B Slice 3 — Staging backfill complete
+
+The owner-approved Slice 3 backfill is complete in `crimson-staging`. The four Phase 5 page rows—Home, Services, About, and Contact—now contain validated `schemaVersion: 1` PageDocument objects and four migration-generated Published baseline snapshots. Work remains a legacy array and was not converted. Transitional `page_sections` compatibility remains available for the current public renderer, and the two scoped anti-drift guards remain intentionally installed until the approved later cutover.
+
+The active read-only staging verifier now checks post-Slice-3 migration state structurally: canonical local and remote ledgers must match with no pending versions, the Slice 3 version must be recorded exactly once, and the linked Supabase dry-run must exit successfully without applying anything. The temporary one-shot Slice 3 execution workflow was retired after the successful staging apply. Its post-apply false negative was caused by an alias typo in its temporary guard query (`pg_trigger` was aliased as `trg` but referenced as `trigger`); this was verification infrastructure only and did not indicate a database or migration failure. The Phase 5B staging bootstrap correction remains in place, with global content seeded before the Phase 5 page-section seed and registry verification.
+
+Production release and promotion remain a deferred release gate. Slice 4 public-loader cutover has not begun.
+
 ## Completed
 
 - Connected the local project workspace to the empty GitHub repository `ocscolabs-platform/crimson`.
