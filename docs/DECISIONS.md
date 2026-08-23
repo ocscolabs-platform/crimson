@@ -427,3 +427,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Extend the existing revision RPCs narrowly so complete PageDocuments for Home, Services, About, and Contact are validated at the database/RPC boundary, use `cms_revisions.status` as the only workflow authority, replace PageDocument content atomically, derive legacy SEO projections during future publication, validate published Service references, and restore PageDocument history as Review. Keep legacy array-valued pages, `page_sections`, Services, case studies, Work, public reads, and the current CMS editor behavior unchanged until later cutover slices.
 - **Reason:** Application validation alone cannot protect direct RPC calls. The future PageDocument contract needs an authoritative mutation boundary without forcing legacy historical revisions or current page rows through an unfinished Phase 5 model.
 - **Consequence:** The new migration is forward-only and data-free. It creates no PageDocument rows, does not backfill or convert page content, does not publish `page_sections`, and does not change Production. Owner review and a separate staging migration application remain required before Slice 2 is considered deployed.
+
+## ADR-061 - Align PageDocument validation with the approved About and Contact contract
+
+- **Date:** 2026-08-23
+- **Status:** Accepted for Phase 5B Slice 3 preparation
+- **Decision:** Persist `about_people` with exactly `eyebrow`, `heading`, and `cta`; it has no `body` field. Persist Contact process items with exactly `title` and `body`. Numbering and prefixes such as `01 /` remain code-controlled presentation and are rejected as unknown PageDocument fields.
+- **Reason:** The approved Phase 5A contract intentionally preserves the existing About placeholder without inventing body copy and keeps Contact numbering in the renderer. The Slice 1 application validator and Slice 2 database helper incorrectly required `about_people.body`; the correction restores one shared strict contract before any PageDocument backfill.
+- **Consequence:** A forward, data-free validator correction is required before Slice 3. Save, publish, restore, authorization, legacy arrays, `page_sections`, Work, and all current page data remain unchanged. No PageDocument backfill is included in this decision.

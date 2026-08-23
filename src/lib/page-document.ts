@@ -371,17 +371,20 @@ function parseSectionContent(key: PageSectionKey, value: unknown, path: string, 
       }
       return result;
     }
-    case "home_contact":
-    case "about_people": {
+    case "home_contact": {
       exactKeys(value, ["eyebrow", "heading", "body", "cta"], path, issues);
-      const body = optionalString(value.body, `${path}.body`, issues);
-      if (body === undefined) {
-        issues.push(`${path}.body: required non-empty string`);
-      }
       return {
         eyebrow: requiredString(value.eyebrow, `${path}.eyebrow`, issues, 80),
         heading: requiredString(value.heading, `${path}.heading`, issues, 180),
-        body: body || "",
+        body: requiredString(value.body, `${path}.body`, issues),
+        cta: parseCta(value.cta, `${path}.cta`, issues),
+      };
+    }
+    case "about_people": {
+      exactKeys(value, ["eyebrow", "heading", "cta"], path, issues);
+      return {
+        eyebrow: requiredString(value.eyebrow, `${path}.eyebrow`, issues, 80),
+        heading: requiredString(value.heading, `${path}.heading`, issues, 180),
         cta: parseCta(value.cta, `${path}.cta`, issues),
       };
     }
