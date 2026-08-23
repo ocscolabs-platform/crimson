@@ -1,0 +1,236 @@
+name: Bootstrap crimson-staging page sections
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type APPLY_STAGING_PAGE_SECTIONS to authorize the staging-only bootstrap"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    name: Apply staging page-section bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging-supabase
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      EXPECTED_STAGING_REF: sdfbcgctquagfcrkvoyw
+      EXPECTED_STAGING_NAME: crimson-staging
+      PGHOST: aws-0-ap-northeast-1.pooler.supabase.com
+      PGPORT: "5432"
+      PGDATABASE: postgres
+      PGUSER: postgres.sdfbcgctquagfcrkvoyw
+      PGSSLMODE: require
+    steps:
+      - name: Check out staging
+        uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 1
+
+      - name: Enforce staging-only target and explicit confirmation
+        shell: bash
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_REF:-}" != "refs/heads/staging" ]]; then
+            echo "Refusing bootstrap outside refs/heads/staging: ${GITHUB_REF:-unset}"
+            exit 1
+          fi
+          if [[ "${SUPABASE_PROJECT_REF:-}" != "$EXPECTED_STAGING_REF" ]]; then
+            echo "Refusing bootstrap: project ref is not the approved staging ref."
+            exit 1
+          fi
+          if [[ "$CONFIRM" != "APPLY_STAGING_PAGE_SECTIONS" ]]; then
+            echo "Refusing bootstrap: explicit staging confirmation was not provided."
+            exit 1
+          fi
+          for required in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD; do
+            if [[ -z "${!required:-}" ]]; then
+              echo "Refusing bootstrap: $required is missing."
+              exit 1
+            fi
+          done
+
+      - name: Confirm exact staging project identity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          project_json="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            "https://api.supabase.com/v1/projects/$EXPECTED_STAGING_REF")"
+          project_ref="$(jq -r '.id // .ref // empty' <<< "$project_json")"
+          project_name="$(jq -r '.name // empty' <<< "$project_json")"
+
+          if [[ "$project_ref" != "$EXPECTED_STAGING_REF" || "$project_name" != "$EXPECTED_STAGING_NAME" ]]; then
+            echo "Refusing bootstrap: exact staging project identity check failed."
+            exit 1
+          fi
+
+      - name: Set up pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.111.0
+
+      - name: Link only the approved staging project
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase link --project-ref "$EXPECTED_STAGING_REF" --password "$SUPABASE_DB_PASSWORD"
+          supabase migration list --linked
+
+      - name: Capture protected pre-bootstrap state
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_page_count="$(PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -Atqc "
+            select count(*)
+            from public.pages
+            where slug in ('home', 'services', 'about', 'contact');
+          ")"
+          if [[ "$target_page_count" != "4" ]]; then
+            echo "Refusing bootstrap: exactly four target pages are required."
+            exit 1
+          fi
+
+          work_content_type="$(PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -Atqc "
+            select jsonb_typeof(content)
+            from public.pages
+            where slug = 'work';
+          ")"
+          if [[ "$work_content_type" != "array" ]]; then
+            echo "Refusing bootstrap: Work is not legacy array-valued."
+            exit 1
+          fi
+
+          target_section_count="$(PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -Atqc "
+            select count(*)
+            from public.page_sections section
+            join public.pages page on page.id = section.page_id
+            where page.slug in ('home', 'services', 'about', 'contact');
+          ")"
+          if [[ "$target_section_count" != "0" && "$target_section_count" != "10" ]]; then
+            echo "Refusing bootstrap: target page_sections count is neither zero nor canonical ten."
+            exit 1
+          fi
+
+          page_digest="$(PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -Atqc "
+            select md5(coalesce(string_agg(slug || ':' || content::text, '|' order by slug), ''))
+            from public.pages
+            where slug in ('home', 'services', 'about', 'contact', 'work');
+          ")"
+          work_count="$(PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -Atqc "
+            select count(*)
+            from public.page_sections section
+            join public.pages page on page.id = section.page_id
+            where page.slug = 'work';
+          ")"
+          {
+            echo "PAGE_DIGEST_BEFORE=$page_digest"
+            echo "WORK_SECTION_COUNT_BEFORE=$work_count"
+          } >> "$GITHUB_ENV"
+
+      - name: Materialize canonical staging page sections
+        shell: bash
+        run: |
+          set -euo pipefail
+          PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 \
+            -f supabase/seeds/20260823040000_seed_staging_phase5_page_sections.sql
+
+      - name: Verify exact rows and protected state
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          expected_ok="$(PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -Atqc "
+            with expected(slug, section_key, label, sort_order, is_visible) as (
+              values
+                ('home', 'home_intro', 'The work', 10, true),
+                ('home', 'home_capabilities', 'Capabilities', 20, true),
+                ('home', 'home_approach', 'How we work', 30, true),
+                ('home', 'home_proof', 'Proof of work', 40, true),
+                ('home', 'home_contact', 'The next step', 50, true),
+                ('services', 'services_capabilities', 'Capabilities', 10, true),
+                ('about', 'about_principles', 'Working principles', 10, true),
+                ('about', 'about_people', 'The people', 20, true),
+                ('contact', 'contact_process', 'What happens next', 10, true),
+                ('contact', 'contact_form', 'Start the conversation', 20, true)
+            ), actual as (
+              select page.slug, section.section_key, section.label, section.sort_order, section.is_visible
+              from public.page_sections section
+              join public.pages page on page.id = section.page_id
+              where page.slug in ('home', 'services', 'about', 'contact')
+            )
+            select case when
+              (select count(*) from actual) = 10
+              and not exists (
+                select 1 from expected e
+                where not exists (
+                  select 1 from actual a
+                  where a.slug = e.slug
+                    and a.section_key = e.section_key
+                    and a.label = e.label
+                    and a.sort_order = e.sort_order
+                    and a.is_visible = e.is_visible
+                )
+              )
+              and not exists (
+                select 1 from actual a
+                where not exists (
+                  select 1 from expected e
+                  where e.slug = a.slug
+                    and e.section_key = a.section_key
+                    and e.label = a.label
+                    and e.sort_order = a.sort_order
+                    and e.is_visible = a.is_visible
+                )
+              )
+            then 'true' else 'false' end;
+          ")"
+          if [[ "$expected_ok" != "true" ]]; then
+            echo "Staging page_sections do not match the canonical ten-row registry."
+            exit 1
+          fi
+
+          page_digest_after="$(PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -Atqc "
+            select md5(coalesce(string_agg(slug || ':' || content::text, '|' order by slug), ''))
+            from public.pages
+            where slug in ('home', 'services', 'about', 'contact', 'work');
+          ")"
+          if [[ "$page_digest_after" != "$PAGE_DIGEST_BEFORE" ]]; then
+            echo "Page content changed during the section bootstrap."
+            exit 1
+          fi
+
+          work_count_after="$(PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -Atqc "
+            select count(*)
+            from public.page_sections section
+            join public.pages page on page.id = section.page_id
+            where page.slug = 'work';
+          ")"
+          if [[ "$work_count_after" != "$WORK_SECTION_COUNT_BEFORE" ]]; then
+            echo "Work page_sections state changed during the bootstrap."
+            exit 1
+          fi
+
+          PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -AtF '|' -c "
+            select page.slug, section.section_key, section.label, section.sort_order, section.is_visible
+            from public.page_sections section
+            join public.pages page on page.id = section.page_id
+            where page.slug in ('home', 'services', 'about', 'contact')
+            order by page.slug, section.sort_order, section.section_key;
+          "
+
+          echo "Staging page_sections bootstrap completed; Slice 3 was not applied."
+

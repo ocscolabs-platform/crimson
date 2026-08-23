@@ -21,7 +21,13 @@ The database prevents an owner from hiding the last visible section on a page. E
 ## Staging rollout
 
 1. Apply `supabase/migrations/20260820110000_add_staging_page_sections.sql` in `crimson-staging` after the global-content editor migration.
-2. Open `/crimson-admin-control/content` as the staging owner and confirm each page shows its approved section list.
-3. Change one non-sensitive section order or visibility setting and confirm the success toast and the public staging route.
-4. Confirm the public route follows the saved order and that hiding a section removes only that section.
-5. Do not apply this migration in Production or promote it to `main` until the staging workflow is reviewed.
+2. Run the explicit staging global-content seed so the `pages` rows exist.
+3. Dispatch `.github/workflows/bootstrap-crimson-staging-page-sections.yml` on the `staging` branch and enter `APPLY_STAGING_PAGE_SECTIONS` when the owner approves the staging-only repair/bootstrap.
+4. Confirm the workflow reports exactly five Home rows, one Services row, two About rows, and two Contact rows. Work is excluded.
+5. Open `/crimson-admin-control/content` as the staging owner and confirm each page shows its approved section list.
+6. Change one non-sensitive section order or visibility setting and confirm the success toast and the public staging route.
+7. Confirm the public route follows the saved order and that hiding a section removes only that section.
+8. Do not apply this migration or the staging bootstrap to another environment or promote staging-only content to `main` until the relevant release boundary is separately reviewed.
+
+The historical migration creates the fixed table and attempts its initial inserts at migration time. Because the clean staging reset intentionally runs with Supabase seeding disabled, page rows may be created later by the explicit staging global-content seed. The repository-backed bootstrap workflow therefore materializes the same ten rows only after those pages exist. The seed is idempotent, rejects unexpected or conflicting target rows, preserves page content, and never creates a Work row.
+
