@@ -5,8 +5,12 @@ import { createJiti } from "jiti";
 const jiti = createJiti(import.meta.url, {
   alias: { "@": new URL("../src/", import.meta.url).pathname },
 });
-const { createPageDocumentRenderPlan } = await jiti.import("../src/lib/page-document-renderer.ts");
 const {
+  PAGE_DOCUMENT_SECTION_RENDERERS,
+  createPageDocumentRenderPlan,
+} = await jiti.import("../src/lib/page-document-renderer.ts");
+const {
+  getPublishedPageDocument,
   resolvePublishedPageDocumentRow,
   resolvePublishedServiceRows,
 } = await jiti.import("../src/lib/page-document-loader.ts");
@@ -113,6 +117,29 @@ test("valid published PageDocument loads and produces an ordered enabled render 
   ]);
 });
 
+test("the static registry contains exactly the approved public section keys", () => {
+  assert.deepEqual(Object.keys(PAGE_DOCUMENT_SECTION_RENDERERS).sort(), [
+    "about_hero",
+    "about_people",
+    "about_principles",
+    "contact_form",
+    "contact_hero",
+    "contact_process",
+    "home_approach",
+    "home_capabilities",
+    "home_contact",
+    "home_hero",
+    "home_intro",
+    "home_proof",
+    "services_capabilities",
+    "services_hero",
+  ]);
+
+  const unknownSectionDocument = structuredClone(homeDocument());
+  unknownSectionDocument.sections[0].key = "unknown_section";
+  assert.throws(() => createPageDocumentRenderPlan(unknownSectionDocument), /No approved/);
+});
+
 test("the PageDocument loader excludes Work and distinguishes unavailable from invalid content", () => {
   assert.throws(() => createPageDocumentRenderPlan({ pageKey: "work", sections: [], schemaVersion: 1, seo: {} }), /work/i);
 
@@ -122,8 +149,35 @@ test("the PageDocument loader excludes Work and distinguishes unavailable from i
   const unpublished = resolvePublishedPageDocumentRow("home", publishedRow(homeDocument(), { status: "review" }), now);
   assert.equal(unpublished.kind, "unavailable");
 
+  const future = resolvePublishedPageDocumentRow("home", publishedRow(homeDocument(), { published_at: "2026-08-25T00:00:00.000Z" }), now);
+  assert.equal(future.kind, "unavailable");
+
   const malformed = resolvePublishedPageDocumentRow("home", publishedRow({ schemaVersion: 2 }), now);
   assert.equal(malformed.kind, "invalid");
+
+  const legacyArray = resolvePublishedPageDocumentRow("home", publishedRow([]), now);
+  assert.equal(legacyArray.kind, "invalid");
+});
+
+test("CMS configuration failure is unavailable and remains distinct from malformed content", async () => {
+  const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const originalKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  try {
+    const result = await getPublishedPageDocument("home");
+    assert.deepEqual(result, {
+      kind: "unavailable",
+      reason: "cms-not-configured",
+      message: "The published CMS read boundary is not configured.",
+    });
+  } finally {
+    if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+    if (originalKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    else process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = originalKey;
+  }
 });
 
 test("published PageDocument validation rejects wrong page, schema, unknown section, CTA, required section, and order", () => {
@@ -160,6 +214,9 @@ test("Service references preserve document order and reject duplicates, missing,
 
   const unpublishedResult = resolvePublishedServiceRows(document, publishedServiceRows({ status: "review" }), now);
   assert.equal(unpublishedResult.kind, "invalid");
+
+  const futureResult = resolvePublishedServiceRows(document, publishedServiceRows({ published_at: "2026-08-25T00:00:00.000Z" }), now);
+  assert.equal(futureResult.kind, "invalid");
 });
 
 test("Contact and About contract rules remain enforced by the existing validator", () => {

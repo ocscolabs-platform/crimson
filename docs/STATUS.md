@@ -99,4 +99,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Create the focused Phase 5 planning package against the accepted staging baseline. Keep the deferred Production release gate visible and complete it before any future Production CMS/schema promotion.
+After Slice 4A is merged and staging-verified, proceed with the approved Slice 4B About public PageDocument cutover. Keep the deferred Production release gate visible, and keep Phase 6 Insights unstarted until the remaining Phase 5B slices are complete.
