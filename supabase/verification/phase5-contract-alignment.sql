@@ -153,10 +153,7 @@ begin
   if not exists (
     select 1
     from pg_proc proc
-    join pg_namespace ns on ns.oid = proc.pronamespace
-    where ns.nspname = 'public'
-      and proc.proname = 'cms_save_revision'
-      and pg_get_function_identity_arguments(proc.oid) = 'text, text, text, jsonb'
+    where proc.oid = 'public.cms_save_revision(text, text, text, jsonb)'::regprocedure
       and pg_get_functiondef(proc.oid) like '%cms_validate_phase5_page_revision_payload%'
       and pg_get_functiondef(proc.oid) like '%PageDocument revisions use cms_revisions.status%'
   ) then
@@ -166,12 +163,10 @@ begin
   if not exists (
     select 1
     from pg_proc proc
-    join pg_namespace ns on ns.oid = proc.pronamespace
-    where ns.nspname = 'public'
-      and proc.proname = 'cms_publish_revision'
-      and pg_get_function_identity_arguments(proc.oid) = 'uuid'
+    where proc.oid = 'public.cms_publish_revision(uuid)'::regprocedure
       and pg_get_functiondef(proc.oid) like '%PageDocument publication is atomic and does not publish page_sections%'
       and pg_get_functiondef(proc.oid) like '%opengraph-image%'
+      and pg_get_functiondef(proc.oid) ~* 'cms_validate_phase5_page_revision_payload[[:space:]]*\([[:space:]]*page_slug[[:space:]]*,[[:space:]]*revision[.]payload[[:space:]]*,[[:space:]]*true[[:space:]]*\)'
   ) then
     raise exception 'cms_publish_revision is not the approved Slice 2 definition';
   end if;
@@ -179,14 +174,61 @@ begin
   if not exists (
     select 1
     from pg_proc proc
-    join pg_namespace ns on ns.oid = proc.pronamespace
-    where ns.nspname = 'public'
-      and proc.proname = 'cms_restore_revision'
-      and pg_get_function_identity_arguments(proc.oid) = 'uuid'
+    where proc.oid = 'public.cms_restore_revision(uuid)'::regprocedure
       and pg_get_functiondef(proc.oid) like '%return public.cms_save_revision%'
       and pg_get_functiondef(proc.oid) like '%''review''%'
   ) then
     raise exception 'cms_restore_revision is not the approved Slice 2 definition';
+  end if;
+
+  -- Publish delegates Service-reference enforcement through the PageDocument
+  -- revision validator. Verify each deployed link in that dependency chain
+  -- instead of requiring the Service error text inside cms_publish_revision.
+  if not exists (
+    select 1
+    from pg_proc proc
+    where proc.oid = 'public.cms_validate_phase5_page_revision_payload(text, jsonb, boolean)'::regprocedure
+      and pg_get_functiondef(proc.oid) like '%cms_validate_phase5_page_document%'
+      and pg_get_functiondef(proc.oid) like '%p_require_published_services%'
+  ) then
+    raise exception 'PageDocument revision validator does not delegate publication validation';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_proc proc
+    where proc.oid = 'public.cms_validate_phase5_page_document(text, jsonb, boolean)'::regprocedure
+      and pg_get_functiondef(proc.oid) like '%cms_phase5_validate_section_content%'
+      and pg_get_functiondef(proc.oid) like '%home_capabilities%'
+      and pg_get_functiondef(proc.oid) like '%public.services%'
+      and pg_get_functiondef(proc.oid) like '%status = ''published''%'
+      and pg_get_functiondef(proc.oid) like '%published_at is not null%'
+      and pg_get_functiondef(proc.oid) like '%published_at <= now()%'
+  ) then
+    raise exception 'PageDocument validator is missing published Service checks';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_proc proc
+    where proc.oid = 'public.cms_phase5_validate_section_content(text, jsonb, text)'::regprocedure
+      and pg_get_functiondef(proc.oid) like '%cms_phase5_validate_service_reference%'
+  ) then
+    raise exception 'Section validator is missing Service-reference structure validation';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_proc proc
+    where proc.oid = 'public.cms_phase5_validate_service_reference(jsonb, text)'::regprocedure
+      and pg_get_functiondef(proc.oid) like '%array[''kind'', ''slug'']%'
+      and pg_get_functiondef(proc.oid) like '%''branding''%'
+      and pg_get_functiondef(proc.oid) like '%''website-design-development''%'
+      and pg_get_functiondef(proc.oid) like '%''custom-cms''%'
+      and pg_get_functiondef(proc.oid) like '%''crm-business-tools''%'
+      and pg_get_functiondef(proc.oid) like '%''custom-web-applications''%'
+  ) then
+    raise exception 'Service-reference validator is missing the approved structure or slug allowlist';
   end if;
 end;
 $$;
