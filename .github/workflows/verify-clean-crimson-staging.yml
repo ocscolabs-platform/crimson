@@ -182,38 +182,96 @@ jobs:
 
           echo "Migration ledger matches the expected canonical versions exactly once."
 
-      - name: Confirm no migrations remain pending
+      - name: Verify structured migration state
         shell: bash
         run: |
           set -euo pipefail
-          dry_run_output="$(supabase db push --linked --dry-run)"
-          printf '%s\n' "$dry_run_output"
-          slice3_version="${PHASE5_SLICE3_MIGRATION%%_*}"
-          slice3_recorded="$({
-            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
-            psql -Atqc "
-              select count(*)
-              from supabase_migrations.schema_migrations
-              where version = '$slice3_version'
-            "
-          })"
-          if [[ "$slice3_recorded" == "0" ]]; then
-            if grep -qi 'up to date' <<< "$dry_run_output" \
-              || { ! grep -Fq "$slice3_version" <<< "$dry_run_output" && ! grep -Fq "$PHASE5_SLICE3_MIGRATION" <<< "$dry_run_output"; }; then
-              echo "Pre-apply dry-run did not show the expected single pending Slice 3 migration."
-              exit 1
-            fi
-            echo "Dry-run shows the expected pending Slice 3 migration only; no apply was performed."
-          elif [[ "$slice3_recorded" == "1" ]]; then
-            if ! grep -qi 'up to date' <<< "$dry_run_output"; then
-              echo "Pending migrations remain after Slice 3 apply."
-              exit 1
-            fi
-            echo "No migrations remain pending."
-          else
-            echo "Slice 3 migration ledger contains an unexpected duplicate count: $slice3_recorded"
+          if ! dry_run_output="$(supabase db push --linked --dry-run 2>&1)"; then
+            printf '%s\n' "$dry_run_output"
+            echo "Supabase dry-run could not complete; no migration was applied."
             exit 1
           fi
+          printf '%s\n' "$dry_run_output"
+          slice3_version="${PHASE5_SLICE3_MIGRATION%%_*}"
+          mapfile -t local_migration_files < <(
+            find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sort
+          )
+          mapfile -t local_versions < <(
+            printf '%s\n' "${local_migration_files[@]}" |
+              sed -E 's/^([0-9]{14})_.+\.sql$/\1/' |
+              sort
+          )
+          if [[ "${#local_versions[@]}" -eq 0 ]]; then
+            echo "Canonical local migration version extraction returned no versions."
+            exit 1
+          fi
+
+          if [[ ! -f "supabase/migrations/$PHASE5_SLICE3_MIGRATION" ]]; then
+            echo "The required Slice 3 migration file is missing: $PHASE5_SLICE3_MIGRATION"
+            exit 1
+          fi
+
+          local_versions_file="$RUNNER_TEMP/local-migration-versions.txt"
+          remote_versions_file="$RUNNER_TEMP/remote-migration-versions.txt"
+          printf '%s\n' "${local_versions[@]}" > "$local_versions_file"
+
+          local_duplicates="$(uniq -d "$local_versions_file")"
+          if [[ -n "$local_duplicates" ]]; then
+            echo "Canonical Git migrations contain duplicate version identifiers:"
+            printf '%s\n' "$local_duplicates"
+            exit 1
+          fi
+
+          mapfile -t remote_versions < <(
+            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql -Atqc "select version from supabase_migrations.schema_migrations order by version"
+          )
+          if [[ "${#remote_versions[@]}" -eq 0 ]]; then
+            echo "Remote migration ledger returned no versions."
+            exit 1
+          fi
+          printf '%s\n' "${remote_versions[@]}" > "$remote_versions_file"
+
+          remote_duplicates="$(uniq -d "$remote_versions_file")"
+          if [[ -n "$remote_duplicates" ]]; then
+            echo "Remote migration ledger contains duplicate version identifiers:"
+            printf '%s\n' "$remote_duplicates"
+            exit 1
+          fi
+
+          remote_only="$(comm -23 "$remote_versions_file" "$local_versions_file")"
+          if [[ -n "$remote_only" ]]; then
+            echo "Remote migration versions are missing from canonical Git:"
+            printf '%s\n' "$remote_only"
+            exit 1
+          fi
+
+          pending_versions="$(comm -13 "$remote_versions_file" "$local_versions_file")"
+          pending_count=0
+          if [[ -n "$pending_versions" ]]; then
+            pending_count="$(printf '%s\n' "$pending_versions" | wc -l | tr -d '[:space:]')"
+          fi
+          if [[ "$pending_count" -eq 1 ]]; then
+            if [[ "$pending_versions" != "$slice3_version" ]]; then
+              echo "Unexpected pre-apply pending migration version: $pending_versions"
+              exit 1
+            fi
+            echo "Pre-apply state verified structurally: exactly one pending migration, $PHASE5_SLICE3_MIGRATION."
+          elif [[ "$pending_count" -eq 0 ]]; then
+            slice3_recorded="$(grep -Fx "$slice3_version" "$remote_versions_file" | wc -l | tr -d '[:space:]')"
+            if [[ "$slice3_recorded" != "1" ]]; then
+              echo "No migration is pending, but the applied Slice 3 migration is not recorded exactly once."
+              exit 1
+            fi
+            echo "Post-apply state verified structurally: no migrations remain pending."
+          else
+            echo "Expected zero pending migrations after Slice 3, or exactly one pending Slice 3 migration before it."
+            echo "Pending local-minus-remote versions:"
+            printf '%s\n' "$pending_versions"
+            exit 1
+          fi
+
+          echo "Structured migration comparison passed; Supabase dry-run was non-mutating."
 
       - name: Verify PageDocument compatibility and legacy rows
         shell: bash
