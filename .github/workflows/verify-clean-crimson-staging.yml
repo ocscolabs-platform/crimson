@@ -22,7 +22,8 @@ jobs:
       SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
       EXPECTED_STAGING_REF: sdfbcgctquagfcrkvoyw
       EXPECTED_STAGING_NAME: crimson-staging
-      EXPECTED_MIGRATION: 20260821060000_remove_conflicting_legacy_publication_triggers.sql
+      EXPECTED_MIGRATION: 20260823000000_expand_pages_content_compatibility.sql
+      EXPECTED_MIGRATION_COUNT: "22"
       PGHOST: aws-0-ap-northeast-1.pooler.supabase.com
       PGPORT: "5432"
       PGDATABASE: postgres
@@ -65,8 +66,8 @@ jobs:
 
           mapfile -t migrations < <(find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sort)
 
-          if [[ "${#migrations[@]}" -ne 21 ]]; then
-            echo "Refusing verification: expected exactly 21 canonical SQL migrations, found ${#migrations[@]}."
+          if [[ "${#migrations[@]}" -ne "$EXPECTED_MIGRATION_COUNT" ]]; then
+            echo "Refusing verification: expected exactly $EXPECTED_MIGRATION_COUNT canonical SQL migrations, found ${#migrations[@]}."
             exit 1
           fi
 
@@ -125,8 +126,8 @@ jobs:
             psql -Atqc "select version from supabase_migrations.schema_migrations order by version"
           )
 
-          if [[ "${#recorded_versions[@]}" -ne 21 ]]; then
-            echo "Migration ledger does not contain exactly 21 remote versions."
+          if [[ "${#recorded_versions[@]}" -ne "$EXPECTED_MIGRATION_COUNT" ]]; then
+            echo "Migration ledger does not contain exactly $EXPECTED_MIGRATION_COUNT remote versions."
             exit 1
           fi
 
@@ -136,7 +137,7 @@ jobs:
           printf '%s\n' "${recorded_versions[@]}" > "$recorded_file"
 
           if ! diff -u "$expected_file" "$recorded_file"; then
-            echo "Remote migration versions do not exactly match the 21 canonical Git timestamps."
+            echo "Remote migration versions do not exactly match the $EXPECTED_MIGRATION_COUNT canonical Git timestamps."
             exit 1
           fi
 
@@ -166,6 +167,100 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install --yes postgresql-client
+
+      - name: Verify PageDocument compatibility and legacy rows
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          column_contract="$({
+            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql -Atqc "
+              select data_type || '|' || is_nullable
+              from information_schema.columns
+              where table_schema = 'public'
+                and table_name = 'pages'
+                and column_name = 'content'
+            "
+          })"
+          if [[ "$column_contract" != "jsonb|NO" ]]; then
+            echo "Unexpected public.pages.content column contract: $column_contract"
+            exit 1
+          fi
+
+          constraint_definition="$({
+            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql -Atqc "
+              select pg_get_constraintdef(c.oid)
+              from pg_constraint c
+              join pg_class t on t.oid = c.conrelid
+              join pg_namespace n on n.oid = t.relnamespace
+              where n.nspname = 'public'
+                and t.relname = 'pages'
+                and c.conname = 'pages_content_check'
+            "
+          })"
+          if ! grep -qi 'jsonb_typeof(content)' <<< "$constraint_definition" \
+            || ! grep -qi "array" <<< "$constraint_definition" \
+            || ! grep -qi "object" <<< "$constraint_definition"; then
+            echo "pages_content_check does not permit both JSON arrays and objects: $constraint_definition"
+            exit 1
+          fi
+
+          mapfile -t page_rows < <(
+            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql -AtF '|' -c "
+              select slug, jsonb_typeof(content), status
+              from public.pages
+              where slug in ('home', 'services', 'about', 'contact', 'work')
+              order by array_position(array['home', 'services', 'about', 'contact', 'work'], slug)
+            "
+          )
+          if [[ "${#page_rows[@]}" -ne 5 ]]; then
+            echo "Expected Home, Services, About, Contact, and Work rows; found ${#page_rows[@]}."
+            exit 1
+          fi
+
+          for expected_slug in home services about contact work; do
+            if ! printf '%s\n' "${page_rows[@]}" | grep -Eq "^${expected_slug}\|array\|"; then
+              echo "Expected legacy array content for $expected_slug."
+              printf '%s\n' "${page_rows[@]}"
+              exit 1
+            fi
+          done
+
+          phase5_objects="$({
+            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql -Atqc "
+              select count(*)
+              from public.pages
+              where slug in ('home', 'services', 'about', 'contact')
+                and jsonb_typeof(content) = 'object'
+            "
+          })"
+          if [[ "$phase5_objects" != "0" ]]; then
+            echo "Phase 5 PageDocument objects already exist: $phase5_objects"
+            exit 1
+          fi
+
+          page_section_coverage="$({
+            PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql -Atqc "
+              select count(*)
+              from public.pages p
+              where p.slug in ('home', 'services', 'about', 'contact', 'work')
+                and exists (select 1 from public.page_sections ps where ps.page_id = p.id)
+            "
+          })"
+          if [[ "$page_section_coverage" != "5" ]]; then
+            echo "Expected page_sections coverage for all five legacy pages; found $page_section_coverage."
+            exit 1
+          fi
+
+          echo "pages.content is jsonb NOT NULL and permits array/object values."
+          printf 'Legacy page rows:\n%s\n' "${page_rows[*]}"
+          echo "No Phase 5 PageDocument objects or backfill rows detected."
+          echo "page_sections remains present for all five legacy pages."
 
       - name: Run read-only release contract
         shell: bash
