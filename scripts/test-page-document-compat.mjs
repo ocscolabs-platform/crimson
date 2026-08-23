@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { readPageContent, validatePageDocument } from "../src/lib/page-document.ts";
+import { createJiti } from "jiti";
+
+const jiti = createJiti(import.meta.url, {
+  alias: { "@": new URL("../src/", import.meta.url).pathname },
+});
+const { readPageContent, validatePageDocument } = await jiti.import("../src/lib/page-document.ts");
 
 const serviceSlugs = [
   "branding",

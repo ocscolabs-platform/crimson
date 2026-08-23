@@ -217,6 +217,7 @@ async function savePageSection(sectionId: string, formData: FormData) {
 }
 
 const pageStatusOptions: AdminPageMetadata["status"][] = ["draft", "review"];
+const PAGE_DOCUMENT_PAGE_KEYS = new Set(["home", "services", "about", "contact"]);
 
 function formatDate(value: string | null) {
   if (!value) return "Not published";
@@ -371,6 +372,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                   const statusOptions = pageStatusOptions;
                   const editorStatus = page.revision_status ?? (page.status === "published" ? "review" : page.status);
                   const pageSections = content.sections[page.id] ?? [];
+                  const pageDocumentTransition = PAGE_DOCUMENT_PAGE_KEYS.has(page.slug);
                   return (
                     <details className="admin-page-metadata-card" key={page.id} open={pageIndex === 0}>
                       <summary className="admin-content-row-heading admin-page-metadata-summary">
@@ -398,18 +400,25 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                         {isOwner && page.revision_id && page.revision_status === "review" ? <form className="admin-publish-form" action={publishRevision.bind(null, "page", page.id)}><AdminSubmitButton label="Publish page metadata" pendingLabel="Publishing…" /></form> : null}
                         <div className="admin-page-section-controls">
                         <div className="admin-content-row-heading">
-                          <div><strong>Approved sections</strong><small>Fixed application sections; owner-controlled visibility and order.</small></div>
+                          <div><strong>Approved sections</strong><small>{pageDocumentTransition ? "Structured PageDocument sections are read-only during the transition." : "Fixed application sections; owner-controlled visibility and order."}</small></div>
                           <span className="admin-status-muted">{pageSections.length} configured</span>
                         </div>
+                        {pageDocumentTransition ? <p className="admin-editor-warning">This page now uses structured PageDocument content. Section visibility and order will be managed by the approved PageDocument editor in a later slice.</p> : null}
                         {pageSections.map((section) => (
                           <div className="admin-page-section-row" key={section.id}>
                             <div><strong>{section.label}</strong><small>{section.section_key}</small></div>
-                            <form action={savePageSection.bind(null, section.id)}>
-                              <label>Order<input className="admin-input" name="sort_order" type="number" min="0" defaultValue={section.sort_order} disabled={!isOwner} /></label>
-                              <label>Visibility<AdminSelect name="is_visible" defaultValue={String(section.is_visible)} disabled={!isOwner} aria-label={`Section visibility for ${section.label}`}><option value="true">Visible</option><option value="false">Hidden</option></AdminSelect></label>
-                              {isOwner ? <AdminSubmitButton label="Save as review" pendingLabel="Saving…" variant="secondary" /> : null}
-                            </form>
-                            {isOwner && section.revision_id && section.revision_status === "review" ? <form className="admin-publish-form" action={publishRevision.bind(null, "page_section", section.id)}><AdminSubmitButton label="Publish section" pendingLabel="Publishing…" /></form> : null}
+                            {pageDocumentTransition ? (
+                              <span className="admin-status-muted">Read-only during PageDocument transition</span>
+                            ) : (
+                              <>
+                                <form action={savePageSection.bind(null, section.id)}>
+                                  <label>Order<input className="admin-input" name="sort_order" type="number" min="0" defaultValue={section.sort_order} disabled={!isOwner} /></label>
+                                  <label>Visibility<AdminSelect name="is_visible" defaultValue={String(section.is_visible)} disabled={!isOwner} aria-label={`Section visibility for ${section.label}`}><option value="true">Visible</option><option value="false">Hidden</option></AdminSelect></label>
+                                  {isOwner ? <AdminSubmitButton label="Save as review" pendingLabel="Saving…" variant="secondary" /> : null}
+                                </form>
+                                {isOwner && section.revision_id && section.revision_status === "review" ? <form className="admin-publish-form" action={publishRevision.bind(null, "page_section", section.id)}><AdminSubmitButton label="Publish section" pendingLabel="Publishing…" /></form> : null}
+                              </>
+                            )}
                           </div>
                         ))}
                         </div>
