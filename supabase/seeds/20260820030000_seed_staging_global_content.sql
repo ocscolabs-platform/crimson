@@ -97,3 +97,8 @@ on conflict (slug) do update set
   status = excluded.status,
   published_at = excluded.published_at,
   last_reviewed_at = excluded.last_reviewed_at;
+
+-- The page rows must exist before the Phase 5 section registry is materialized.
+-- Reuse the guarded canonical seed rather than duplicating its ten-row definition.
+\ir 20260823040000_seed_staging_phase5_page_sections.sql
+
