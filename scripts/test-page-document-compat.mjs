@@ -86,7 +86,7 @@ function aboutDocument() {
     },
     {
       key: "about_people", enabled: false, order: 20,
-      content: { eyebrow: "People", heading: "Heading", body: "Body", cta: { kind: "route", label: "Contact", href: "/contact" } },
+      content: { eyebrow: "People", heading: "Heading", cta: { kind: "route", label: "Contact", href: "/contact" } },
     },
   ]);
 }
@@ -134,6 +134,50 @@ test("rejects duplicate, missing, hidden-required, and wrong-page sections", () 
   const result = validatePageDocument(invalid);
   assert.equal(result.success, false);
   if (!result.success) assert.ok(result.issues.some((issue) => issue.includes("duplicate section key")));
+});
+
+test("accepts the canonical about_people shape without body", () => {
+  const document = aboutDocument();
+  const result = validatePageDocument(document, "about");
+  assert.equal(result.success, true);
+  if (result.success) {
+    const people = result.value.sections.find((section) => section.key === "about_people");
+    assert.ok(people);
+    assert.equal("body" in people.content, false);
+  }
+});
+
+test("rejects about_people body and required-field omissions", () => {
+  const withBody = structuredClone(aboutDocument());
+  withBody.sections[2].content.body = "Unapproved body";
+  const bodyResult = validatePageDocument(withBody, "about");
+  assert.equal(bodyResult.success, false);
+  if (!bodyResult.success) assert.ok(bodyResult.issues.some((issue) => issue.includes(".content.body: unknown field")));
+
+  for (const field of ["eyebrow", "heading", "cta"]) {
+    const invalid = structuredClone(aboutDocument());
+    delete invalid.sections[2].content[field];
+    const result = validatePageDocument(invalid, "about");
+    assert.equal(result.success, false);
+    if (!result.success) assert.ok(result.issues.some((issue) => issue.includes(`.content.${field}`)));
+  }
+});
+
+test("keeps Contact process items limited to title and body", () => {
+  const valid = contactDocument();
+  assert.equal(validatePageDocument(valid, "contact").success, true);
+
+  const withPrefix = structuredClone(valid);
+  withPrefix.sections[1].content.items[0].prefix = "01 /";
+  const prefixResult = validatePageDocument(withPrefix, "contact");
+  assert.equal(prefixResult.success, false);
+  if (!prefixResult.success) assert.ok(prefixResult.issues.some((issue) => issue.includes(".content.items[0].prefix: unknown field")));
+
+  const wrongCount = structuredClone(valid);
+  wrongCount.sections[1].content.items.pop();
+  const countResult = validatePageDocument(wrongCount, "contact");
+  assert.equal(countResult.success, false);
+  if (!countResult.success) assert.ok(countResult.issues.some((issue) => issue.includes("expected exactly 3 items")));
 });
 
 test("recognizes legacy arrays without merging them with PageDocuments", () => {
