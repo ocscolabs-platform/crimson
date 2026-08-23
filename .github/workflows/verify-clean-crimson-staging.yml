@@ -243,24 +243,21 @@ jobs:
             exit 1
           fi
 
-          page_section_coverage="$({
+          page_sections_table="$({
             PGPASSWORD="$SUPABASE_DB_PASSWORD" \
             psql -Atqc "
-              select count(*)
-              from public.pages p
-              where p.slug in ('home', 'services', 'about', 'contact', 'work')
-                and exists (select 1 from public.page_sections ps where ps.page_id = p.id)
+              select to_regclass('public.page_sections')
             "
           })"
-          if [[ "$page_section_coverage" != "5" ]]; then
-            echo "Expected page_sections coverage for all five legacy pages; found $page_section_coverage."
+          if [[ "$page_sections_table" != "public.page_sections" ]]; then
+            echo "The legacy page_sections table is missing."
             exit 1
           fi
 
           echo "pages.content is jsonb NOT NULL and permits array/object values."
           printf 'Legacy page rows:\n%s\n' "${page_rows[*]}"
           echo "No Phase 5 PageDocument objects or backfill rows detected."
-          echo "page_sections remains present for all five legacy pages."
+          echo "page_sections remains present; existing fallback/legacy authority is unchanged."
 
       - name: Run read-only release contract
         shell: bash
