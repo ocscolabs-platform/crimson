@@ -147,6 +147,8 @@ The following are descriptive completion work packages, not historical Phase 5B 
 
 ##### Work Package A — PageDocument Editor and Editorial Workflow
 
+**Current status:** Batch 1 — **Closed** after merge and staging verification. Batch 2 — **Next, not started**.
+
 **Objective:** Build the reusable Crimson CMS editorial experience for the four approved Phase 5 pages.
 
 **Scope:**
