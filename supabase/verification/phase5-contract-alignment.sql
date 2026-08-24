@@ -8,6 +8,10 @@ declare
   page_sections_count integer;
   phase5_slice3_applied boolean;
   page_record record;
+  page_document_target_definition text;
+  generic_publish_definition text;
+  page_document_publish_definition text;
+  page_document_restore_definition text;
 begin
   -- The approved about_people contract has exactly eyebrow, heading, and cta.
   perform public.cms_phase5_validate_section_content(
@@ -217,7 +221,18 @@ begin
     end if;
   end if;
 
-  -- Query the deployed RPC definitions to ensure Slice 2 behavior remains live.
+  -- Query the deployed RPC definitions to ensure the current PageDocument
+  -- contract remains live. Migration #26 superseded the old Slice 2 generic
+  -- PageDocument projection: approved PageDocuments now use dedicated RPCs,
+  -- while the generic RPC remains a compatibility path for legacy entities.
+  select pg_get_functiondef('public.cms_page_document_is_target(text)'::regprocedure)
+    into page_document_target_definition;
+  if page_document_target_definition not like
+    '%p_page_key = any (array[''home'', ''services'', ''about'', ''contact'']::text[])%'
+  then
+    raise exception 'PageDocument target allowlist is not the approved four-page contract';
+  end if;
+
   if not exists (
     select 1
     from pg_proc proc
@@ -228,15 +243,20 @@ begin
     raise exception 'cms_save_revision is not the approved Slice 2 definition';
   end if;
 
-  if not exists (
-    select 1
-    from pg_proc proc
-    where proc.oid = 'public.cms_publish_revision(uuid)'::regprocedure
-      and pg_get_functiondef(proc.oid) like '%PageDocument publication is atomic and does not publish page_sections%'
-      and pg_get_functiondef(proc.oid) like '%opengraph-image%'
-      and pg_get_functiondef(proc.oid) ~* 'cms_validate_phase5_page_revision_payload[[:space:]]*\([[:space:]]*page_slug[[:space:]]*,[[:space:]]*revision[.]payload[[:space:]]*,[[:space:]]*true[[:space:]]*\)'
-  ) then
-    raise exception 'cms_publish_revision is not the approved Slice 2 definition';
+  select pg_get_functiondef('public.cms_publish_revision(uuid)'::regprocedure)
+    into generic_publish_definition;
+  if generic_publish_definition not like
+      '%PageDocument publication requires the dedicated Publish RPC%'
+    or generic_publish_definition not like '%public.cms_page_document_is_target%'
+    or generic_publish_definition not like '%revision.entity_type = ''site_settings''%'
+    or generic_publish_definition not like '%revision.entity_type = ''navigation_item''%'
+    or generic_publish_definition not like '%revision.entity_type = ''page_section''%'
+    or generic_publish_definition not like '%revision.entity_type = ''service''%'
+    or generic_publish_definition not like '%revision.entity_type = ''page''%'
+    or generic_publish_definition not like '%revision.entity_type = ''case_study''%'
+    or generic_publish_definition not like '%jsonb_typeof(revision.payload->''content'') <> ''array''%'
+  then
+    raise exception 'cms_publish_revision does not preserve the migration #26 guard and legacy compatibility branches';
   end if;
 
   if not exists (
@@ -249,9 +269,59 @@ begin
     raise exception 'cms_restore_revision is not the approved Slice 2 definition';
   end if;
 
+  -- The old Slice 2 PageDocument projection assertions belong on the
+  -- dedicated publisher after migration #26. Verify its owner, Review-only,
+  -- stale-protection, pointer, archival, projection, and audit contract.
+  select pg_get_functiondef(
+    'public.cms_page_document_publish(text, uuid, timestamptz)'::regprocedure
+  ) into page_document_publish_definition;
+  if page_document_publish_definition not like '%Only the owner can publish PageDocuments%'
+    or page_document_publish_definition not like '%public.cms_page_document_is_target%'
+    or page_document_publish_definition not like '%revision.status <> ''review''%'
+    or page_document_publish_definition not like '%p_expected_updated_at is null%'
+    or page_document_publish_definition not like '%revision.updated_at is distinct from p_expected_updated_at%'
+    or page_document_publish_definition not like '%cms_validate_phase5_page_revision_payload%'
+    or page_document_publish_definition not like '%revision.payload%'
+    or page_document_publish_definition not like '%published_revision_id is null%'
+    or page_document_publish_definition not like '%set status = ''archived''%'
+    or page_document_publish_definition not like '%set status = ''published'',%'
+    or page_document_publish_definition not like '%published_revision_id = revision.id%'
+    or page_document_publish_definition not like '%publish_archived_previous%'
+    or page_document_publish_definition not like '%''published'',%''review'',%''published''%'
+    or page_document_publish_definition not like '%opengraph-image%'
+    or page_document_publish_definition not like '%cms_write_page_workflow_audit%'
+    or page_document_publish_definition not like '%p_page_key%'
+  then
+    raise exception 'cms_page_document_publish is missing the migration #26 dedicated Publish contract';
+  end if;
+
+  -- Restore is also a dedicated PageDocument path. Keep its no-public-change
+  -- behavior and Review-only result independently covered by this verifier.
+  select pg_get_functiondef(
+    'public.cms_page_document_restore(text, uuid)'::regprocedure
+  ) into page_document_restore_definition;
+  if page_document_restore_definition not like '%Only the owner can restore PageDocuments%'
+    or page_document_restore_definition not like '%public.cms_page_document_is_target%'
+    or page_document_restore_definition not like '%status in (''published'', ''archived'')%'
+    or page_document_restore_definition not like '%cms_validate_phase5_page_revision_payload%'
+    or page_document_restore_definition not like '%restore_payload%'
+    or page_document_restore_definition not like '%active_revision%'
+    or page_document_restore_definition not like '%set status = ''archived''%'
+    or page_document_restore_definition not like '%insert into public.cms_revisions%'
+    or page_document_restore_definition not like '%''review''%'
+    or page_document_restore_definition not like '%published_at%'
+    or page_document_restore_definition like '%update public.pages%'
+    or page_document_restore_definition like '%published_revision_id =%'
+    or page_document_restore_definition not like '%restored_to_review%'
+    or page_document_restore_definition not like '%restore_archived_active%'
+    or page_document_restore_definition not like '%cms_write_page_workflow_audit%'
+  then
+    raise exception 'cms_page_document_restore is missing the migration #26 dedicated Restore contract';
+  end if;
+
   -- Publish delegates Service-reference enforcement through the PageDocument
   -- revision validator. Verify each deployed link in that dependency chain
-  -- instead of requiring the Service error text inside cms_publish_revision.
+  -- instead of requiring the Service error text inside either Publish RPC.
   if not exists (
     select 1
     from pg_proc proc
