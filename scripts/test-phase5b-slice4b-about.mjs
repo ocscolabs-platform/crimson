@@ -109,7 +109,7 @@ test("About route uses PageDocument body authority without page_sections or hard
   const source = await readFile(new URL("../src/app/about/page.tsx", import.meta.url), "utf8");
   assert.match(source, /getPublishedPageDocument\("about"\)/);
   assert.match(source, /createAboutPageRenderData/);
-  assert.match(source, /getPublishedPage\("about"\)/); // metadata remains on the existing Slice 4F boundary.
+  assert.match(source, /getPublishedPageMetadata\("about"\)/); // metadata now follows the approved PageDocument authority.
   assert.doesNotMatch(source, /getPublishedPageSections|page-sections/);
   assert.doesNotMatch(source, /Clarity as a discipline\.|Intelligent innovation\.|Quiet confidence\./);
   assert.doesNotMatch(source, /Team and origin details will be added after owner review\./);

@@ -2,15 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { RouteShell } from "@/components/route-shell";
-import { getPublishedPage } from "@/lib/cms-content";
 import { createAboutPageRenderData, type AboutPageBodySection } from "@/lib/about-page";
 import { getPublishedPageDocument } from "@/lib/page-document-loader";
+import { getPublishedPageMetadata } from "@/lib/page-metadata";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getPublishedPage("about");
-  return { title: page?.seoTitle || "About", description: page?.seoDescription };
+  const result = await getPublishedPageMetadata("about");
+  if (result.kind === "invalid") {
+    console.error(`[about] Invalid published PageDocument metadata: ${result.issues.join("; ")}`);
+  }
+  if (result.kind !== "metadata") notFound();
+  return result.metadata;
 }
 
 function renderAboutBodySection(section: AboutPageBodySection) {
