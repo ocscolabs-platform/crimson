@@ -46,7 +46,7 @@ test("Batch 1 contains no PageDocument mutation path", () => {
 test("Batch 1 preserves the Services and Contact authority boundaries", () => {
   assert.match(editorSource, /canonical validator|canonical PageDocument/i);
   assert.match(editorSource, /Legacy controls preserved/);
-  assert.match(editorSource, /Work conversion/);
+  assert.match(editorSource, /Work remains legacy|Work.*excluded/i);
   assert.match(editorSource, /canonical public\.services/i);
   assert.match(editorSource, /functional ContactForm/);
   assert.match(dashboardSource, /content\/pages/);
