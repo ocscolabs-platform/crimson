@@ -12,12 +12,6 @@ export type PageDocumentActionState = {
   issues: string[];
 };
 
-export const initialPageDocumentActionState: PageDocumentActionState = {
-  status: "idle",
-  message: "",
-  issues: [],
-};
-
 function errorState(message: string, issues: string[] = []): PageDocumentActionState {
   return { status: "error", message, issues };
 }

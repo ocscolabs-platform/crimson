@@ -109,6 +109,7 @@ test("Batch 2 exposes the structured editor without publication or Work conversi
   assert.match(action, /cms_save_revision/);
   assert.match(action, /p_status: "draft"/);
   assert.doesNotMatch(action, /cms_publish_revision|cms_restore_revision/);
+  assert.doesNotMatch(editor, /initialPageDocumentActionState.*from/);
   assert.match(page, /PageDocumentEditor/);
   assert.match(globalContent, /Managed in Pages/);
   assert.match(globalContent, /content\/pages\/\$\{page\.slug\}/);

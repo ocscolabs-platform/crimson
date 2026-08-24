@@ -17,10 +17,7 @@ import type {
   SafeCta,
   ServiceSlug,
 } from "@/lib/page-document";
-import {
-  initialPageDocumentActionState,
-  savePageDocumentDraft,
-} from "../actions";
+import { savePageDocumentDraft } from "../actions";
 
 const SERVICE_OPTIONS: Array<{ slug: ServiceSlug; label: string }> = [
   { slug: "branding", label: "Branding" },
@@ -32,6 +29,12 @@ const SERVICE_OPTIONS: Array<{ slug: ServiceSlug; label: string }> = [
 
 const ROUTE_OPTIONS = ["/", "/services", "/about", "/contact"] as const;
 const ANCHOR_OPTIONS = ["#contact", "#contact-form"] as const;
+
+const initialPageDocumentActionState = {
+  status: "idle" as const,
+  message: "",
+  issues: [],
+};
 
 type TextFieldProps = {
   id: string;
