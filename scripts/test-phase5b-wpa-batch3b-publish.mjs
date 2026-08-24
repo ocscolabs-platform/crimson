@@ -18,7 +18,7 @@ test("Batch 3B uses the dedicated Owner-only canonical publish action", async ()
   assert.match(actions, /p_page_key: authorized\.adapter\.pageKey/);
   assert.match(actions, /p_revision_id: revisionId/);
   assert.match(actions, /p_expected_updated_at: expectedUpdatedAt/);
-  assert.doesNotMatch(actions, /cms_page_document_restore/);
+  assert.match(actions, /restorePageDocument/);
   assert.doesNotMatch(actions, /errorState\(error\?\.message/);
 });
 

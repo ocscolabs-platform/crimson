@@ -319,8 +319,11 @@ export default function PageDocumentEditor({ initialDocument }: { initialDocumen
   const serializedDocument = JSON.stringify(document);
   const [savedDocumentSerialization, setSavedDocumentSerialization] = useState(() => JSON.stringify(initialDocument));
   const documentRef = useRef(document);
+  const submitLockRef = useRef(false);
   const dirty = serializedDocument !== savedDocumentSerialization;
   const [actionState, formAction, pending] = useActionState(savePageDocumentDraft, initialPageDocumentActionState);
+  const [submitLocked, setSubmitLocked] = useState(false);
+  const locked = pending || (submitLocked && actionState.status === "idle");
   const issues = localIssues.length > 0 ? localIssues : actionState.issues;
 
   useEffect(() => {
@@ -344,6 +347,14 @@ export default function PageDocumentEditor({ initialDocument }: { initialDocumen
   }, [dirty]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    if (actionState.status !== "idle") {
+      submitLockRef.current = false;
+      setSubmitLocked(false);
+    }
+    if (pending || submitLockRef.current) {
+      event.preventDefault();
+      return;
+    }
     const result = validatePageDocumentDraft(document, document.pageKey);
     if (!result.success) {
       event.preventDefault();
@@ -351,6 +362,8 @@ export default function PageDocumentEditor({ initialDocument }: { initialDocumen
       return;
     }
     setLocalIssues([]);
+    submitLockRef.current = true;
+    setSubmitLocked(true);
   };
 
   return (
@@ -399,7 +412,7 @@ export default function PageDocumentEditor({ initialDocument }: { initialDocumen
           <strong>{dirty ? "Unsaved changes" : actionState.status === "success" ? "Draft saved" : "No unsaved changes"}</strong>
           <small>{pending ? "Saving your private Draft…" : "Draft changes are private and are not visible on the public site. Published content remains unchanged."}</small>
         </div>
-        <AdminSubmitButton label="Save Draft" pendingLabel="Saving Draft…" />
+        <AdminSubmitButton label="Save Draft" pendingLabel="Saving Draft…" disabled={locked} />
       </div>
     </form>
   );
