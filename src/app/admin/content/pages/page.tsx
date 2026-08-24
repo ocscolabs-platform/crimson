@@ -44,7 +44,7 @@ export default async function AdminPagesIndex() {
             <p className="admin-kicker admin-kicker-green">PageDocument foundation</p>
             <h1>Four pages, one controlled system.</h1>
           </div>
-          <p className="admin-intro">Review the authoritative PageDocument state for the approved Phase 5 pages. Editing and publication actions will be introduced only in a later approved batch.</p>
+          <p className="admin-intro">Edit approved structured content for the four Phase 5 pages and save private Draft revisions. Publish, Restore, and authenticated Preview remain deferred.</p>
         </section>
 
         <section className="admin-editor-panel" aria-labelledby="pages-list-heading">
@@ -53,7 +53,7 @@ export default async function AdminPagesIndex() {
               <p className="admin-kicker">Approved PageDocuments</p>
               <h2 id="pages-list-heading">Pages</h2>
             </div>
-            <span className="admin-status-muted">Read-only foundation</span>
+            <span className="admin-status-ready">Structured editor</span>
           </div>
 
           {loadError ? (
@@ -79,7 +79,7 @@ export default async function AdminPagesIndex() {
                     <div><dt>Last updated</dt><dd>{formatDate(page.lastUpdatedAt)}</dd></div>
                   </dl>
                   <div className="admin-page-document-card-actions">
-                    <Link className="admin-panel-link" href={`/crimson-admin-control/content/pages/${page.adapter.pageKey}`}>Open read-only foundation ↗</Link>
+                    <Link className="admin-panel-link" href={`/crimson-admin-control/content/pages/${page.adapter.pageKey}`}>Open structured editor ↗</Link>
                   </div>
                 </article>
               ))}
@@ -89,7 +89,7 @@ export default async function AdminPagesIndex() {
 
         <div className="admin-page-document-lower">
           <p className="admin-editor-note admin-page-document-legacy-note">Work remains a legacy page and is intentionally excluded from this PageDocument management surface. Legacy page-section controls and anti-drift guards remain unchanged.</p>
-          <footer className="admin-footer">PageDocument content is read-only in Batch 1.</footer>
+          <footer className="admin-footer">Draft editing is available in Batch 2. Publish, Restore, and authenticated Preview remain deferred.</footer>
         </div>
       </div>
     </main>

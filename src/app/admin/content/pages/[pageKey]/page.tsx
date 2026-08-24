@@ -4,6 +4,7 @@ import AdminAccountActions from "@/app/admin/AdminAccountActions";
 import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import { requireCmsViewer } from "@/app/admin/content/pages/_lib";
 import PageDocumentReadOnly, { ReadOnlySeoPanel } from "@/app/admin/content/pages/_components/PageDocumentReadOnly";
+import PageDocumentEditor from "@/app/admin/content/pages/_components/PageDocumentEditor";
 import { getAdminPageDocumentReadModel, getPageDocumentAdminAdapter } from "@/lib/admin-page-documents";
 
 export const dynamic = "force-dynamic";
@@ -55,9 +56,7 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
   const publishedDocument = page?.published.document ?? null;
   const roleMessage = membership.role === "reviewer"
     ? "Reviewer access is read-only. Mutation controls are not available."
-    : membership.role === "owner"
-      ? "Owner actions such as Edit, Publish, and Restore will be enabled in a later approved batch."
-      : "Editorial actions will be enabled in a later approved batch. This foundation is read-only.";
+      : "You can edit approved structured content and save a private Draft. Publish, Restore, and Preview remain deferred.";
   const authorityMessage = adapter.pageKey === "services"
     ? "The PageDocument owns the Services page shell. Canonical public.services records remain authoritative for Service names, descriptions, icons, and detail links."
     : adapter.pageKey === "contact"
@@ -117,7 +116,7 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
               <p className="admin-disclosure-note">This is the version available to the published-only public loader. It is separate from any active editorial revision.</p>
               <p className="admin-editor-note">Published {formatDate(page.publishedAt)} · Last reviewed {formatDate(page.lastReviewedAt)}</p>
               <ValidationState issues={page.published.validationIssues} />
-              {publishedDocument ? <div className="admin-readonly-document-stack"><ReadOnlySeoPanel document={publishedDocument} idSuffix="published" /><PageDocumentReadOnly document={publishedDocument} idSuffix="published" /></div> : null}
+              {!publishedDocument ? null : membership.role === "reviewer" ? <div className="admin-readonly-document-stack"><ReadOnlySeoPanel document={publishedDocument} idSuffix="published" /><PageDocumentReadOnly document={publishedDocument} idSuffix="published" /></div> : <p className="admin-disclosure-note">The authoritative published PageDocument is shown below through the structured editor. Draft changes remain private until a later approved publication workflow.</p>}
             </section>
 
             <section className="admin-editor-panel" aria-labelledby="active-page-heading">
@@ -133,9 +132,26 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
                   <p className="admin-disclosure-note">Draft and Review content is private and is never used by the public route.</p>
                   <p className="admin-editor-note">Created {formatDate(page.activeRevision.createdAt)} · Updated {formatDate(page.activeRevision.updatedAt)}</p>
                   <ValidationState issues={page.activeRevision.validationIssues} />
-                  {activeDocument ? <div className="admin-readonly-document-stack"><ReadOnlySeoPanel document={activeDocument} idSuffix="active" /><PageDocumentReadOnly document={activeDocument} idSuffix="active" /></div> : null}
+                  {activeDocument && membership.role === "reviewer" ? <div className="admin-readonly-document-stack"><ReadOnlySeoPanel document={activeDocument} idSuffix="active" /><PageDocumentReadOnly document={activeDocument} idSuffix="active" /></div> : null}
                 </>
               ) : <p className="admin-empty-state">No active Draft or Review revision exists for this page.</p>}
+            </section>
+
+            <section className="admin-editor-panel" aria-labelledby="page-document-editor-heading">
+              <div className="admin-panel-heading">
+                <div>
+                  <p className="admin-kicker">Structured editor</p>
+                  <h2 id="page-document-editor-heading">PageDocument content</h2>
+                </div>
+                <span className={membership.role === "reviewer" ? "admin-status-muted" : "admin-status-ready"}>{membership.role === "reviewer" ? "Read-only" : "Draft only"}</span>
+              </div>
+              {membership.role === "reviewer" ? (
+                <p className="admin-disclosure-note">Reviewer access remains read-only. Owner and editor roles can edit approved fields and save Draft revisions; no publication controls are available in Batch 2.</p>
+              ) : (activeDocument ?? publishedDocument) ? (
+                <PageDocumentEditor initialDocument={(activeDocument ?? publishedDocument)!} />
+              ) : (
+                <p className="admin-empty-state">A valid PageDocument is not available for editing.</p>
+              )}
             </section>
 
             <section className="admin-editor-panel" aria-labelledby="legacy-boundary-heading">
@@ -146,13 +162,13 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
                 </div>
                 <span className="admin-status-muted">Read-only</span>
               </div>
-              <p className="admin-disclosure-note">The existing page-section records and anti-drift guards remain unchanged. Batch 1 does not expose section mutation, PageDocument editing, or Work conversion.</p>
+              <p className="admin-disclosure-note">The existing page-section records and anti-drift guards remain unchanged. PageDocument editing now uses the approved structured editor; Work remains legacy and is excluded.</p>
               {authorityMessage ? <p className="admin-editor-note">{authorityMessage}</p> : null}
             </section>
           </>
         )}
 
-        <footer className="admin-footer">PageDocument editor actions remain deferred to the next approved batch.</footer>
+        <footer className="admin-footer">Publish, Restore, and authenticated Preview remain deferred to later approved batches.</footer>
       </div>
     </main>
   );

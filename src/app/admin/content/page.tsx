@@ -257,7 +257,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
             <p className="admin-kicker admin-kicker-green">Controlled content</p>
             <h1>Keep the public system coherent.</h1>
           </div>
-          <p className="admin-intro">Update the global settings, navigation labels, and page metadata that support the public site. Body sections and media remain intentionally controlled in code until their contracts are approved.</p>
+          <p className="admin-intro">Update site-wide settings and navigation here. Home, Services, About, and Contact body content and authoritative PageDocument SEO are managed in Pages.</p>
         </section>
 
         {saved ? <AdminToast tone="success" message={saved === "published" ? "Revision published successfully." : saved === "settings" ? "Site settings saved as a private Review revision." : saved === "navigation" ? "Navigation item saved as a private Review revision." : saved === "section" ? "Page section saved as a private Review revision." : "Page metadata saved as a private revision."} /> : null}
@@ -266,7 +266,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
           <span>Jump to</span>
           <a href="#site-settings">Site settings</a>
           <a href="#navigation">Navigation</a>
-          <a href="#pages">Page metadata</a>
+          <a href="#pages">Page metadata compatibility</a>
         </nav>
 
         {loadError ? (
@@ -355,16 +355,16 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
               <details className="admin-content-disclosure" open>
                 <summary className="admin-disclosure-summary">
                   <div>
-                    <p className="admin-kicker">Page metadata</p>
-                    <h2>Publish with intention.</h2>
+                    <p className="admin-kicker">Page metadata compatibility</p>
+                    <h2>Keep page authority in Pages.</h2>
                   </div>
                   <div className="admin-disclosure-summary-side">
-                    <p className="admin-section-note">Titles, SEO, CTAs, and publication state.</p>
+                    <p className="admin-section-note">Legacy values remain available without competing with PageDocument SEO.</p>
                     <span className="admin-disclosure-icon" aria-hidden="true" />
                   </div>
                 </summary>
                 <div className="admin-content-section-body">
-                  <p className="admin-disclosure-note">Page body sections remain approved application components for now. Open a page only when you need to edit it.</p>
+                  <p className="admin-disclosure-note">For Home, Services, About, and Contact, PageDocument body content and page-level SEO are authoritative in <Link href="/crimson-admin-control/content/pages">Pages</Link>. Work remains on its legacy metadata path.</p>
                   <div className="admin-page-metadata-list">
                 {content.pages.map((page, pageIndex) => {
                   const publishedLocked = page.status === "published" && !isOwner;
@@ -384,7 +384,21 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                       </summary>
                       <div className="admin-page-metadata-body">
                         {publishedLocked ? <p className="admin-editor-warning">Published metadata is protected for editors. An owner must move this page to Review before changes can be made.</p> : null}
-                        <form className="admin-editor-form admin-page-metadata-form" action={savePageMetadata.bind(null, page.id)}>
+                        {pageDocumentTransition ? (
+                          <div className="admin-page-metadata-readonly">
+                            <p className="admin-editor-warning">Managed in Pages. These legacy metadata values remain stored for compatibility and are not editable here.</p>
+                            <dl className="admin-readonly-fields">
+                              <div><dt>Page title</dt><dd>{page.title}</dd></div>
+                              <div><dt>Page purpose</dt><dd>{page.page_purpose || "Not recorded"}</dd></div>
+                              <div><dt>Audience</dt><dd>{page.audience || "Not recorded"}</dd></div>
+                              <div><dt>SEO title</dt><dd>Managed in Pages</dd></div>
+                              <div><dt>SEO description</dt><dd>Managed in Pages</dd></div>
+                              <div><dt>Open Graph image</dt><dd>Managed in Pages</dd></div>
+                              <div><dt>CTA wrapper</dt><dd>Managed in Pages where approved by the PageDocument contract</dd></div>
+                            </dl>
+                            <Link className="admin-panel-link" href={`/crimson-admin-control/content/pages/${page.slug}`}>Open {page.title} in Pages ↗</Link>
+                          </div>
+                        ) : <form className="admin-editor-form admin-page-metadata-form" action={savePageMetadata.bind(null, page.id)}>
                         <label>Page title<input className="admin-input" name="title" defaultValue={page.title} disabled={!pageCanEdit} required /></label>
                         <label>Page purpose<input className="admin-input" name="page_purpose" defaultValue={page.page_purpose ?? ""} disabled={!pageCanEdit} /></label>
                         <label>Audience<input className="admin-input" name="audience" defaultValue={page.audience ?? ""} disabled={!pageCanEdit} /></label>
@@ -395,15 +409,15 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                         <label>CTA destination<input className="admin-input" name="cta_href" defaultValue={page.cta_href ?? ""} disabled={!pageCanEdit} /></label>
                         <label>Editorial status<AdminSelect name="status" defaultValue={editorStatus} disabled={!pageCanEdit}>{statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}</AdminSelect></label>
                         {pageCanEdit ? <AdminSubmitButton label="Save as review" pendingLabel="Saving page…" /> : null}
-                        </form>
-                        {page.revision_status ? <p className="admin-editor-warning">This {page.revision_status} revision is private. The public page remains on its last published version.</p> : null}
-                        {isOwner && page.revision_id && page.revision_status === "review" ? <form className="admin-publish-form" action={publishRevision.bind(null, "page", page.id)}><AdminSubmitButton label="Publish page metadata" pendingLabel="Publishing…" /></form> : null}
+                        </form>}
+                        {!pageDocumentTransition && page.revision_status ? <p className="admin-editor-warning">This {page.revision_status} revision is private. The public page remains on its last published version.</p> : null}
+                        {!pageDocumentTransition && isOwner && page.revision_id && page.revision_status === "review" ? <form className="admin-publish-form" action={publishRevision.bind(null, "page", page.id)}><AdminSubmitButton label="Publish page metadata" pendingLabel="Publishing…" /></form> : null}
                         <div className="admin-page-section-controls">
                         <div className="admin-content-row-heading">
-                          <div><strong>Approved sections</strong><small>{pageDocumentTransition ? "Structured PageDocument sections are read-only during the transition." : "Fixed application sections; owner-controlled visibility and order."}</small></div>
+                          <div><strong>Legacy section compatibility</strong><small>{pageDocumentTransition ? "PageDocument section content, visibility, and order are managed in Pages." : "Fixed application sections; owner-controlled visibility and order."}</small></div>
                           <span className="admin-status-muted">{pageSections.length} configured</span>
                         </div>
-                        {pageDocumentTransition ? <p className="admin-editor-warning">This page now uses structured PageDocument content. Section visibility and order will be managed by the approved PageDocument editor in a later slice.</p> : null}
+                        {pageDocumentTransition ? <p className="admin-editor-warning">These legacy page-section rows remain preserved for compatibility and are not editable here.</p> : null}
                         {pageSections.map((section) => (
                           <div className="admin-page-section-row" key={section.id}>
                             <div><strong>{section.label}</strong><small>{section.section_key}</small></div>
