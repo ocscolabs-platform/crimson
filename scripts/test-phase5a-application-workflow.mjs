@@ -7,13 +7,14 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const read = (relativePath) => readFile(path.join(root, relativePath), "utf8");
 
-test("PageDocument application workflow uses only the approved transition RPCs", async () => {
+test("PageDocument application workflow retains the approved transitions and isolates Publish", async () => {
   const actions = await read("src/app/admin/content/pages/actions.ts");
   assert.match(actions, /cms_page_document_save_draft/);
   assert.match(actions, /cms_page_document_submit_for_review/);
   assert.match(actions, /cms_page_document_return_to_draft/);
+  assert.match(actions, /cms_page_document_publish/);
   assert.doesNotMatch(actions, /cms_save_revision/);
-  assert.doesNotMatch(actions, /cms_page_document_publish|cms_page_document_restore/);
+  assert.doesNotMatch(actions, /cms_page_document_restore/);
   assert.doesNotMatch(actions, /error\.message/);
 });
 

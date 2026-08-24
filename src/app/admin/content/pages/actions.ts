@@ -34,7 +34,17 @@ async function getAuthorizedPageAction(pageKeyValue: string) {
     return { error: errorState("Reviewer access is read-only. This workflow action was not performed.") };
   }
 
-  return { adapter, supabase };
+  return { adapter, supabase, role: membership.role };
+}
+
+async function getAuthorizedOwnerPageAction(pageKeyValue: string) {
+  const authorized = await getAuthorizedPageAction(pageKeyValue);
+  if (authorized.error) return authorized;
+  if (authorized.role !== "owner") {
+    return { error: errorState("Only an Owner can publish PageDocuments. This workflow action was not performed.") };
+  }
+
+  return authorized;
 }
 
 function revalidatePageDocument(pageKey: string) {
@@ -137,4 +147,42 @@ export async function returnPageDocumentToDraft(
 
   revalidatePageDocument(authorized.adapter.pageKey);
   return successState("Returned to Draft. The content can be edited again and remains private.", returnedRevisionId);
+}
+
+function publishFailureMessage(message: string | undefined) {
+  const normalized = message?.toLowerCase() ?? "";
+  if (normalized.includes("changed") || normalized.includes("reload before publishing")) {
+    return "This Review changed. Reload before publishing.";
+  }
+  if (normalized.includes("active review") || normalized.includes("page is not an approved") || normalized.includes("does not belong")) {
+    return "This Review is no longer available for publishing. Reload the page and try again.";
+  }
+  return "Publish could not be completed. Reload the page and try again.";
+}
+
+export async function publishPageDocument(
+  previousState: PageDocumentActionState,
+  formData: FormData,
+): Promise<PageDocumentActionState> {
+  void previousState;
+  const pageKey = String(formData.get("page_key") || "");
+  const revisionId = String(formData.get("revision_id") || "");
+  const expectedUpdatedAt = String(formData.get("expected_updated_at") || "");
+  const authorized = await getAuthorizedOwnerPageAction(pageKey);
+  if (authorized.error) return authorized.error;
+  if (!revisionId || !expectedUpdatedAt) {
+    return errorState("The active Review identity is missing. Reload the page and try again.");
+  }
+
+  const { data: publishedRevisionId, error } = await authorized.supabase.rpc("cms_page_document_publish", {
+    p_page_key: authorized.adapter.pageKey,
+    p_revision_id: revisionId,
+    p_expected_updated_at: expectedUpdatedAt,
+  });
+
+  if (error || !publishedRevisionId) return errorState(publishFailureMessage(error?.message));
+
+  revalidatePageDocument(authorized.adapter.pageKey);
+  revalidatePath(authorized.adapter.route);
+  return successState("Published. The new revision is now public and the previous Published revision is archived.", publishedRevisionId);
 }

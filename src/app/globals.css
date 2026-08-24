@@ -356,6 +356,12 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-audit-list small { white-space: nowrap; }
 .admin-page-workflow-controls { display: grid; gap: 12px; margin-top: 22px; border-top: 1px solid rgb(255 255 255 / 10%); padding-top: 20px; }
 .admin-page-workflow-controls form { display: flex; }
+.admin-publish-confirmation { display: grid; gap: 14px; border: 1px solid rgb(255 255 255 / 18%); border-radius: 12px; background: #171717; padding: 20px; }
+.admin-publish-confirmation h3, .admin-publish-confirmation p { margin: 0; }
+.admin-publish-confirmation p { color: #c9c9c9; font-size: .86rem; line-height: 1.6; }
+.admin-publish-confirmation code { color: #f0f0f0; font-size: .78rem; overflow-wrap: anywhere; }
+.admin-publish-confirmation-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.admin-publish-confirmation-actions .admin-submit { width: auto; min-width: 220px; margin-top: 0; }
 .admin-page-history-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .admin-page-history-grid h3 { margin: 0 0 12px; color: #eee; font-size: .9rem; }
 .admin-page-history-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
