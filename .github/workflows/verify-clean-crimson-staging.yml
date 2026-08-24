@@ -482,33 +482,16 @@ jobs:
           PGPASSWORD="$SUPABASE_DB_PASSWORD" \
           psql -v ON_ERROR_STOP=1 -f supabase/verification/phase5-contract-alignment.sql
 
-      - name: Verify legacy page-sections authority in source
+      - name: Verify mixed Phase 5B public authority in source
         shell: bash
         run: |
           set -euo pipefail
-
-          for route in src/app/page.tsx src/app/services/page.tsx src/app/about/page.tsx src/app/contact/page.tsx src/app/work/page.tsx; do
-            if ! grep -Fq 'getPublishedPageSections' "$route"; then
-              echo "Expected legacy page_sections reader in $route."
-              exit 1
-            fi
-            if grep -Eq 'readPageContent|PageDocument' "$route"; then
-              echo "Unexpected PageDocument renderer dependency in $route."
-              exit 1
-            fi
-          done
-
-          if ! grep -Fq '.from("page_sections")' src/lib/page-sections.ts; then
-            echo "The shared legacy page_sections reader is missing."
-            exit 1
-          fi
+          node scripts/verify-phase5b-public-authority.mjs
 
           if ! grep -R -n -i -E 'cms_freeze_phase5_page_section_update|cms_freeze_phase5_page_section_revision' supabase/migrations; then
             echo "Expected Slice 3 page_sections transition guards are missing."
             exit 1
           fi
-
-          echo "All five public page routes remain on the legacy page_sections reader; no public PageDocument cutover was found."
 
       - name: Run read-only release contract
         shell: bash
