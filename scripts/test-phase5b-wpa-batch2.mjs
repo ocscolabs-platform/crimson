@@ -95,6 +95,7 @@ test("Batch 2 exposes the structured editor without publication or Work conversi
   const editor = read("src/app/admin/content/pages/_components/PageDocumentEditor.tsx");
   const action = read("src/app/admin/content/pages/actions.ts");
   const page = read("src/app/admin/content/pages/[pageKey]/page.tsx");
+  const pageIndex = read("src/app/admin/content/pages/page.tsx");
   const globalContent = read("src/app/admin/content/page.tsx");
 
   for (const key of ["home_hero", "home_intro", "home_capabilities", "home_approach", "home_proof", "home_contact", "services_hero", "services_capabilities", "about_hero", "about_principles", "about_people", "contact_hero", "contact_process", "contact_form"]) {
@@ -111,6 +112,8 @@ test("Batch 2 exposes the structured editor without publication or Work conversi
   assert.doesNotMatch(action, /cms_publish_revision|cms_restore_revision/);
   assert.doesNotMatch(editor, /initialPageDocumentActionState.*from/);
   assert.match(page, /PageDocumentEditor/);
+  assert.match(pageIndex, /Open structured editor/);
+  assert.doesNotMatch(pageIndex, /read-only foundation|read-only in Batch 1/i);
   assert.match(globalContent, /Managed in Pages/);
   assert.match(globalContent, /content\/pages\/\$\{page\.slug\}/);
   assert.match(globalContent, /Legacy section compatibility/);
