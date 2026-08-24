@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - staging
-    paths:
-      - .github/workflows/verify-clean-crimson-staging.yml
-      - supabase/verification/**
   workflow_dispatch:
 
 permissions:
