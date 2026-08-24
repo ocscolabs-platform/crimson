@@ -2,6 +2,8 @@
 
 ## Current Phase
 
+**Phase 5B Slice 4F — Metadata / SEO and revalidation integration — Next approved slice**
+**Phase 5B Slice 4E — Home public PageDocument cutover — Closed**
 **Phase 5B Slice 4D — Contact public PageDocument cutover — Closed**
 **Phase 5B Slice 4C — Services public PageDocument cutover — Closed**
 **Phase 5B Slice 4B — About public PageDocument cutover — Closed**
@@ -13,7 +15,7 @@ The canonical roadmap is [`MASTER-PLAN.md`](./MASTER-PLAN.md). This file records
 
 Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4A and 4B are complete for the approved staging CMS slices: schema, published-only public read boundary, role authorization, revision-based publishing, media workflow, relationships, audit history, and canonical `/crimson-admin-control` route. Owner-approved staging Phase 4C baseline and QA are complete. Production deployment, configuration, Auth, database, and promotion verification remain a deferred release gate and do not block Phase 5 development in staging.
 
-Phase 5B Slices 4A, 4B, 4C, and 4D are closed; About, Services, and Contact now use PageDocument public body authority, while Home remains transitional and Work remains legacy. The current CMS is not yet a complete body-content editor for Home, About, Services, and Contact. It currently manages global metadata/settings, navigation, fixed approved section visibility/order, services, case-study editorial data, media, relationships, and revisions. Full page-body editing remains Phase 5. Insights is approved for Phase 6 and has not been implemented. CRM remains Phase 7 and is not implemented beyond inquiry intake.
+Phase 5B Slices 4A through 4E are closed; Home, About, Services, and Contact now use PageDocument public body authority, while Work remains legacy. Metadata authority remains unchanged and is the next approved Slice 4F boundary. The current CMS is not yet a complete body-content editor for Home, About, Services, and Contact. It currently manages global metadata/settings, navigation, fixed approved section visibility/order, services, case-study editorial data, media, relationships, and revisions. Full page-body editing remains Phase 5. Insights is approved for Phase 6 and has not been implemented. CRM remains Phase 7 and is not implemented beyond inquiry intake.
 
 The deferred Production gate still includes the invitation-flow remediation: Supabase administrator invitations must establish an implicit callback session at `/crimson-admin-control/invite` before the CMS membership is activated. Public signup remains disabled.
 
@@ -23,7 +25,7 @@ The owner-approved Slice 3 backfill is complete in `crimson-staging`. The four P
 
 The active read-only staging verifier now checks post-Slice-3 migration state structurally: canonical local and remote ledgers must match with no pending versions, the Slice 3 version must be recorded exactly once, and the linked Supabase dry-run must exit successfully without applying anything. The temporary one-shot Slice 3 execution workflow was retired after the successful staging apply. Its post-apply false negative was caused by an alias typo in its temporary guard query (`pg_trigger` was aliased as `trg` but referenced as `trigger`); this was verification infrastructure only and did not indicate a database or migration failure. The Phase 5B staging bootstrap correction remains in place, with global content seeded before the Phase 5 page-section seed and registry verification.
 
-Production release and promotion remain a deferred release gate. Slices 4A, 4B, 4C, and 4D are closed after automated staging-health verification. About, Services, and Contact are the fully PageDocument-driven public Phase 5 pages; Home remains transitional, and Work remains legacy. The verifier now runs on every push to `staging`. Phase 6 Insights remains not started.
+Production release and promotion remain a deferred release gate. Slices 4A through 4E are closed after automated staging-health verification. Home, About, Services, and Contact are the fully PageDocument-driven public Phase 5 pages; Work remains legacy and metadata remains on its existing authority pending Slice 4F. The verifier now runs on every push to `staging`. Phase 6 Insights remains not started.
 
 ## Phase 5B Slice 4A — Shared loader and renderer foundation — Closed
 
@@ -40,6 +42,12 @@ The approved Slice 4C cutover routes the Services overview body through the publ
 ## Phase 5B Slice 4D — Contact public PageDocument cutover — Closed
 
 The approved Slice 4D cutover routes Contact public marketing/body content through the published Contact PageDocument loader, canonical validator, deterministic render plan, and existing static Contact renderers. Contact no longer uses `page_sections` as public body authority. The `contact_hero`, `contact_process`, and `contact_form` sections preserve the approved visual composition; process numbering remains code-controlled as `01 /`, `02 /`, and `03 /`; and the PageDocument controls only the approved form-wrapper marketing fields. `ContactForm` remains code-controlled for fields, labels, validation, honeypot, inquiry submission, service options, success/error behavior, and environment guards. Metadata authority remains unchanged pending Slice 4F. Home remains transitional and Work remains legacy. PR #58 merged into `staging` at `c7cacb1e`, and `Verify clean crimson-staging` run #14 passed with the baseline, contracts, Storage, and mixed-authority matrix intact. Responsive QA passed at 1440×900, 768×1024, and 390×844. The next approved implementation slice is Phase 5B Slice 4E — Home public PageDocument cutover.
+
+## Phase 5B Slice 4E — Home public PageDocument cutover — Closed
+
+The approved Slice 4E cutover routes the Home public body through the published Home PageDocument loader, canonical validator, deterministic render plan, typed Home render data, and existing Home visual composition. The six approved sections—`home_hero`, `home_intro`, `home_capabilities`, `home_approach`, `home_proof`, and `home_contact`—are PageDocument-backed. Home capability cards resolve canonical published Service records in the PageDocument reference order without duplicating Service content. Home no longer uses `page_sections` as public body authority; Work remains legacy and the transitional `page_sections` infrastructure and anti-drift guards remain intentionally retained. Metadata authority remains unchanged pending Slice 4F. PR #60 merged into `staging` at `b1f2216a`, `Verify clean crimson-staging` run #14 passed, application validation passed, and the merged staging deployment rendered the complete Home page with clean runtime smoke. The next approved implementation slice is Phase 5B Slice 4F — Metadata / SEO and revalidation integration.
+
+**ALL FOUR PHASE 5 PUBLIC PAGE BODIES ARE NOW PAGEDOCUMENT-DRIVEN.**
 
 ## Completed
 
@@ -114,4 +122,4 @@ No account IDs, URLs, domains, credentials, or production secrets were fabricate
 
 ## Next Recommended Step
 
-Proceed with the approved Phase 5B Slice 4E Home public PageDocument cutover. Keep the deferred Production release gate visible, and keep Phase 6 Insights unstarted until the remaining Phase 5B slices are complete.
+Proceed with the approved Phase 5B Slice 4F metadata/SEO and revalidation integration. Keep the deferred Production release gate visible, keep Work legacy, and keep Phase 6 Insights unstarted.
