@@ -5,7 +5,7 @@ import { verifyPublicAuthority } from "./verify-phase5b-public-authority.mjs";
 const valid = {
   about: 'const result = await getPublishedPageDocument("about"); createAboutPageRenderData(result.document);',
   services: 'const result = await getPublishedPageDocument("services"); createServicesPageRenderData(result.document);',
-  home: 'const sections = await getPublishedPageSections("home");',
+  home: 'const result = await getPublishedPageDocument("home"); createHomePageRenderData(result.document);',
   contact: 'const result = await getPublishedPageDocument("contact"); createContactPageRenderData(result.document);',
   work: 'const sections = await getPublishedPageSections("work");',
   pageSections: 'return supabase.from("page_sections");',
@@ -14,7 +14,7 @@ const valid = {
 test("approved mixed authority matrix passes", () => {
   assert.deepEqual(verifyPublicAuthority(valid), {
     about: "PageDocument",
-    home: "transitional",
+    home: "PageDocument",
     services: "PageDocument",
     contact: "PageDocument",
     work: "legacy",
@@ -25,8 +25,12 @@ test("About using the legacy body reader fails", () => {
   assert.throws(() => verifyPublicAuthority({ ...valid, about: 'getPublishedPageSections("about")' }), /About/);
 });
 
-test("Home cut over before Slice 4E fails", () => {
-  assert.throws(() => verifyPublicAuthority({ ...valid, home: 'getPublishedPageDocument("home")' }), /home/);
+test("Home without the approved render path fails", () => {
+  assert.throws(() => verifyPublicAuthority({ ...valid, home: 'getPublishedPageDocument("home")' }), /Home/);
+});
+
+test("Home using the legacy body reader fails", () => {
+  assert.throws(() => verifyPublicAuthority({ ...valid, home: 'getPublishedPageSections("home")' }), /Home/);
 });
 
 test("Services without the approved render path fails", () => {

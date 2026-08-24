@@ -146,8 +146,10 @@ test("About, Services, Home, and Work remain isolated from Contact cutover", asy
   ]);
   assert.match(about, /getPublishedPageDocument\("about"\)/);
   assert.match(services, /getPublishedPageDocument\("services"\)/);
-  assert.match(home, /getPublishedPageSections\("home"\)/);
+  assert.match(home, /getPublishedPageDocument\("home"\)/);
+  assert.match(home, /createHomePageRenderData/);
+  assert.doesNotMatch(home, /getPublishedPageSections|from ["']@\/lib\/page-sections/);
+  assert.doesNotMatch(home, /Digital infrastructure for brands ready to move with precision\./);
   assert.match(work, /getPublishedPageSections\("work"\)/);
-  assert.doesNotMatch(home, /getPublishedPageDocument|createHomePageRenderData/);
   assert.doesNotMatch(work, /getPublishedPageDocument|PageDocument/);
 });
