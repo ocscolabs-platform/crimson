@@ -47,6 +47,8 @@ The public PageDocument architecture is complete for Home, Services, About, and 
 
 ### Work Package A — PageDocument Editor and Editorial Workflow
 
+**Current status:** Batch 1 — **Closed** after merge and staging verification. Batch 2 — **Next, not started**.
+
 **Objective:** Build the reusable Crimson CMS editorial experience for the four approved Phase 5 pages.
 
 **Scope:**
