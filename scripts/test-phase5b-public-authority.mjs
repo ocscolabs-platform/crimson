@@ -6,7 +6,7 @@ const valid = {
   about: 'const result = await getPublishedPageDocument("about"); createAboutPageRenderData(result.document);',
   services: 'const result = await getPublishedPageDocument("services"); createServicesPageRenderData(result.document);',
   home: 'const sections = await getPublishedPageSections("home");',
-  contact: 'const sections = await getPublishedPageSections("contact");',
+  contact: 'const result = await getPublishedPageDocument("contact"); createContactPageRenderData(result.document);',
   work: 'const sections = await getPublishedPageSections("work");',
   pageSections: 'return supabase.from("page_sections");',
 };
@@ -16,7 +16,7 @@ test("approved mixed authority matrix passes", () => {
     about: "PageDocument",
     home: "transitional",
     services: "PageDocument",
-    contact: "transitional",
+    contact: "PageDocument",
     work: "legacy",
   });
 });
@@ -37,8 +37,12 @@ test("Services using the legacy body reader fails", () => {
   assert.throws(() => verifyPublicAuthority({ ...valid, services: 'getPublishedPageSections("services")' }), /Services/);
 });
 
-test("Contact cut over before Slice 4D fails", () => {
-  assert.throws(() => verifyPublicAuthority({ ...valid, contact: 'getPublishedPageDocument("contact")' }), /contact/);
+test("Contact without the approved render path fails", () => {
+  assert.throws(() => verifyPublicAuthority({ ...valid, contact: 'getPublishedPageDocument("contact")' }), /Contact/);
+});
+
+test("Contact using the legacy body reader fails", () => {
+  assert.throws(() => verifyPublicAuthority({ ...valid, contact: 'getPublishedPageSections("contact")' }), /Contact/);
 });
 
 test("Work leaving legacy authority fails", () => {
