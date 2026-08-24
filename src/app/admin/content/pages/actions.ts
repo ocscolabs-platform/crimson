@@ -81,7 +81,7 @@ export async function savePageDocumentDraft(
 
   return {
     status: "success",
-    message: "Draft saved. It remains private until a later approved Review and Publish workflow.",
+    message: "Draft saved. Draft changes are private and are not visible on the public site; published content remains unchanged.",
     issues: [],
   };
 }

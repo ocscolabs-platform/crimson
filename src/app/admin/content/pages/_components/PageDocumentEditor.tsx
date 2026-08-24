@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useActionState, useEffect, useRef, useState, type FormEvent } from "react";
 import AdminSelect from "@/app/admin/AdminSelect";
 import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 import {
@@ -315,11 +315,22 @@ function ValidationSummary({ issues }: { issues: string[] }) {
 export default function PageDocumentEditor({ initialDocument }: { initialDocument: PageDocument }) {
   const [document, setDocument] = useState<PageDocument>(initialDocument);
   const [localIssues, setLocalIssues] = useState<string[]>([]);
-  const baseline = useMemo(() => JSON.stringify(initialDocument), [initialDocument]);
   const serializedDocument = JSON.stringify(document);
-  const dirty = serializedDocument !== baseline;
+  const [savedDocumentSerialization, setSavedDocumentSerialization] = useState(() => JSON.stringify(initialDocument));
+  const documentRef = useRef(document);
+  const dirty = serializedDocument !== savedDocumentSerialization;
   const [actionState, formAction, pending] = useActionState(savePageDocumentDraft, initialPageDocumentActionState);
   const issues = localIssues.length > 0 ? localIssues : actionState.issues;
+
+  useEffect(() => {
+    documentRef.current = document;
+  }, [document]);
+
+  useEffect(() => {
+    if (actionState.status === "success") {
+      setSavedDocumentSerialization(JSON.stringify(documentRef.current));
+    }
+  }, [actionState.status]);
 
   useEffect(() => {
     if (!dirty) return undefined;
@@ -345,8 +356,8 @@ export default function PageDocumentEditor({ initialDocument }: { initialDocumen
     <form className="admin-page-document-editor" action={formAction} onSubmit={handleSubmit} aria-describedby="page-document-editor-help">
       <input type="hidden" name="page_key" value={document.pageKey} />
       <input type="hidden" name="page_document" value={serializedDocument} readOnly />
-      <p id="page-document-editor-help" className="admin-disclosure-note">Edit approved structured content only. Save Draft keeps the revision private; Publish and Restore are intentionally deferred.</p>
-      {actionState.status === "success" ? <p className="admin-readonly-valid" role="status">{actionState.message}</p> : null}
+      <p id="page-document-editor-help" className="admin-disclosure-note">Edit approved structured content. Save Draft stores changes privately. Draft changes are not visible on the public site, and published content remains unchanged.</p>
+      {actionState.status === "success" && !dirty ? <p className="admin-readonly-valid" role="status">{actionState.message}</p> : null}
       {actionState.status === "error" && actionState.issues.length === 0 ? <div className="admin-alert" role="alert"><strong>{actionState.message}</strong></div> : null}
       <ValidationSummary issues={issues} />
 
@@ -384,8 +395,8 @@ export default function PageDocumentEditor({ initialDocument }: { initialDocumen
 
       <div className="admin-page-editor-actions">
         <div>
-          <strong>{dirty ? "Unsaved changes" : "No unsaved changes"}</strong>
-          <small>{pending ? "Validating and saving Draft…" : "Draft only · no publication action is available in Batch 2."}</small>
+          <strong>{dirty ? "Unsaved changes" : actionState.status === "success" ? "Draft saved" : "No unsaved changes"}</strong>
+          <small>{pending ? "Saving your private Draft…" : "Draft changes are private and are not visible on the public site. Published content remains unchanged."}</small>
         </div>
         <AdminSubmitButton label="Save Draft" pendingLabel="Saving Draft…" />
       </div>
