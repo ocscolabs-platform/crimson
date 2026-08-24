@@ -18,6 +18,7 @@ import type {
   ServiceSlug,
 } from "@/lib/page-document";
 import { savePageDocumentDraft } from "../actions";
+import editorStyles from "./PageDocumentEditor.module.css";
 
 const SERVICE_OPTIONS: Array<{ slug: ServiceSlug; label: string }> = [
   { slug: "branding", label: "Branding" },
@@ -393,7 +394,7 @@ export default function PageDocumentEditor({ initialDocument }: { initialDocumen
         </div>
       </section>
 
-      <div className="admin-page-editor-actions">
+      <div className={`admin-page-editor-actions ${editorStyles.actions}`}>
         <div>
           <strong>{dirty ? "Unsaved changes" : actionState.status === "success" ? "Draft saved" : "No unsaved changes"}</strong>
           <small>{pending ? "Saving your private Draft…" : "Draft changes are private and are not visible on the public site. Published content remains unchanged."}</small>
