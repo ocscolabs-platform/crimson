@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { OrderedPageSections } from "@/components/ordered-page-sections";
+import { notFound } from "next/navigation";
 import { RouteShell } from "@/components/route-shell";
 import { getPublishedPage } from "@/lib/cms-content";
-import { getPublishedPageSections } from "@/lib/page-sections";
+import { createAboutPageRenderData, type AboutPageBodySection } from "@/lib/about-page";
+import { getPublishedPageDocument } from "@/lib/page-document-loader";
 
 export const dynamic = "force-dynamic";
 
@@ -12,45 +13,57 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: page?.seoTitle || "About", description: page?.seoDescription };
 }
 
+function renderAboutBodySection(section: AboutPageBodySection) {
+  switch (section.key) {
+    case "about_principles":
+      return (
+        <section className="section-light route-section" key={section.key}>
+          <div className="shell route-detail-grid">
+            <div>
+              <p className="overline">{section.content.eyebrow}</p>
+              <h2>{section.content.heading}</h2>
+            </div>
+            <div className="route-list">
+              {section.content.items.map((item) => (
+                <p key={item.title}><strong>{item.title}</strong> {item.body}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    case "about_people":
+      return (
+        <section className="section-snow route-section" key={section.key}>
+          <div className="shell route-placeholder">
+            <p className="overline">{section.content.eyebrow}</p>
+            <h2>{section.content.heading}</h2>
+            <Link className="button button-dark" href={section.content.cta.href}>
+              {section.content.cta.label} <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
+        </section>
+      );
+  }
+}
+
 export default async function AboutPage() {
-  const pageSections = await getPublishedPageSections("about");
+  const result = await getPublishedPageDocument("about");
+  if (result.kind !== "document") {
+    if (result.kind === "invalid") {
+      console.error(`[about] Invalid published PageDocument: ${result.issues.join("; ")}`);
+    }
+    notFound();
+  }
+
+  const { hero, body } = createAboutPageRenderData(result.document);
 
   return (
     <RouteShell
-      pageSlug="about"
-      eyebrow="The thinking"
-      title="Clarity is not a presentation layer. It is how the work gets built."
-      intro="OCSCO brings strategy, design, and technology into one connected practice for organizations that need their digital presence to work harder."
+      eyebrow={hero.eyebrow}
+      title={hero.title}
+      intro={hero.intro}
     >
-      <OrderedPageSections
-        sections={pageSections}
-        blocks={{
-          about_principles: (
-            <section className="section-light route-section">
-              <div className="shell route-detail-grid">
-                <div>
-                  <p className="overline">Working principles</p>
-                  <h2>Precision over volume. Substance before style. Partnership, not vendorship.</h2>
-                </div>
-                <div className="route-list">
-                  <p><strong>Clarity as a discipline.</strong> Remove ambiguity from strategy, design, and communication.</p>
-                  <p><strong>Intelligent innovation.</strong> Use technology when it creates a genuine advantage.</p>
-                  <p><strong>Quiet confidence.</strong> Let the quality of the thinking and the work carry the weight.</p>
-                </div>
-              </div>
-            </section>
-          ),
-          about_people: (
-            <section className="section-snow route-section">
-              <div className="shell route-placeholder">
-                <p className="overline">The people</p>
-                <h2>Team and origin details will be added after owner review.</h2>
-                <Link className="button button-dark" href="/contact">Start a conversation <span aria-hidden="true">↗</span></Link>
-              </div>
-            </section>
-          ),
-        }}
-      />
+      {body.map(renderAboutBodySection)}
     </RouteShell>
   );
 }
