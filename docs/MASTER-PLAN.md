@@ -1,7 +1,7 @@
 # OCSCO Project Crimson — Master Plan
 
 **Plan version:** 2026-08-23
-**Status:** Owner-approved roadmap; Phase 4C staging baseline and QA are complete, Phase 5B Slices 4A through 4E are closed, the approved Slice 4F metadata/SEO and revalidation integration is next, and the Production release/promotion gate is deferred.
+**Status:** Owner-approved roadmap; Phase 4C staging baseline and QA are complete, Phase 5B Slices 4A through 4F are closed in staging, no subsequent Phase 5B slice has been titled or approved in the canonical documents, and the Production release/promotion gate is deferred.
 **Canonical roadmap:** This document is the source of truth for phase order, scope, dependencies, and release gates. Detailed phase documents remain implementation records and may contain historical statuses.
 
 ## Product objective
@@ -59,7 +59,7 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 | 4A | CMS foundation, auth, roles, and read boundary | Complete in staging; Production release gate deferred | Supabase schema, RLS, Auth, membership roles, published-only public reads, canonical CMS route. |
 | 4B | Staging editorial surfaces | Complete in staging for approved slices | Services, global metadata/navigation, fixed page-section controls, case studies, media, relationships, audit history, revisions, publish/restore controls, admin UX. |
 | 4C | Staging baseline and QA | **Complete** | Clean rebuild, canonical migration parity, CMS workflow acceptance, media, inquiry, route, runtime, and staging/Production isolation checks. The Production release/promotion gate is tracked separately as deferred. |
-| 5 | Full Page Content CMS | **In progress** | Slices 4A through 4E are closed; Slice 4F is the next approved metadata/SEO and revalidation integration. |
+| 5 | Full Page Content CMS | **In progress** | Phase 5B Slices 4A through 4F are closed in staging; the next Phase 5B slice remains to be explicitly planned and approved. |
 | 6 | Insights CMS and public experience | Planned | `/insights`, `/insights/[slug]`, article model, CMS editor, public listing, search/filtering, SEO, media, preview, and publishing. |
 | 7 | CRM foundation and workflows | Planned | Inquiry/contacts and the approved business relationship workflow; scope must be finalized before implementation. |
 | 8 | Product hardening and reusable-platform work | Future | Automation, richer media, scheduled publishing, analytics/integrations, multi-tenant concerns, and other explicitly approved extensions. |
@@ -137,7 +137,11 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 
 **Status: In progress.** Development is proceeding against the accepted staging baseline; the deferred Production release gate remains required before Production promotion.
 
-Phase 5B Slice 3 is closed. Phase 5B Slices 4A through 4E are closed after automated staging-health verification. Home, About, Services, and Contact are PageDocument-driven for public body authority; Work remains legacy. Metadata authority remains separate and unchanged. The approved next implementation slice is Phase 5B Slice 4F for metadata/SEO and revalidation integration. The staging verifier now runs on every push to `staging`. Phase 6 Insights remains not started.
+Phase 5B Slice 3 is closed. Phase 5B Slices 4A through 4F are closed after automated staging-health verification. Home, About, Services, and Contact use PageDocument authority for public body and page-level SEO metadata; Work remains legacy. Publication freshness remains request-time under the current `force-dynamic` architecture, and no explicit revalidation infrastructure is required. The staging verifier now runs on every push to `staging`. The canonical documents do not currently title or approve a subsequent Phase 5B slice; do not infer or begin Slice 4G. Phase 6 Insights remains not started.
+
+#### Phase 5B Slice 4F — Metadata / SEO and revalidation integration
+
+**Status: Closed in staging.** Home, Services, About, and Contact now use the validated Published PageDocument boundary for page-level SEO title, description, and approved generated Open Graph reference resolution. Origin, `metadataBase`, route paths, canonical construction, absolute URLs, global branding, and environment behavior remain code-controlled. Work remains legacy for body and metadata. The routes remain `force-dynamic`, so publication freshness is request-time; React `cache()` is request-scoped memoization only and no ISR, cache tags, webhooks, or explicit revalidation bridge is required. PR #62 merged into `staging` at `d8af973b`; the read-only staging verifier, application validation, and migration-release workflow passed, with Production skipped. No database mutation was required.
 
 The current CMS can edit global metadata and a fixed section registry, but it does not yet provide complete body-content editing for Home, About, Services, or Contact. This phase closes that gap without introducing an arbitrary page builder.
 
