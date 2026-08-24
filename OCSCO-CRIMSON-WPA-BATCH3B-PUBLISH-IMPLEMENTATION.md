@@ -74,7 +74,7 @@ Read-only Owner QA on the feature Preview confirmed:
 ## Preview and public smoke QA
 
 Feature Preview for the implementation commit: https://ocsco-project-crimson-1grjp239t-ocscolabs-platforms-projects.vercel.app  
-Latest report-only PR deployment: https://ocsco-project-crimson-ot12h8yjr-ocscolabs-platforms-projects.vercel.app  
+Current PR-head Preview: https://ocsco-project-crimson-npnl74z72-ocscolabs-platforms-projects.vercel.app  
 Vercel status: Ready / Preview.
 
 Read-only public smoke checks passed without application or runtime errors:
