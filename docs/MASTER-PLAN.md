@@ -1,7 +1,7 @@
 # OCSCO Project Crimson — Master Plan
 
 **Plan version:** 2026-08-23
-**Status:** Owner-approved roadmap; Phase 4C staging baseline and QA are complete, Phase 5B Slice 4A implementation is in progress, and the Production release/promotion gate is deferred.
+**Status:** Owner-approved roadmap; Phase 4C staging baseline and QA are complete, Phase 5B Slice 4A is closed, the approved Slice 4B About cutover is next, and the Production release/promotion gate is deferred.
 **Canonical roadmap:** This document is the source of truth for phase order, scope, dependencies, and release gates. Detailed phase documents remain implementation records and may contain historical statuses.
 
 ## Product objective
@@ -137,7 +137,7 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 
 **Status: In progress.** Development is proceeding against the accepted staging baseline; the deferred Production release gate remains required before Production promotion.
 
-Phase 5B Slice 3 is closed. Phase 5B Slice 4A is the current approved implementation slice for the shared typed PageDocument public loader and static renderer foundation. No public route cutover has begun. Phase 6 Insights remains not started.
+Phase 5B Slice 3 is closed. Phase 5B Slice 4A is closed after automated staging-health verification. The approved next implementation slice is Phase 5B Slice 4B for the About public PageDocument cutover. No public route cutover has begun. The staging verifier now runs on every push to `staging`. Phase 6 Insights remains not started.
 
 The current CMS can edit global metadata and a fixed section registry, but it does not yet provide complete body-content editing for Home, About, Services, or Contact. This phase closes that gap without introducing an arbitrary page builder.
 
