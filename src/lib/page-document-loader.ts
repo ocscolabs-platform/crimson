@@ -36,6 +36,14 @@ export type PageDocumentServiceResult =
   | { kind: "unavailable"; reason: "cms-not-configured" | "cms-read-failed"; message: string }
   | { kind: "invalid"; issues: string[] };
 
+const SERVICES_PAGE_SLUGS: readonly ServiceSlug[] = [
+  "branding",
+  "website-design-development",
+  "custom-cms",
+  "crm-business-tools",
+  "custom-web-applications",
+];
+
 function getPublicCmsClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -53,6 +61,17 @@ function isPublishedAtOrBeforeNow(value: string | null, now: Date) {
   if (!value) return false;
   const timestamp = Date.parse(value);
   return Number.isFinite(timestamp) && timestamp <= now.getTime();
+}
+
+function toPublishedService(row: PublishedServiceRow): Service {
+  return {
+    slug: row.slug,
+    name: row.name,
+    cardName: row.card_name || row.name,
+    summary: row.short_description || "",
+    audience: row.audience || "",
+    outcome: row.outcome || "",
+  };
 }
 
 /**
@@ -161,17 +180,89 @@ export function resolvePublishedServiceRows(
       issues.push(`home_capabilities.items: Service ${slug} is not published`);
       continue;
     }
-    services.push({
-      slug: row.slug,
-      name: row.name,
-      cardName: row.card_name || row.name,
-      summary: row.short_description || "",
-      audience: row.audience || "",
-      outcome: row.outcome || "",
-    });
+    services.push(toPublishedService(row));
   }
 
   return issues.length > 0 ? { kind: "invalid", issues } : { kind: "resolved", services };
+}
+
+/**
+ * Resolves the complete Services page list from canonical published Service
+ * rows. The Services PageDocument owns the page shell and section plan; the
+ * Service records remain the sole authority for cards and detail links.
+ */
+export function resolvePublishedServiceList(
+  rows: readonly PublishedServiceRow[],
+  now = new Date(),
+): PageDocumentServiceResult {
+  const rowsBySlug = new Map<string, PublishedServiceRow>();
+  const issues: string[] = [];
+
+  for (const row of rows) {
+    if (rowsBySlug.has(row.slug)) {
+      issues.push(`services: duplicate Service slug ${row.slug}`);
+      continue;
+    }
+    rowsBySlug.set(row.slug, row);
+  }
+
+  for (const slug of SERVICES_PAGE_SLUGS) {
+    const row = rowsBySlug.get(slug);
+    if (!row) {
+      issues.push(`services: Service ${slug} is missing`);
+      continue;
+    }
+    if (row.status !== "published" || !isPublishedAtOrBeforeNow(row.published_at, now)) {
+      issues.push(`services: Service ${slug} is not published`);
+    }
+  }
+
+  for (const row of rows) {
+    if (!SERVICES_PAGE_SLUGS.includes(row.slug as ServiceSlug)) {
+      issues.push(`services: unexpected Service slug ${row.slug}`);
+    }
+  }
+
+  if (issues.length > 0) {
+    return { kind: "invalid", issues: [...new Set(issues)] };
+  }
+
+  return {
+    kind: "resolved",
+    // The query's created_at order is the existing canonical card order. The
+    // PageDocument supplies the page shell, not a duplicate card ordering.
+    services: rows.map(toPublishedService),
+  };
+}
+
+export async function getPublishedPageServices(): Promise<PageDocumentServiceResult> {
+  const client = getPublicCmsClient();
+  if (!client) {
+    return {
+      kind: "unavailable",
+      reason: "cms-not-configured",
+      message: "The published Service read boundary is not configured.",
+    };
+  }
+
+  const now = new Date();
+  const { data, error } = await client
+    .from("services")
+    .select("name, card_name, slug, short_description, audience, outcome, status, published_at")
+    .eq("status", "published")
+    .not("published_at", "is", null)
+    .lte("published_at", now.toISOString())
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return {
+      kind: "unavailable",
+      reason: "cms-read-failed",
+      message: "The published Service content could not be read.",
+    };
+  }
+
+  return resolvePublishedServiceList((data ?? []) as PublishedServiceRow[], now);
 }
 
 export async function resolvePublishedPageServices(document: PageDocument): Promise<PageDocumentServiceResult> {

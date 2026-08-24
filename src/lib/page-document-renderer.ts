@@ -53,8 +53,9 @@ export type PageDocumentRenderPlan = {
 };
 
 /**
- * Produces a deterministic plan only. Slice 4A deliberately does not connect
- * this registry to any live public route or React component.
+ * Produces the deterministic plan consumed by the approved PageDocument
+ * public route renderers. Each route decides which registered sections it
+ * renders directly and keeps the existing static markup for those sections.
  */
 export function createPageDocumentRenderPlan(document: PageDocument): PageDocumentRenderPlan {
   if (!PAGE_DOCUMENT_PAGE_KEYS.has(document.pageKey)) {
