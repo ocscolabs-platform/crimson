@@ -32,7 +32,13 @@ export function verifyPublicAuthority(sources) {
   requireMatch(about, /result\.document/, "About must render the validated PageDocument result.");
   requireAbsent(about, new RegExp(LEGACY_READER), "About must not use the legacy page_sections reader for body authority.");
 
-  for (const route of ["home", "services", "contact"]) {
+  const services = sources.services;
+  requireMatch(services, /getPublishedPageDocument\(\s*["']services["']\s*\)/, "Services must use the published PageDocument loader.");
+  requireMatch(services, /createServicesPageRenderData/, "Services must use the deterministic approved render-plan path.");
+  requireMatch(services, /result\.document/, "Services must render the validated PageDocument result.");
+  requireAbsent(services, new RegExp(LEGACY_READER), "Services must not use the legacy page_sections reader for body authority.");
+
+  for (const route of ["home", "contact"]) {
     const source = sources[route];
     requireMatch(source, new RegExp(LEGACY_READER), `${route} must remain on the transitional page_sections authority.`);
     requireAbsent(source, PAGE_DOCUMENT_MARKERS, `${route} must not use the PageDocument public path before its approved cutover.`);
@@ -49,7 +55,7 @@ export function verifyPublicAuthority(sources) {
   return {
     about: "PageDocument",
     home: "transitional",
-    services: "transitional",
+    services: "PageDocument",
     contact: "transitional",
     work: "legacy",
   };
