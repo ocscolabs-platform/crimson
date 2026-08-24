@@ -5,6 +5,7 @@ import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import { requireCmsViewer } from "@/app/admin/content/pages/_lib";
 import PageDocumentReadOnly, { ReadOnlySeoPanel } from "@/app/admin/content/pages/_components/PageDocumentReadOnly";
 import PageDocumentEditor from "@/app/admin/content/pages/_components/PageDocumentEditor";
+import PageDocumentPublishControl from "@/app/admin/content/pages/_components/PageDocumentPublishControl";
 import PageDocumentWorkflowControls from "@/app/admin/content/pages/_components/PageDocumentWorkflowControls";
 import { getAdminPageDocumentReadModel, getPageDocumentAdminAdapter } from "@/lib/admin-page-documents";
 
@@ -116,7 +117,9 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
   const canMutate = membership.role === "owner" || membership.role === "editor";
   const roleMessage = membership.role === "reviewer"
     ? "Reviewer access is read-only. Review content and immutable workflow history without mutation controls."
-      : "Owner and editor access can save Drafts, submit Drafts for Review, and return Reviews to Draft.";
+      : membership.role === "owner"
+        ? "Owner access can save Drafts, submit Drafts for Review, return Reviews to Draft, and publish an approved Review."
+        : "Editor access can save Drafts, submit Drafts for Review, and return Reviews to Draft.";
   const authorityMessage = adapter.pageKey === "services"
     ? "The PageDocument owns the Services page shell. Canonical public.services records remain authoritative for Service names, descriptions, icons, and detail links."
     : adapter.pageKey === "contact"
@@ -195,6 +198,13 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
                   {activeDocument && page.activeRevision.status === "review" ? (
                     <>
                       <div className="admin-readonly-document-stack"><ReadOnlySeoPanel document={activeDocument} idSuffix="review" /><PageDocumentReadOnly document={activeDocument} idSuffix="review" /></div>
+                      <PageDocumentPublishControl
+                        pageKey={adapter.pageKey}
+                        pageLabel={adapter.label}
+                        revisionId={page.activeRevision.id}
+                        expectedUpdatedAt={page.activeRevision.updatedAt}
+                        canPublish={membership.role === "owner" && page.activeRevision.validationIssues.length === 0}
+                      />
                       <PageDocumentWorkflowControls pageKey={adapter.pageKey} revisionId={page.activeRevision.id} status="review" canMutate={canMutate} />
                     </>
                   ) : null}
