@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
 import { notFound } from "next/navigation";
 import { RouteShell } from "@/components/route-shell";
-import { getPublishedPage } from "@/lib/cms-content";
 import { getPublishedPageDocument, getPublishedPageServices } from "@/lib/page-document-loader";
+import { getPublishedPageMetadata } from "@/lib/page-metadata";
 import { createServicesPageRenderData } from "@/lib/services-page";
 
 const serviceIcons = {
@@ -18,8 +18,12 @@ const serviceIcons = {
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getPublishedPage("services");
-  return { title: page?.seoTitle || "Services", description: page?.seoDescription };
+  const result = await getPublishedPageMetadata("services");
+  if (result.kind === "invalid") {
+    console.error(`[services] Invalid published PageDocument metadata: ${result.issues.join("; ")}`);
+  }
+  if (result.kind !== "metadata") notFound();
+  return result.metadata;
 }
 
 export default async function ServicesPage() {

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -5,8 +6,18 @@ import { HomeCta, HomePageSections } from "@/components/home-page-sections";
 import { createHomePageRenderData } from "@/lib/home-page";
 import { getPublishedSiteChrome } from "@/lib/cms-content";
 import { getPublishedPageDocument, resolvePublishedPageServices } from "@/lib/page-document-loader";
+import { getPublishedPageMetadata } from "@/lib/page-metadata";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const result = await getPublishedPageMetadata("home");
+  if (result.kind === "invalid") {
+    console.error(`[home] Invalid published PageDocument metadata: ${result.issues.join("; ")}`);
+  }
+  if (result.kind !== "metadata") notFound();
+  return result.metadata;
+}
 
 export default async function Home() {
   const [chrome, result] = await Promise.all([

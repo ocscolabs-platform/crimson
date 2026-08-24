@@ -2,15 +2,19 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContactForm } from "@/components/contact-form";
 import { RouteShell } from "@/components/route-shell";
-import { getPublishedPage } from "@/lib/cms-content";
 import { createContactPageRenderData, type ContactPageBodySection } from "@/lib/contact-page";
 import { getPublishedPageDocument } from "@/lib/page-document-loader";
+import { getPublishedPageMetadata } from "@/lib/page-metadata";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getPublishedPage("contact");
-  return { title: page?.seoTitle || "Contact", description: page?.seoDescription };
+  const result = await getPublishedPageMetadata("contact");
+  if (result.kind === "invalid") {
+    console.error(`[contact] Invalid published PageDocument metadata: ${result.issues.join("; ")}`);
+  }
+  if (result.kind !== "metadata") notFound();
+  return result.metadata;
 }
 
 function renderContactBodySection(section: ContactPageBodySection) {

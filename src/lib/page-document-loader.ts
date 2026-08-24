@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@supabase/supabase-js";
 import type { PageDocument, PageKey, ServiceSlug } from "@/lib/page-document";
 import { validatePageDocument } from "@/lib/page-document";
@@ -109,7 +110,7 @@ export function resolvePublishedPageDocumentRow(
  * Reads only explicitly published, currently effective rows. RLS remains a
  * second boundary, but publication intent is visible in this query as well.
  */
-export async function getPublishedPageDocument(pageKey: PageKey): Promise<PublishedPageDocumentResult> {
+export const getPublishedPageDocument = cache(async function getPublishedPageDocument(pageKey: PageKey): Promise<PublishedPageDocumentResult> {
   const client = getPublicCmsClient();
   if (!client) {
     return {
@@ -138,7 +139,7 @@ export async function getPublishedPageDocument(pageKey: PageKey): Promise<Publis
   }
 
   return resolvePublishedPageDocumentRow(pageKey, data as PublishedPageDocumentRow | null, now);
-}
+});
 
 function getHomeServiceSlugs(document: PageDocument): ServiceSlug[] {
   if (document.pageKey !== "home") return [];
