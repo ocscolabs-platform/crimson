@@ -63,6 +63,7 @@ export type AdminPageDocumentRevisionHistoryEntry = {
 export type AdminPageDocumentAuditEntry = {
   id: string;
   revisionId: string;
+  actorLabel: string | null;
   sourceRevisionId: string | null;
   relatedRevisionId: string | null;
   action:
@@ -126,6 +127,7 @@ type RevisionRow = {
 type AuditRow = {
   id: string;
   revision_id: string;
+  actor_user_id: string | null;
   source_revision_id: string | null;
   related_revision_id: string | null;
   action: AdminPageDocumentAuditEntry["action"];
@@ -162,6 +164,7 @@ function buildSummary(
   page: PageRow | undefined,
   revisions: RevisionRow[],
   auditHistory: AuditRow[],
+  actorLabels: ReadonlyMap<string, string>,
 ): AdminPageDocumentSummary {
   const pageStatus = page && isWorkflowStatus(page.status) ? page.status : "unavailable";
   const publishedRevision = page?.published_revision_id
@@ -235,6 +238,7 @@ function buildSummary(
     auditHistory: auditHistory.map((entry) => ({
       id: entry.id,
       revisionId: entry.revision_id,
+      actorLabel: entry.actor_user_id ? actorLabels.get(entry.actor_user_id) ?? "CMS member" : null,
       sourceRevisionId: entry.source_revision_id,
       relatedRevisionId: entry.related_revision_id,
       action: entry.action,
@@ -289,7 +293,7 @@ export async function getAdminPageDocumentReadModel(): Promise<AdminPageDocument
   if (pageIds.length > 0) {
     const { data: auditData, error: auditError } = await supabase
       .from("cms_workflow_audit_log")
-      .select("id, page_id, revision_id, source_revision_id, related_revision_id, action, from_status, to_status, created_at")
+      .select("id, page_id, revision_id, actor_user_id, source_revision_id, related_revision_id, action, from_status, to_status, created_at")
       .in("page_id", pageIds)
       .order("created_at", { ascending: false })
       .limit(100);
@@ -305,10 +309,24 @@ export async function getAdminPageDocumentReadModel(): Promise<AdminPageDocument
     }
   }
 
+  const actorIds = [...new Set([...auditByPage.values()].flat().map((entry) => entry.actor_user_id).filter((value): value is string => Boolean(value)))];
+  const actorLabels = new Map<string, string>();
+  if (actorIds.length > 0) {
+    const { data: members } = await supabase
+      .from("cms_members")
+      .select("user_id, role")
+      .in("user_id", actorIds);
+    for (const member of members ?? []) {
+      if (["owner", "editor", "reviewer"].includes(member.role)) {
+        actorLabels.set(member.user_id, `${member.role[0].toUpperCase()}${member.role.slice(1)}`);
+      }
+    }
+  }
+
   return {
     pages: PAGE_DOCUMENT_ADMIN_ADAPTERS.map((adapter) => {
       const page = pagesBySlug.get(adapter.pageKey);
-      return buildSummary(adapter, page, page ? revisionsByPage.get(page.id) ?? [] : [], page ? auditByPage.get(page.id) ?? [] : []);
+      return buildSummary(adapter, page, page ? revisionsByPage.get(page.id) ?? [] : [], page ? auditByPage.get(page.id) ?? [] : [], actorLabels);
     }),
   };
 }

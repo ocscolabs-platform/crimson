@@ -38,10 +38,14 @@ async function getAuthorizedPageAction(pageKeyValue: string) {
 }
 
 async function getAuthorizedOwnerPageAction(pageKeyValue: string) {
+  return getAuthorizedOwnerPageActionWithMessage(pageKeyValue, "Only an Owner can publish PageDocuments. This workflow action was not performed.");
+}
+
+async function getAuthorizedOwnerPageActionWithMessage(pageKeyValue: string, ownerMessage: string) {
   const authorized = await getAuthorizedPageAction(pageKeyValue);
   if (authorized.error) return authorized;
   if (authorized.role !== "owner") {
-    return { error: errorState("Only an Owner can publish PageDocuments. This workflow action was not performed.") };
+    return { error: errorState(ownerMessage) };
   }
 
   return authorized;
@@ -158,6 +162,55 @@ function publishFailureMessage(message: string | undefined) {
     return "This Review is no longer available for publishing. Reload the page and try again.";
   }
   return "Publish could not be completed. Reload the page and try again.";
+}
+
+function restoreFailureMessage(message: string | undefined) {
+  const normalized = message?.toLowerCase() ?? "";
+  if (normalized.includes("historical") || normalized.includes("cannot be restored")) {
+    return "That historical version is no longer available. Reload the page history and try again.";
+  }
+  if (normalized.includes("does not belong") || normalized.includes("approved pagedocument")) {
+    return "That version does not belong to this page. Reload the page history.";
+  }
+  if (normalized.includes("changed") || normalized.includes("lock") || normalized.includes("active")) {
+    return "The editorial state changed while you were restoring. Reload the page history before trying again.";
+  }
+  if (normalized.includes("owner") || normalized.includes("role")) {
+    return "Only an Owner can restore historical page versions.";
+  }
+  return "Restore could not be completed. The public page was not changed. Reload and try again.";
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+export async function restorePageDocument(
+  previousState: PageDocumentActionState,
+  formData: FormData,
+): Promise<PageDocumentActionState> {
+  void previousState;
+  const pageKey = String(formData.get("page_key") || "");
+  const sourceRevisionId = String(formData.get("source_revision_id") || "");
+  const authorized = await getAuthorizedOwnerPageActionWithMessage(
+    pageKey,
+    "Only an Owner can restore historical page versions.",
+  );
+  if (authorized.error) return authorized.error;
+  if (!isUuid(sourceRevisionId)) {
+    return errorState("That historical version is no longer available. Reload the page history and try again.");
+  }
+
+  const { data: restoredRevisionId, error } = await authorized.supabase.rpc("cms_page_document_restore", {
+    p_page_key: authorized.adapter.pageKey,
+    p_source_revision_id: sourceRevisionId,
+  });
+
+  if (error || !restoredRevisionId) return errorState(restoreFailureMessage(error?.message));
+
+  revalidatePageDocument(authorized.adapter.pageKey);
+  revalidatePath(authorized.adapter.route);
+  return successState("Historical content was restored as a new Review. The public page was not changed.", restoredRevisionId);
 }
 
 export async function publishPageDocument(

@@ -6,6 +6,7 @@ import { requireCmsViewer } from "@/app/admin/content/pages/_lib";
 import PageDocumentReadOnly, { ReadOnlySeoPanel } from "@/app/admin/content/pages/_components/PageDocumentReadOnly";
 import PageDocumentEditor from "@/app/admin/content/pages/_components/PageDocumentEditor";
 import PageDocumentPublishControl from "@/app/admin/content/pages/_components/PageDocumentPublishControl";
+import PageDocumentRestoreControl from "@/app/admin/content/pages/_components/PageDocumentRestoreControl";
 import PageDocumentWorkflowControls from "@/app/admin/content/pages/_components/PageDocumentWorkflowControls";
 import { getAdminPageDocumentReadModel, getPageDocumentAdminAdapter } from "@/lib/admin-page-documents";
 
@@ -25,15 +26,25 @@ function statusClass(status: string) {
 }
 
 function actionLabel(action: string) {
+  if (action === "restore_archived_active") return "Archived active editorial revision";
+  if (action === "restored_to_review") return "Restored historical revision as Review";
   return action.replaceAll("_", " ").replace(/^./, (character) => character.toUpperCase());
 }
 
 function PageDocumentHistory({
   history,
   audit,
+  pageKey,
+  pageLabel,
+  canRestore,
+  hasActiveEditorialRevision,
 }: {
   history: NonNullable<Awaited<ReturnType<typeof getAdminPageDocumentReadModel>>>["pages"][number]["revisionHistory"];
   audit: NonNullable<Awaited<ReturnType<typeof getAdminPageDocumentReadModel>>>["pages"][number]["auditHistory"];
+  pageKey: string;
+  pageLabel: string;
+  canRestore: boolean;
+  hasActiveEditorialRevision: boolean;
 }) {
   return (
     <section className="admin-editor-panel" aria-labelledby="page-document-history-heading">
@@ -56,6 +67,15 @@ function PageDocumentHistory({
                     <span>{revision.id}</span>
                   </div>
                   <small>Updated {formatDate(revision.updatedAt)}{revision.publishedAt ? ` · Published ${formatDate(revision.publishedAt)}` : ""}</small>
+                  {canRestore && revision.status === "archived" && !revision.isPublished ? (
+                    <PageDocumentRestoreControl
+                      pageKey={pageKey}
+                      pageLabel={pageLabel}
+                      sourceRevisionId={revision.id}
+                      historicalTimestamp={formatDate(revision.updatedAt)}
+                      hasActiveEditorialRevision={hasActiveEditorialRevision}
+                    />
+                  ) : null}
                 </li>
               ))}
             </ol>
@@ -69,9 +89,9 @@ function PageDocumentHistory({
                 <li key={entry.id}>
                   <div>
                     <strong>{actionLabel(entry.action)}</strong>
-                    <span>{entry.fromStatus ?? "new"} → {entry.toStatus} · revision {entry.revisionId}</span>
+                    <span>{entry.fromStatus ?? "new"} → {entry.toStatus} · revision {entry.revisionId}{entry.sourceRevisionId ? ` · source ${entry.sourceRevisionId}` : ""}{entry.relatedRevisionId ? ` · related ${entry.relatedRevisionId}` : ""}</span>
                   </div>
-                  <small>{formatDate(entry.createdAt)}</small>
+                  <small>{entry.actorLabel ? `${entry.actorLabel} · ` : ""}{formatDate(entry.createdAt)}</small>
                 </li>
               ))}
             </ol>
@@ -118,7 +138,7 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
   const roleMessage = membership.role === "reviewer"
     ? "Reviewer access is read-only. Review content and immutable workflow history without mutation controls."
       : membership.role === "owner"
-        ? "Owner access can save Drafts, submit Drafts for Review, return Reviews to Draft, and publish an approved Review."
+        ? "Owner access can save Drafts, submit Drafts for Review, return Reviews to Draft, publish an approved Review, and restore eligible archived history."
         : "Editor access can save Drafts, submit Drafts for Review, and return Reviews to Draft.";
   const authorityMessage = adapter.pageKey === "services"
     ? "The PageDocument owns the Services page shell. Canonical public.services records remain authoritative for Service names, descriptions, icons, and detail links."
@@ -223,7 +243,7 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
               {membership.role === "reviewer" ? (
                 <p className="admin-disclosure-note">Reviewer access remains read-only. Review the Published and active Review panels above; workflow history is shown below.</p>
               ) : page.activeRevision?.status === "review" ? (
-                <p className="admin-disclosure-note">Review is immutable. Return it to Draft before editing. No publication or restoration controls are available in this batch.</p>
+                <p className="admin-disclosure-note">Review is immutable. Return it to Draft before editing. Restore is available only for eligible archived history and does not change the public site.</p>
               ) : (activeDocument ?? publishedDocument) ? (
                 <>
                   <PageDocumentEditor initialDocument={(activeDocument ?? publishedDocument)!} />
@@ -234,7 +254,14 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
               )}
             </section>
 
-            <PageDocumentHistory history={page.revisionHistory} audit={page.auditHistory} />
+            <PageDocumentHistory
+              history={page.revisionHistory}
+              audit={page.auditHistory}
+              pageKey={adapter.pageKey}
+              pageLabel={adapter.label}
+              canRestore={membership.role === "owner"}
+              hasActiveEditorialRevision={Boolean(page.activeRevision)}
+            />
 
             <section className="admin-editor-panel" aria-labelledby="legacy-boundary-heading">
               <div className="admin-panel-heading">
@@ -250,7 +277,7 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
           </>
         )}
 
-        <footer className="admin-footer">Publication, restoration, and authenticated Preview are intentionally unavailable in this Batch 3A application workflow.</footer>
+        <footer className="admin-footer">Publication remains controlled, authenticated Preview remains unavailable, and Restore is limited to Owners selecting eligible archived history.</footer>
       </div>
     </main>
   );

@@ -14,7 +14,8 @@ test("PageDocument application workflow retains the approved transitions and iso
   assert.match(actions, /cms_page_document_return_to_draft/);
   assert.match(actions, /cms_page_document_publish/);
   assert.doesNotMatch(actions, /cms_save_revision/);
-  assert.doesNotMatch(actions, /cms_page_document_restore/);
+  assert.match(actions, /cms_page_document_restore/);
+  assert.match(actions, /export async function restorePageDocument/);
   assert.doesNotMatch(actions, /error\.message/);
 });
 
@@ -56,9 +57,11 @@ test("History and audit presentation preserve newest-first markers", async () =>
   assert.match(page, /Immutable record/);
 });
 
-test("Approved application surface contains no Publish or Restore callable controls", async () => {
+test("Approved application surface keeps Publish isolated and Restore in history", async () => {
+  const page = await read("src/app/admin/content/pages/[pageKey]/page.tsx");
   const editor = await read("src/app/admin/content/pages/_components/PageDocumentEditor.tsx");
   const controls = await read("src/app/admin/content/pages/_components/PageDocumentWorkflowControls.tsx");
-  assert.doesNotMatch(editor, /\bPublish\b|\bRestore\b|cms_page_document_publish|cms_page_document_restore/);
-  assert.doesNotMatch(controls, /\bPublish\b|\bRestore\b|cms_page_document_publish|cms_page_document_restore/);
+  assert.match(page, /PageDocumentRestoreControl/);
+  assert.doesNotMatch(editor, /cms_page_document_publish|cms_page_document_restore/);
+  assert.doesNotMatch(controls, /cms_page_document_publish|cms_page_document_restore/);
 });
