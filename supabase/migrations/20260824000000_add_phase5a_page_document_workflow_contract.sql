@@ -264,12 +264,14 @@ begin
       or candidate.payload is distinct from expected_payload
       or page_row.seo_title is distinct from page_row.content->'seo'->>'title'
       or page_row.seo_description is distinct from page_row.content->'seo'->>'description'
-      or page_row.og_image_path is distinct from case
-        when page_row.content->'seo'->'ogImageRef'->>'kind' = 'generated'
-          and page_row.content->'seo'->'ogImageRef'->>'key' = 'default'
-        then '/opengraph-image'
-        else null
-      end
+      or page_row.og_image_path is distinct from (
+        case
+          when page_row.content->'seo'->'ogImageRef'->>'kind' = 'generated'
+            and page_row.content->'seo'->'ogImageRef'->>'key' = 'default'
+          then '/opengraph-image'
+          else null
+        end
+      )
     then
       raise exception 'Published revision for PageDocument % does not match authoritative page content',
         page_row.slug;

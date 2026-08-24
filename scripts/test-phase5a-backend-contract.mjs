@@ -63,6 +63,10 @@ test("Batch 3A backfill is content-verified and leaves editorial revisions alone
   assert.match(backfill, /candidate\.payload is distinct from expected_payload/);
   assert.match(backfill, /candidate\.published_at is distinct from page_row\.published_at/);
   assert.match(backfill, /set published_revision_id = candidate\.id/);
+  assert.match(
+    backfill,
+    /page_row\.og_image_path is distinct from \(\s*case[\s\S]*?\n\s*end\s*\)\s*then/
+  );
   assert.doesNotMatch(backfill, /update public\.cms_revisions/);
 });
 
