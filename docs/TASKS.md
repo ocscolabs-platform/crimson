@@ -2,7 +2,7 @@
 
 This queue records approved next-step work before implementation. Tasks in this file are not production changes until they are implemented, reviewed in staging, and explicitly promoted to `main`.
 
-## Current roadmap overlay — 2026-08-23
+## Current roadmap overlay — 2026-08-24
 
 `docs/MASTER-PLAN.md` is now the canonical source of truth for phase order and release readiness. The detailed `PH4-001` through `PH4-016` entries below preserve the implementation history and acceptance criteria of the original CMS slices; some early entries retain their historical “pending” wording even though later entries document the verified staging implementation. Use the master plan and `STATUS.md` for the current state.
 
@@ -39,10 +39,47 @@ Owner approval closes the staging portion of **PH4-017 — Post-merge release ve
 
 ## PH5-001 — Complete the Full Page Content CMS
 
-- **Status:** Ready to plan / not started
-- **Goal:** Make Home, About, Services, and Contact body content editable through approved structured CMS sections.
-- **Scope:** Copy, headings, supporting text, CTAs, approved section variants, SEO metadata, Open Graph image, preview, draft/review/published revisions, validation, responsive/public QA.
-- **Constraint:** Do not introduce a freeform page builder or arbitrary component creation.
+- **Status:** Owner-approved remaining roadmap; implementation not started
+- **Goal:** Make Home, About, Services, and Contact body content editable through approved structured PageDocument CMS sections.
+- **Constraint:** Do not introduce a freeform page builder, arbitrary component creation, Work migration, Insights, CRM, or Production controls.
+
+The public PageDocument architecture is complete for Home, Services, About, and Contact, and Work remains legacy. Phase 5 remains open because authorized non-technical editors cannot yet manage the authoritative PageDocument content through Crimson CMS. The remaining scope is exactly the two descriptive work packages below; neither is a historical Slice 4G.
+
+### Work Package A — PageDocument Editor and Editorial Workflow
+
+**Objective:** Build the reusable Crimson CMS editorial experience for the four approved Phase 5 pages.
+
+**Scope:**
+
+- Shared PageDocument page-management shell.
+- Home editor, Services overview PageDocument editor, About editor, and Contact marketing-content editor.
+- Page-specific structured field forms for approved Hero and section content.
+- Constrained CTA controls, section order, and allowed visibility controls.
+- Authoritative PageDocument SEO title, SEO description, and approved Open Graph reference control.
+- Home Service-reference controls and Services wrapper controls without duplicating canonical `public.services` records.
+- Draft save/update, Review workflow, owner-only Publish, owner-only Restore, role-aware controls, revision/audit status, validation UX, and authenticated Draft/Review Preview.
+- Protection of all code-controlled functionality.
+
+**Explicit exclusions:** Work migration; freeform page builder; arbitrary sections, components, or routes; Contact form-builder behavior; Service-record duplication; scheduled publishing; version comparison; bulk editing; Insights; CRM; and Production.
+
+### Work Package B — Full Page Content CMS Staging QA, Owner Front-End Polish, and Phase 5 Closure
+
+**Objective:** After Work Package A is implemented and staging-verified, perform end-to-end editor acceptance, public staging QA, owner/client-style visual refinement, and formal Phase 5 closure.
+
+**Editorial acceptance:** Test owner, editor, and reviewer boundaries where applicable. A non-technical authorized user must be able to open each page, edit structured content and CTAs, manage approved order/visibility, edit SEO, save Draft, move through Review, use authenticated Preview, Publish, verify public output, inspect revision/audit state, Restore, and receive understandable validation/error feedback without SQL Editor, Supabase dashboard, GitHub, repository edits, Codex intervention, or manual database changes.
+
+**Final QA:** Verify Home, Services, About, and Contact for CMS usability, Draft/Review/Publish/Restore, Preview, PageDocument SEO, CTA and section constraints, validation UX, role boundaries, public Published-only behavior, responsive and accessibility sanity, browser/runtime health, public visual regression, Service-reference integrity, Contact functional-boundary integrity, Work isolation, migration alignment, staging architecture verification, and audit/revision preservation. Use the Codex browser device toolbar at 1440×900, 768×1024, and 390×844.
+
+**Owner Front-End Polish checkpoint:** During staging acceptance, classify every observation as:
+
+- **FIX NOW** — implementation bug, regression, broken responsive behavior, accessibility defect, or mismatch against the approved design.
+- **POLISH WINDOW** — small visual or UX adjustment with no architecture, schema, product-behavior, or workflow change.
+- **NEW SCOPE** — new feature, component type, CMS capability, workflow, database behavior, integration, or functional requirement; requires separate owner approval and must not silently expand Phase 5.
+- **DEFER** — useful enhancement not required for Phase 5 acceptance.
+
+Only FIX NOW and approved POLISH WINDOW items belong in Work Package B.
+
+**Phase 5 closure gate:** Phase 5 may close only when an authorized non-technical editor can manage Home, Services overview, About, and Contact through Crimson CMS with authoritative PageDocument editing, SEO editing, usable Draft/Review/Publish/Preview/validation flows, and enforced role boundaries. Work remains legacy. ContactForm behavior remains code-controlled, and canonical Service records remain separately managed through the existing Services CMS.
 
 ## PH6-001 — Add the Insights data model
 
