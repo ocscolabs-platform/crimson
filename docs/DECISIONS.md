@@ -435,3 +435,13 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Persist `about_people` with exactly `eyebrow`, `heading`, and `cta`; it has no `body` field. Persist Contact process items with exactly `title` and `body`. Numbering and prefixes such as `01 /` remain code-controlled presentation and are rejected as unknown PageDocument fields.
 - **Reason:** The approved Phase 5A contract intentionally preserves the existing About placeholder without inventing body copy and keeps Contact numbering in the renderer. The Slice 1 application validator and Slice 2 database helper incorrectly required `about_people.body`; the correction restores one shared strict contract before any PageDocument backfill.
 - **Consequence:** A forward, data-free validator correction is required before Slice 3. Save, publish, restore, authorization, legacy arrays, `page_sections`, Work, and all current page data remain unchanged. No PageDocument backfill is included in this decision.
+
+## ADR-062 - Implement the Batch 3A PageDocument backend contract before remote application
+
+- **Date:** 2026-08-24
+- **Status:** Implemented on a review-only feature branch; remote staging application pending owner review
+- **Decision:** Add one canonical migration for the four approved PageDocument pages. The migration adds a durable `pages.published_revision_id`, content-verified fail-closed backfill, revision-aware workflow audit records, dedicated Draft/Review/Publish/Restore RPCs, immutable Review enforcement, expected-`updated_at` Publish protection, and guarded compatibility for the existing generic RPC consumers.
+- **Scope:** `home`, `services`, `about`, and `contact` only. Work remains legacy. The migration is repository-only until a separate owner authorization applies it to remote staging.
+- **Reason:** Batch 2 already exposes a generic Draft save path, while direct generic RPC calls could otherwise bypass the approved PageDocument workflow. Dedicated functions close that boundary without breaking legacy Settings, Navigation, Services, Case Studies, or Work consumers.
+- **Safety:** Publish locks the page and revision, rejects stale `updated_at`, archives the prior pointer, publishes the selected Review, updates public projections and the durable pointer atomically, and audits both revision transitions. Restore archives active editorial state in place, creates a new Review clone, leaves the source and public content unchanged, and is not exposed through the application in Batch 3A.
+- **Consequence:** The branch contains migration #26 and local static verification only. Production, `main`, remote staging Supabase, the existing Homepage Draft, application/UI work, Work Package B, and Phase 6 remain untouched.
