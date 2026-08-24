@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "validate:migrations": "node scripts/validate-migrations.mjs",
     "test:phase5b:authority": "node --test scripts/test-phase5b-public-authority.mjs",
+    "test:phase5a:application": "node --test scripts/test-phase5a-application-workflow.mjs",
     "test:phase5b:slice4f:metadata": "node --test scripts/test-phase5b-slice4f-metadata.mjs",
     "test:phase5b:slice4e:home": "node --test scripts/test-phase5b-slice4e-home.mjs",
     "test:phase5b:slice4d:contact": "node --test scripts/test-phase5b-slice4d-contact.mjs",

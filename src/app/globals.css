@@ -354,6 +354,15 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-audit-list span, .admin-audit-list small { color: #898989; font-size: .78rem; }
 .admin-audit-meta { display: grid; justify-items: end; gap: 10px; }
 .admin-audit-list small { white-space: nowrap; }
+.admin-page-workflow-controls { display: grid; gap: 12px; margin-top: 22px; border-top: 1px solid rgb(255 255 255 / 10%); padding-top: 20px; }
+.admin-page-workflow-controls form { display: flex; }
+.admin-page-history-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.admin-page-history-grid h3 { margin: 0 0 12px; color: #eee; font-size: .9rem; }
+.admin-page-history-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.admin-page-history-list li { display: grid; gap: 8px; border-top: 1px solid rgb(255 255 255 / 10%); padding: 14px 0; }
+.admin-page-history-list li > div { display: grid; gap: 5px; }
+.admin-page-history-list strong { color: #eee; font-size: .84rem; text-transform: capitalize; }
+.admin-page-history-list span, .admin-page-history-list small { color: #999; font-size: .74rem; overflow-wrap: anywhere; }
 .admin-audit-restore { border: 1px solid rgb(255 255 255 / 18%); border-radius: 999px; background: transparent; color: #d2d2d2; cursor: pointer; font: inherit; font-size: .72rem; padding: 7px 11px; }
 .admin-audit-restore:hover { border-color: var(--green); color: var(--green); }
 .admin-team-layout { display: grid; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.2fr); gap: 16px; }
@@ -603,6 +612,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-content-row-actions { grid-column: 1; }
   .admin-page-section-row { grid-template-columns: 1fr; }
   .admin-page-document-grid { grid-template-columns: 1fr; }
+  .admin-page-history-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 1120px) and (min-width: 841px) {

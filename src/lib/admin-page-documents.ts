@@ -49,6 +49,35 @@ export type AdminPageDocumentRevision = {
   validationIssues: string[];
 };
 
+export type AdminPageDocumentRevisionHistoryEntry = {
+  id: string;
+  status: "draft" | "review" | "published" | "archived";
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+  isPublished: boolean;
+  document: PageDocument | null;
+  validationIssues: string[];
+};
+
+export type AdminPageDocumentAuditEntry = {
+  id: string;
+  revisionId: string;
+  sourceRevisionId: string | null;
+  relatedRevisionId: string | null;
+  action:
+    | "draft_saved"
+    | "submitted_for_review"
+    | "returned_to_draft"
+    | "publish_archived_previous"
+    | "published"
+    | "restore_archived_active"
+    | "restored_to_review";
+  fromStatus: "draft" | "review" | "published" | "archived" | null;
+  toStatus: "draft" | "review" | "published" | "archived";
+  createdAt: string;
+};
+
 export type AdminPageDocumentSummary = {
   pageId: string | null;
   adapter: PageDocumentAdminAdapter;
@@ -58,10 +87,13 @@ export type AdminPageDocumentSummary = {
   lastUpdatedAt: string | null;
   published: {
     status: "published" | "unavailable" | "invalid";
+    revisionId: string | null;
     document: PageDocument | null;
     validationIssues: string[];
   };
   activeRevision: AdminPageDocumentRevision | null;
+  revisionHistory: AdminPageDocumentRevisionHistoryEntry[];
+  auditHistory: AdminPageDocumentAuditEntry[];
   currentState: "draft" | "review" | "published" | "archived" | "invalid" | "unavailable";
 };
 
@@ -77,6 +109,7 @@ type PageRow = {
   published_at: string | null;
   last_reviewed_at: string | null;
   updated_at: string | null;
+  published_revision_id: string | null;
   content: unknown;
 };
 
@@ -88,6 +121,17 @@ type RevisionRow = {
   updated_at: string;
   published_at: string | null;
   payload: unknown;
+};
+
+type AuditRow = {
+  id: string;
+  revision_id: string;
+  source_revision_id: string | null;
+  related_revision_id: string | null;
+  action: AdminPageDocumentAuditEntry["action"];
+  from_status: AdminPageDocumentAuditEntry["fromStatus"];
+  to_status: AdminPageDocumentAuditEntry["toStatus"];
+  created_at: string;
 };
 
 function getPageDocumentCandidate(payload: unknown): unknown {
@@ -117,19 +161,27 @@ function buildSummary(
   adapter: PageDocumentAdminAdapter,
   page: PageRow | undefined,
   revisions: RevisionRow[],
+  auditHistory: AuditRow[],
 ): AdminPageDocumentSummary {
   const pageStatus = page && isWorkflowStatus(page.status) ? page.status : "unavailable";
-  const publishedValidation = page ? validateDocument(page.content, adapter.pageKey) : { document: null, validationIssues: ["The page record is unavailable."] };
-  const published = page && page.status === "published"
+  const publishedRevision = page?.published_revision_id
+    ? revisions.find((revision) => revision.id === page.published_revision_id)
+    : undefined;
+  const publishedValidation = publishedRevision
+    ? validateDocument(getPageDocumentCandidate(publishedRevision.payload), adapter.pageKey)
+    : { document: null, validationIssues: page ? ["The authoritative Published revision pointer is unavailable."] : ["The page record is unavailable."] };
+  const published = page && publishedRevision?.status === "published"
     ? {
       status: publishedValidation.document ? "published" as const : "invalid" as const,
+      revisionId: publishedRevision.id,
       document: publishedValidation.document,
       validationIssues: publishedValidation.validationIssues,
     }
     : {
       status: "unavailable" as const,
+      revisionId: page?.published_revision_id ?? null,
       document: null,
-      validationIssues: [],
+      validationIssues: publishedValidation.validationIssues,
     };
 
   const revisionRow = revisions
@@ -150,8 +202,24 @@ function buildSummary(
     }
     : null;
 
+  const revisionHistory = revisions
+    .sort((left, right) => Date.parse(right.updated_at) - Date.parse(left.updated_at))
+    .map((revision) => {
+      const validation = validateDocument(getPageDocumentCandidate(revision.payload), adapter.pageKey);
+      return {
+        id: revision.id,
+        status: revision.status as AdminPageDocumentRevisionHistoryEntry["status"],
+        createdAt: revision.created_at,
+        updatedAt: revision.updated_at,
+        publishedAt: revision.published_at,
+        isPublished: revision.id === page?.published_revision_id,
+        document: validation.document,
+        validationIssues: validation.validationIssues,
+      };
+    });
+
   const currentState = activeRevision?.status
-    ?? (published.status === "published" ? "published" : published.status === "invalid" ? "invalid" : pageStatus);
+    ?? (published.status === "published" ? "published" : published.status === "invalid" ? "invalid" : pageStatus === "archived" ? "archived" : "unavailable");
   const timestamps = [page?.updated_at, activeRevision?.updatedAt].filter((value): value is string => Boolean(value));
 
   return {
@@ -163,6 +231,17 @@ function buildSummary(
     lastUpdatedAt: timestamps.sort((left, right) => Date.parse(right) - Date.parse(left))[0] ?? null,
     published,
     activeRevision,
+    revisionHistory,
+    auditHistory: auditHistory.map((entry) => ({
+      id: entry.id,
+      revisionId: entry.revision_id,
+      sourceRevisionId: entry.source_revision_id,
+      relatedRevisionId: entry.related_revision_id,
+      action: entry.action,
+      fromStatus: entry.from_status,
+      toStatus: entry.to_status,
+      createdAt: entry.created_at,
+    })),
     currentState,
   };
 }
@@ -172,7 +251,7 @@ export async function getAdminPageDocumentReadModel(): Promise<AdminPageDocument
   const pageKeys = PAGE_DOCUMENT_ADMIN_ADAPTERS.map((adapter) => adapter.pageKey);
   const { data: pageData, error: pageError } = await supabase
     .from("pages")
-    .select("id, title, slug, status, published_at, last_reviewed_at, updated_at, content")
+    .select("id, title, slug, status, published_at, last_reviewed_at, updated_at, published_revision_id, content")
     .in("slug", pageKeys);
 
   if (pageError) {
@@ -189,7 +268,7 @@ export async function getAdminPageDocumentReadModel(): Promise<AdminPageDocument
       .select("id, entity_key, status, created_at, updated_at, published_at, payload")
       .eq("entity_type", "page")
       .in("entity_key", pageIds)
-      .in("status", ["draft", "review"]);
+      .in("status", ["draft", "review", "published", "archived"]);
 
     if (revisionError) {
       throw new Error("The current PageDocument workflow state could not be loaded.");
@@ -206,10 +285,30 @@ export async function getAdminPageDocumentReadModel(): Promise<AdminPageDocument
     revisionsByPage.set(revision.entity_key, pageRevisions);
   }
 
+  const auditByPage = new Map<string, AuditRow[]>();
+  if (pageIds.length > 0) {
+    const { data: auditData, error: auditError } = await supabase
+      .from("cms_workflow_audit_log")
+      .select("id, page_id, revision_id, source_revision_id, related_revision_id, action, from_status, to_status, created_at")
+      .in("page_id", pageIds)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (auditError) {
+      throw new Error("The PageDocument workflow history could not be loaded.");
+    }
+
+    for (const entry of (auditData ?? []) as Array<AuditRow & { page_id: string }>) {
+      const pageAudit = auditByPage.get(entry.page_id) ?? [];
+      pageAudit.push(entry);
+      auditByPage.set(entry.page_id, pageAudit);
+    }
+  }
+
   return {
     pages: PAGE_DOCUMENT_ADMIN_ADAPTERS.map((adapter) => {
       const page = pagesBySlug.get(adapter.pageKey);
-      return buildSummary(adapter, page, page ? revisionsByPage.get(page.id) ?? [] : []);
+      return buildSummary(adapter, page, page ? revisionsByPage.get(page.id) ?? [] : [], page ? auditByPage.get(page.id) ?? [] : []);
     }),
   };
 }
