@@ -87,8 +87,10 @@ export default async function AdminPagesIndex() {
           )}
         </section>
 
-        <p className="admin-editor-note">Work remains a legacy page and is intentionally excluded from this PageDocument management surface. Legacy page-section controls and anti-drift guards remain unchanged.</p>
-        <footer className="admin-footer">PageDocument content is read-only in Batch 1.</footer>
+        <div className="admin-page-document-lower">
+          <p className="admin-editor-note admin-page-document-legacy-note">Work remains a legacy page and is intentionally excluded from this PageDocument management surface. Legacy page-section controls and anti-drift guards remain unchanged.</p>
+          <footer className="admin-footer">PageDocument content is read-only in Batch 1.</footer>
+        </div>
       </div>
     </main>
   );
