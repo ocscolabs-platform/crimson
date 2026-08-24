@@ -39,6 +39,7 @@ export default async function AdminDashboardPage() {
         <nav className="admin-nav" aria-label="CMS sections">
           <Link href="#overview">Overview</Link>
           {membership.role ? <Link href="/crimson-admin-control/content">Global content</Link> : null}
+          {membership.role ? <Link href="/crimson-admin-control/content/pages">Pages</Link> : null}
           <Link href="#services-records">Services</Link>
           <Link href="#work-records">Work library</Link>
           {membership.role === "owner" ? <Link href="/crimson-admin-control/team">Team &amp; access</Link> : null}
