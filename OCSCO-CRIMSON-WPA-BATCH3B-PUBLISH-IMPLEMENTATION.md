@@ -12,11 +12,11 @@
 
 Implemented only the Batch 3B Owner-only PageDocument Publish application workflow. No live Publish was submitted. No Restore action was added or called. The protected Homepage Review, migration #26, Supabase data, Production, environment configuration, and public content loaders were not changed.
 
-The staging PR is [#71](https://github.com/ocscolabs-platform/crimson/pull/71), with base `staging`. All 3 required checks passed. The PR remains open and unmerged.
+The staging PR is [#71](https://github.com/ocscolabs-platform/crimson/pull/71), with base `staging`. All 3 required checks passed after the report commit. The PR remains open and unmerged.
 
 ## Exact PR diff scope
 
-GitHub reports 7 changed files, matching the approved Batch 3B application and validation scope:
+GitHub reports 8 changed files: the 7 approved Batch 3B application/validation files below plus this required report:
 
 - `package.json`
 - `scripts/test-phase5a-application-workflow.mjs`
@@ -25,6 +25,7 @@ GitHub reports 7 changed files, matching the approved Batch 3B application and v
 - `src/app/admin/content/pages/_components/PageDocumentPublishControl.tsx`
 - `src/app/admin/content/pages/actions.ts`
 - `src/app/globals.css`
+- `OCSCO-CRIMSON-WPA-BATCH3B-PUBLISH-IMPLEMENTATION.md`
 
 No migration, environment, Vercel, Production, or unrelated application files are in the PR.
 
@@ -72,7 +73,8 @@ Read-only Owner QA on the feature Preview confirmed:
 
 ## Preview and public smoke QA
 
-Feature Preview: https://ocsco-project-crimson-1grjp239t-ocscolabs-platforms-projects.vercel.app  
+Feature Preview for the implementation commit: https://ocsco-project-crimson-1grjp239t-ocscolabs-platforms-projects.vercel.app  
+Latest report-only PR deployment: https://ocsco-project-crimson-ot12h8yjr-ocscolabs-platforms-projects.vercel.app  
 Vercel status: Ready / Preview.
 
 Read-only public smoke checks passed without application or runtime errors:
