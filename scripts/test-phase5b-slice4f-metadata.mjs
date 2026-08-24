@@ -81,19 +81,14 @@ test("PageDocument SEO supplies title, description, Open Graph, Twitter, and cod
     url: "/about",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "About OCSCO" }],
   });
-  assert.deepEqual(metadata.twitter, {
-    card: "summary_large_image",
-    title: "About OCSCO",
-    description: "How OCSCO brings strategy, design, and technology together.",
-    images: ["/opengraph-image"],
-  });
+  assert.equal(metadata.twitter, undefined);
 });
 
 test("omitted approved OG reference falls back to the generated default route", () => {
   const document = aboutDocument({ seo: { title: "About", description: "Description" } });
   const metadata = buildPageDocumentMetadata(document, "about");
   assert.deepEqual(metadata.openGraph.images, [{ url: "/opengraph-image", width: 1200, height: 630, alt: "About" }]);
-  assert.deepEqual(metadata.twitter.images, ["/opengraph-image"]);
+  assert.equal(metadata.twitter, undefined);
 });
 
 test("metadata builder rejects a mismatched page key and invalid OG reference", () => {
@@ -143,7 +138,9 @@ test("route metadata authority is PageDocument-driven while Work remains legacy"
 test("origin, generated image path, and route paths remain code-controlled", async () => {
   const helper = await readFile("src/lib/page-metadata.ts", "utf8");
   const origin = await readFile("src/lib/site-origin.ts", "utf8");
+  const layout = await readFile("src/app/layout.tsx", "utf8");
   assert.match(origin, /NEXT_PUBLIC_SITE_URL/);
+  assert.match(layout, /twitter:\s*\{/);
   assert.match(helper, /\/opengraph-image/);
   assert.doesNotMatch(helper, /NEXT_PUBLIC_SITE_URL|ocsco\\.io|VERCEL_URL/);
   assert.doesNotMatch(helper, /canonical:\s*document\.seo|ogImagePath\s*=\s*document\.seo/);
