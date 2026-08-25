@@ -11,14 +11,15 @@ const migrationName = "20260824000000_add_phase5a_page_document_workflow_contrac
 const readMigration = async () =>
   (await readFile(path.join(migrationDir, migrationName), "utf8")).replaceAll("\r\n", "\n");
 
-test("Batch 3A creates exactly the 26th canonical migration", async () => {
+test("Batch 3A remains at the historical 26th migration boundary", async () => {
   const files = (await readdir(migrationDir))
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 27);
-  assert.equal(files.at(-2), migrationName);
-  assert.match(files.at(-1), /^20260826000000_add_phase6a_insights_foundation\.sql$/);
+  assert.equal(files.length, 28);
+  assert.equal(files.at(-3), migrationName);
+  assert.match(files.at(-2), /^20260826000000_add_phase6a_insights_foundation\.sql$/);
+  assert.match(files.at(-1), /^20260826010000_add_phase6b1_insights_slug_update_contract\.sql$/);
 });
 
 test("Batch 3A exposes the approved PageDocument RPC contracts", async () => {
