@@ -83,13 +83,24 @@ function isCaseStudyMediaItem(value: unknown): value is CaseStudyMediaItem {
 
 type PublicCmsClient = NonNullable<ReturnType<typeof getPublicCmsClient>>;
 
-async function createPublicMediaUrl(client: PublicCmsClient, path: string | null) {
-  if (!path) {
-    return null;
+async function createPublicMediaUrls(client: PublicCmsClient, paths: string[]) {
+  const uniquePaths = [...new Set(paths.filter(Boolean))];
+  if (uniquePaths.length === 0) {
+    return new Map<string, string>();
   }
 
-  const { data, error } = await client.storage.from(CASE_STUDY_MEDIA_BUCKET).createSignedUrl(path, 3600);
-  return error ? null : data?.signedUrl || null;
+  const { data, error } = await client.storage.from(CASE_STUDY_MEDIA_BUCKET).createSignedUrls(uniquePaths, 3600);
+  if (error || !data) {
+    return new Map<string, string>();
+  }
+
+  return new Map<string, string>(
+    data.flatMap((item) => (
+      item.path && item.signedUrl && !item.error
+        ? [[item.path, item.signedUrl] as const]
+        : []
+    )),
+  );
 }
 
 type PublishedPage = {
@@ -273,9 +284,9 @@ export async function getPublishedService(slug: string): Promise<Service | undef
 }
 
 async function mapPublishedCaseStudy(
-  client: PublicCmsClient,
   caseStudy: PublishedCaseStudy,
   relatedCapabilities: Array<{ slug: string; name: string; cardName: string }>,
+  mediaUrls: ReadonlyMap<string, string>,
 ): Promise<WorkProject> {
   const isApproved = caseStudy.client_visibility === "approved";
   const safeName = caseStudy.project_type === "prototype"
@@ -292,15 +303,15 @@ async function mapPublishedCaseStudy(
   const mediaItems = Array.isArray(caseStudy.supporting_media)
     ? caseStudy.supporting_media.filter(isCaseStudyMediaItem).filter((item) => item.approval === "approved")
     : [];
-  const [featuredImageUrl, supportingMedia] = caseStudy.media_status === "approved"
-    ? await Promise.all([
-      createPublicMediaUrl(client, caseStudy.featured_image_path),
-      Promise.all(mediaItems.map(async (item) => {
-        const url = await createPublicMediaUrl(client, item.path);
-        return url ? { url, alt: item.alt } : null;
-      })),
-    ])
-    : [null, []];
+  const featuredImageUrl = caseStudy.media_status === "approved" && caseStudy.featured_image_path
+    ? mediaUrls.get(caseStudy.featured_image_path) || null
+    : null;
+  const supportingMedia = caseStudy.media_status === "approved"
+    ? mediaItems.flatMap((item) => {
+      const url = mediaUrls.get(item.path);
+      return url ? [{ url, alt: item.alt }] : [];
+    })
+    : [];
 
   return {
     slug: caseStudy.slug,
@@ -324,7 +335,8 @@ async function mapPublishedCaseStudy(
   };
 }
 
-export async function getPublishedWorkProjects(): Promise<WorkProject[]> {
+export async function getPublishedWorkProjects(options: { includeRelatedCapabilities?: boolean } = {}): Promise<WorkProject[]> {
+  const includeRelatedCapabilities = options.includeRelatedCapabilities ?? true;
   const client = getPublicCmsClient();
 
   if (!client) {
@@ -343,45 +355,62 @@ export async function getPublishedWorkProjects(): Promise<WorkProject[]> {
   }
 
   const caseStudies = data as PublishedCaseStudy[];
-  const { data: links } = await client
-    .from("case_study_services")
-    .select("case_study_id, service_id")
-    .in("case_study_id", caseStudies.map((caseStudy) => caseStudy.id));
-
-  const relationshipLinks = (links as PublishedCaseStudyServiceLink[] | null) ?? [];
-  const serviceIds = [...new Set(relationshipLinks.map((link) => link.service_id))];
-  const { data: services } = serviceIds.length
-    ? await client
-      .from("services")
-      .select("id, name, card_name, slug")
-      .in("id", serviceIds)
-      .order("created_at", { ascending: true })
-    : { data: [] as PublishedRelatedService[] };
-
-  const relatedServicesById = new Map(
-    ((services as PublishedRelatedService[] | null) ?? []).map((service) => [service.id, service]),
-  );
   const relatedCapabilitiesByCaseStudy = new Map<string, Array<{ slug: string; name: string; cardName: string }>>();
+  if (includeRelatedCapabilities) {
+    const { data: links } = await client
+      .from("case_study_services")
+      .select("case_study_id, service_id")
+      .in("case_study_id", caseStudies.map((caseStudy) => caseStudy.id));
 
-  relationshipLinks.forEach((link) => {
-    const service = relatedServicesById.get(link.service_id);
-    if (!service) {
-      return;
+    const relationshipLinks = (links as PublishedCaseStudyServiceLink[] | null) ?? [];
+    const serviceIds = [...new Set(relationshipLinks.map((link) => link.service_id))];
+    const { data: services } = serviceIds.length
+      ? await client
+        .from("services")
+        .select("id, name, card_name, slug")
+        .in("id", serviceIds)
+        .order("created_at", { ascending: true })
+      : { data: [] as PublishedRelatedService[] };
+
+    const relatedServicesById = new Map(
+      ((services as PublishedRelatedService[] | null) ?? []).map((service) => [service.id, service]),
+    );
+
+    relationshipLinks.forEach((link) => {
+      const service = relatedServicesById.get(link.service_id);
+      if (!service) {
+        return;
+      }
+
+      const capabilities = relatedCapabilitiesByCaseStudy.get(link.case_study_id) ?? [];
+      capabilities.push({
+        slug: service.slug,
+        name: service.name,
+        cardName: service.card_name || service.name,
+      });
+      relatedCapabilitiesByCaseStudy.set(link.case_study_id, capabilities);
+    });
+  }
+
+  const mediaPaths = caseStudies.flatMap((caseStudy) => {
+    if (caseStudy.media_status !== "approved") {
+      return [];
     }
 
-    const capabilities = relatedCapabilitiesByCaseStudy.get(link.case_study_id) ?? [];
-    capabilities.push({
-      slug: service.slug,
-      name: service.name,
-      cardName: service.card_name || service.name,
-    });
-    relatedCapabilitiesByCaseStudy.set(link.case_study_id, capabilities);
+    const supportingPaths = Array.isArray(caseStudy.supporting_media)
+      ? caseStudy.supporting_media
+        .filter(isCaseStudyMediaItem)
+        .filter((item) => item.approval === "approved")
+        .map((item) => item.path)
+      : [];
+    return [caseStudy.featured_image_path, ...supportingPaths].filter((path): path is string => Boolean(path));
   });
+  const mediaUrls = await createPublicMediaUrls(client, mediaPaths);
 
   return Promise.all(caseStudies.map((caseStudy) => mapPublishedCaseStudy(
-    client,
     caseStudy,
     relatedCapabilitiesByCaseStudy.get(caseStudy.id) ?? [],
+    mediaUrls,
   )));
 }
 
