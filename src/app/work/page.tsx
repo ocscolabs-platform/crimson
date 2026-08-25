@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function WorkPage() {
   const [workProjects, pageSections, chrome, page] = await Promise.all([
-    getPublishedWorkProjects(),
+    getPublishedWorkProjects({ includeRelatedCapabilities: false }),
     getPublishedPageSections("work"),
     getPublishedSiteChrome(),
     getPublishedPage("work"),
