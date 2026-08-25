@@ -36,6 +36,12 @@ Deliver the Full Page Content CMS for Home, Services overview, About, and Contac
 - Contact marketing wrapper content is PageDocument-backed, while ContactForm fields, labels, validation, honeypot, inquiry API, service options, and success/error behavior remain code-controlled.
 - Production release/promotion is a separate owner-controlled gate. This artifact is staging sign-off only; it does not authorize a `staging → main` promotion, Production deployment, Production Supabase migration, or Production CMS release.
 
+## Post-acceptance About visibility correction — 2026-08-25
+
+After the initial closure acceptance, the owner identified a staging content-state issue in the About people section. The existing CMS visibility control was verified working, with no application defect. Through the approved Draft → Review → Preview → Publish workflow, `about_people` changed from visible (`enabled: true`) to hidden (`enabled: false`). Its content, order, and CTA remain preserved for future use.
+
+The final staging About Published revision is `c33b7ad5-ade9-4f32-b9b9-fafb39007137`; the previous Published revision `d6b1cecf-a900-4277-9bb6-212f1ceb8f69` is archived. Phase 5 remains **COMPLETE — STAGING VERIFIED**. Production remains untouched, and Production promotion/release remains a separate future owner-controlled gate.
+
 ## Next stage
 
 Phase 6 Insights is the next separately authorized scope and is **NOT STARTED**. Canonical public routes are `/insights` and `/insights/[slug]`; the CMS area is `Insights / Articles`. Editor-first authoring, Trusted Publisher, Insights-only publishing surfaces, simplified article creation, and review/pending notifications belong to Phase 6 planning and are not implemented by this closure.

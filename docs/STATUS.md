@@ -28,6 +28,7 @@ The verified `crimson-staging` baseline is 26 canonical migrations with zero pen
 - Final responsive acceptance: Desktop 1440×900 PASS; Tablet 768×1024 PASS; Mobile 390×844 PASS.
 - Accepted surfaces: Home, Services, About, Contact, Work route health, Cairnstack detail, and authenticated CMS.
 - Editorial workflow: Draft, Review, Preview, Return to Draft, Publish, Restore, history/audit, repeat-action hardening, role enforcement, and public Published-only isolation all PASS.
+- Post-acceptance About correction: `about_people` is hidden in the final staging Published revision `c33b7ad5-ade9-4f32-b9b9-fafb39007137`; its content, order, and CTA remain preserved, and the previous Published revision `d6b1cecf-a900-4277-9bb6-212f1ceb8f69` is archived.
 - Remaining FIX NOW findings: 0.
 - Production and `main`: untouched. Phase 6 Insights: next, not started.
 
