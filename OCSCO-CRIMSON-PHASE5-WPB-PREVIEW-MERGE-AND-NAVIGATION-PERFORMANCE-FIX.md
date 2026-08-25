@@ -2,11 +2,11 @@
 
 ## Preview merge and navigation performance fix
 
-Date: 2026-08-25  
-PR #75 merge commit: `b5cc38419bbbb7dee515ee792fc43c7efeece374`  
-Final staging HEAD at verification: `b5cc38419bbbb7dee515ee792fc43c7efeece374`  
-Performance branch: `codex/phase5-wpb-public-navigation-performance`  
-Performance commit: `3b779eea7ce411221dc35b7955858fbba0220831`  
+Date: 2026-08-25
+PR #75 merge commit: `b5cc38419bbbb7dee515ee792fc43c7efeece374`
+Final staging HEAD at verification: `b5cc38419bbbb7dee515ee792fc43c7efeece374`
+Performance branch: `codex/phase5-wpb-public-navigation-performance`
+Performance commit: `3b779eea7ce411221dc35b7955858fbba0220831`
 Performance PR: [#76](https://github.com/ocscolabs-platform/crimson/pull/76)
 
 ## Executive result
