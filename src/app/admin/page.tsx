@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getAdminContent } from "@/lib/admin-content";
-import { getCmsMembership } from "@/lib/cms-auth";
+import { getCmsMembership, getCmsRoleLabel } from "@/lib/cms-auth";
 import { createClient } from "@/lib/supabase/server";
 import AdminAccountActions from "@/app/admin/AdminAccountActions";
 
@@ -16,6 +16,9 @@ export default async function AdminDashboardPage() {
   }
 
   const membership = await getCmsMembership(user.id);
+  if (membership.accessScope === "insights_only") {
+    redirect("/crimson-admin-control/insights");
+  }
   let content;
   let loadError = "";
 
@@ -33,13 +36,14 @@ export default async function AdminDashboardPage() {
             <Link className="admin-brand" href="/">OCSCO</Link>
             <p className="admin-kicker">CMS / Control room</p>
           </div>
-          <AdminAccountActions email={user.email} role={membership.role} />
+          <AdminAccountActions email={user.email} role={getCmsRoleLabel(membership)} />
         </header>
 
         <nav className="admin-nav" aria-label="CMS sections">
           <Link href="#overview">Overview</Link>
           {membership.role ? <Link href="/crimson-admin-control/content">Global content</Link> : null}
           {membership.role ? <Link href="/crimson-admin-control/content/pages">Pages</Link> : null}
+          {membership.role && (membership.role === "owner" || membership.accessScope === "full_cms" || membership.insightsAccess) ? <Link href="/crimson-admin-control/insights">Insights</Link> : null}
           <Link href="#services-records">Services</Link>
           <Link href="#work-records">Work library</Link>
           {membership.role === "owner" ? <Link href="/crimson-admin-control/team">Team &amp; access</Link> : null}

@@ -12,6 +12,10 @@
 **Phase 4C staging baseline and QA — Complete**
 **Production release/promotion gate — Deferred release gate**
 
+**Phase 6 — Insights — IN PROGRESS / Batch 6A implementation branch under Owner review**
+
+Batch 6A establishes the Insights-only access boundary, Trusted Publisher capability, article/revision workflow foundation, taxonomy, audit history, Published-only projection, and direct security-contract tests. The feature branch remains unmerged and staging Supabase application remains a separate review gate. Batch 6B, the composer, media delivery, and public Insights routes are not started.
+
 The canonical roadmap is [`MASTER-PLAN.md`](./MASTER-PLAN.md). This file records the current implementation state; older detailed phase documents and early task entries are historical implementation records where their statuses conflict with later verified slices.
 
 Phase 0 through Phase 3 are complete. The public route structure, visual system, environment-specific contact workflow, production metadata, and domain release are implemented. Phase 4A and 4B are complete for the approved staging CMS slices: schema, published-only public read boundary, role authorization, revision-based publishing, media workflow, relationships, audit history, and canonical `/crimson-admin-control` route. Owner-approved staging Phase 4C baseline and QA are complete. Production deployment, configuration, Auth, database, and promotion verification remain a deferred release gate and do not block Phase 5 development in staging.

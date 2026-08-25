@@ -14,7 +14,7 @@
 
 ## Project guardrails
 
-- Phase 0 foundation, Phase 1 information architecture, Phase 2 design direction, and Phase 3 public website implementation are complete. The current approved gate is Phase 4C post-merge release verification, including the invitation-flow remediation.
-- Do not begin Phase 5 page-content CMS work or Phase 6 Blog / Insights work without explicit approval.
+- Phase 0 through Phase 5 are complete and staging-verified. The current approved implementation gate is Phase 6 Insights Work Package A / Batch 6A on a feature branch targeting `staging`.
+- Do not begin Phase 6 Batch 6B, public Insights routes, the composer, media delivery, or Production work without separate explicit approval.
 - Do not add production Supabase credentials, Vercel configuration values, domains, or account-specific identifiers to the repository.
 - Update the README and applicable documentation when the architecture or developer workflow changes.

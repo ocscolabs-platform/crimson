@@ -16,8 +16,9 @@ test("Batch 3A creates exactly the 26th canonical migration", async () => {
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 26);
-  assert.equal(files.at(-1), migrationName);
+  assert.equal(files.length, 27);
+  assert.equal(files.at(-2), migrationName);
+  assert.match(files.at(-1), /^20260826000000_add_phase6a_insights_foundation\.sql$/);
 });
 
 test("Batch 3A exposes the approved PageDocument RPC contracts", async () => {

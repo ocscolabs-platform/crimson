@@ -1,7 +1,7 @@
 # OCSCO Project Crimson — Master Plan
 
 **Plan version:** 2026-08-24
-**Status:** Owner-approved roadmap; Phase 5 Work Packages A and B are complete and staging-verified, the Production release/promotion gate remains deferred, and Phase 6 Insights is the next separately authorized scope.
+**Status:** Owner-approved roadmap; Phase 5 Work Packages A and B are complete and staging-verified, Phase 6 Insights Batch 6A is in progress on a feature branch targeting `staging`, and the Production release/promotion gate remains deferred.
 **Canonical roadmap:** This document is the source of truth for phase order, scope, dependencies, and release gates. Detailed phase documents remain implementation records and may contain historical statuses.
 
 ## Product objective

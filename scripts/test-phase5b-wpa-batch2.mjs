@@ -110,8 +110,8 @@ test("Batch 2 exposes the structured editor without publication or Work conversi
   assert.match(editor, /Draft changes are private and are not visible on the public site/);
   assert.match(editor, /published content remains unchanged/);
   assert.doesNotMatch(editor, /Draft only · no publication action is available in Batch 2/);
-  assert.match(action, /cms_save_revision/);
-  assert.match(action, /p_status: "draft"/);
+  assert.match(action, /cms_page_document_save_draft/);
+  assert.match(action, /p_page_key: adapter\.pageKey/);
   assert.match(action, /Draft saved/);
   assert.doesNotMatch(action, /cms_publish_revision|cms_restore_revision/);
   assert.doesNotMatch(editor, /initialPageDocumentActionState.*from/);
