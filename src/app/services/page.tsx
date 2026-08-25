@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RouteShell } from "@/components/route-shell";
 import { ServicesPageBody } from "@/components/page-document-public-bodies";
+import { getPublishedSiteChrome } from "@/lib/cms-content";
 import { getPublishedPageDocument, getPublishedPageServices } from "@/lib/page-document-loader";
 import { getPublishedPageMetadata } from "@/lib/page-metadata";
 import { createServicesPageRenderData } from "@/lib/services-page";
@@ -18,9 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ServicesPage() {
-  const [result, servicesResult] = await Promise.all([
+  const [result, servicesResult, chrome] = await Promise.all([
     getPublishedPageDocument("services"),
     getPublishedPageServices(),
+    getPublishedSiteChrome(),
   ]);
 
   if (result.kind !== "document" || servicesResult.kind !== "resolved") {
@@ -40,6 +42,7 @@ export default async function ServicesPage() {
       eyebrow={hero.eyebrow}
       title={hero.title}
       intro={hero.intro}
+      chrome={chrome}
     >
       <ServicesPageBody capabilities={capabilities} plan={plan} services={services} />
     </RouteShell>
