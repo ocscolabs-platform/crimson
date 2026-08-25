@@ -112,13 +112,9 @@ test("Contact route uses PageDocument body authority without legacy fallback", a
   assert.match(source, /getPublishedPageDocument\("contact"\)/);
   assert.match(source, /createContactPageRenderData/);
   assert.match(source, /result\.document/);
+  assert.match(source, /const \{ hero, body \} = createContactPageRenderData\(result\.document\)/);
+  assert.match(source, /<ContactPageBody body=\{body\} \/>/);
   assert.match(source, /notFound\(\)/);
-  assert.match(source, /section\.content\.eyebrow/);
-  assert.match(source, /section\.content\.heading/);
-  assert.match(source, /section\.content\.items\.map/);
-  assert.match(source, /String\(index \+ 1\)\.padStart/);
-  assert.match(source, /section\.content\.cta\.href/);
-  assert.match(source, /section\.content\.intro/);
   assert.doesNotMatch(source, /getPublishedPageSections|OrderedPageSections|page-sections/);
   assert.doesNotMatch(source, /Bring us the thing that needs to work better\.|What happens next|Tell us what needs to work better/);
   assert.doesNotMatch(source, /prefix/);
@@ -127,7 +123,8 @@ test("Contact route uses PageDocument body authority without legacy fallback", a
 test("ContactForm functional boundary remains code-controlled", async () => {
   const routeSource = await readFile(new URL("../src/app/contact/page.tsx", import.meta.url), "utf8");
   const formSource = await readFile(new URL("../src/components/contact-form.tsx", import.meta.url), "utf8");
-  assert.match(routeSource, /<ContactForm \/>/);
+  assert.match(routeSource, /ContactPageBody/);
+  assert.match(routeSource, /<ContactPageBody body=\{body\} \/>/);
   assert.match(formSource, /fetch\("\/api\/inquiries"/);
   assert.match(formSource, /reportValidity\(\)/);
   assert.match(formSource, /contact-honeypot/);
