@@ -23,13 +23,26 @@ export default function PageDocumentRestoreControl({
   const [state, formAction, pending] = useActionState(restorePageDocument, initialState);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [submitLocked, setSubmitLocked] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const locked = pending || (submitLocked && state.status === "idle");
 
   useEffect(() => {
     if (state.status === "success") {
       router.refresh();
+      const resetTimer = window.setTimeout(() => {
+        setConfirmationOpen(false);
+        setSubmitLocked(false);
+        setShowSuccess(true);
+      }, 0);
+      return () => window.clearTimeout(resetTimer);
+    } else if (state.status === "error") {
+      const resetTimer = window.setTimeout(() => {
+        setSubmitLocked(false);
+        setShowSuccess(false);
+      }, 0);
+      return () => window.clearTimeout(resetTimer);
     }
-  }, [router, state.status]);
+  }, [router, state.status, state.revisionId]);
 
   return (
     <div className="admin-page-restore-control" aria-live="polite">
@@ -37,12 +50,15 @@ export default function PageDocumentRestoreControl({
         className="button admin-button-secondary admin-restore-trigger"
         type="button"
         disabled={pending}
-        onClick={() => setConfirmationOpen(true)}
+        onClick={() => {
+          setShowSuccess(false);
+          setConfirmationOpen(true);
+        }}
       >
         Restore revision
       </button>
 
-      {confirmationOpen && state.status !== "success" ? (
+      {confirmationOpen ? (
         <div className="admin-restore-confirmation" role="dialog" aria-modal="true" aria-labelledby={`restore-${sourceRevisionId}-heading`}>
           <h3 id={`restore-${sourceRevisionId}-heading`}>Restore historical page version?</h3>
           <p>
@@ -79,7 +95,7 @@ export default function PageDocumentRestoreControl({
         </div>
       ) : null}
 
-      {state.status === "success" ? <p className="admin-readonly-valid" role="status">{state.message}</p> : null}
+      {state.status === "success" && showSuccess ? <p className="admin-readonly-valid" role="status">{state.message}</p> : null}
       {state.status === "error" ? <p className="admin-alert" role="alert">{state.message}</p> : null}
     </div>
   );
