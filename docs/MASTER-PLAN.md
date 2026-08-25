@@ -1,7 +1,7 @@
 # OCSCO Project Crimson — Master Plan
 
 **Plan version:** 2026-08-24
-**Status:** Owner-approved roadmap; Phase 4C staging baseline and QA are complete, Phase 5B Slices 4A through 4F are closed in staging, the remaining Phase 5 editor work is approved as two descriptive completion work packages, no historical Slice 4G is created, and the Production release/promotion gate is deferred.
+**Status:** Owner-approved roadmap; Phase 5 Work Packages A and B are complete and staging-verified, the Production release/promotion gate remains deferred, and Phase 6 Insights is the next separately authorized scope.
 **Canonical roadmap:** This document is the source of truth for phase order, scope, dependencies, and release gates. Detailed phase documents remain implementation records and may contain historical statuses.
 
 ## Product objective
@@ -37,7 +37,11 @@ feature/*  →  staging / Preview  →  main / Production
 - **Planned:** approved scope not yet implemented.
 - **Future:** intentionally deferred enhancement, not required for the MVP gate.
 
-## Release state — 2026-08-22
+## Release state — 2026-08-25
+
+Phase 5 is complete in staging. Work Package A delivered the PageDocument editor and editorial workflow; Work Package B passed final staging acceptance. The final staging HEAD recorded at acceptance is `1434210079b2c0bed94b0776a49d490f4fc98341`. The Production release/promotion gate remains separate and deferred.
+
+## Historical release state — 2026-08-22
 
 The latest successful GitHub refresh reports:
 
@@ -59,7 +63,7 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 | 4A | CMS foundation, auth, roles, and read boundary | Complete in staging; Production release gate deferred | Supabase schema, RLS, Auth, membership roles, published-only public reads, canonical CMS route. |
 | 4B | Staging editorial surfaces | Complete in staging for approved slices | Services, global metadata/navigation, fixed page-section controls, case studies, media, relationships, audit history, revisions, publish/restore controls, admin UX. |
 | 4C | Staging baseline and QA | **Complete** | Clean rebuild, canonical migration parity, CMS workflow acceptance, media, inquiry, route, runtime, and staging/Production isolation checks. The Production release/promotion gate is tracked separately as deferred. |
-| 5 | Full Page Content CMS | **In progress** | Public PageDocument authority is complete for Home, Services, About, and Contact; the editor-facing PageDocument CMS remains to be implemented through two approved completion work packages. |
+| 5 | Full Page Content CMS | **Complete in staging** | Work Packages A and B are complete; Home, Services, About, and Contact are PageDocument-backed and the editor workflow is staging-verified. Production release remains a separate deferred gate. |
 | 6 | Insights CMS and public experience | Planned | `/insights`, `/insights/[slug]`, article model, CMS editor, public listing, search/filtering, SEO, media, preview, and publishing. |
 | 7 | CRM foundation and workflows | Planned | Inquiry/contacts and the approved business relationship workflow; scope must be finalized before implementation. |
 | 8 | Product hardening and reusable-platform work | Future | Automation, richer media, scheduled publishing, analytics/integrations, multi-tenant concerns, and other explicitly approved extensions. |
@@ -135,11 +139,11 @@ The remediation branch is based on the latest `origin/main` and is pushed for re
 
 ### Phase 5 — Full Page Content CMS
 
-**Status: In progress.** The public PageDocument architecture is complete in staging, but the editor-facing Full Page Content CMS is not complete. The two remaining completion work packages below are owner-approved for planning; implementation requires separate authorization. The deferred Production release gate remains required before Production promotion but does not block this staging work.
+**Status: Complete in staging / Production release gate deferred.** Work Packages A and B are complete. The final acceptance covered Home, Services, About, Contact, Work route health, Cairnstack detail, authenticated CMS behavior, responsive QA at 1440×900, 768×1024, and 390×844, accessibility/runtime sanity, migration alignment, and staging/Production isolation. The final staging HEAD is `1434210079b2c0bed94b0776a49d490f4fc98341`.
 
-Phase 5B Slice 3 is closed. Phase 5B Slices 4A through 4F are closed after automated staging-health verification. Home, About, Services, and Contact use PageDocument authority for public body and page-level SEO metadata; Work remains legacy. Publication freshness remains request-time under the current `force-dynamic` architecture, and no explicit revalidation infrastructure is required. The staging verifier now runs on every push to `staging`. Phase 5 cannot close merely because public routes consume PageDocuments: authorized non-technical editors still cannot manage authoritative PageDocument content for Home, Services overview, About, and Contact through Crimson CMS. Phase 6 Insights remains not started.
+Phase 5B Slice 3 and Slices 4A through 4F remain closed historical implementation records. Home, About, Services, and Contact use PageDocument authority for public body and page-level SEO metadata; Work remains legacy. Publication freshness remains request-time under the current `force-dynamic` architecture. The final Work Package B acceptance verified the editor workflow, Preview, role boundaries, public Published-only isolation, history/audit, repeat-action hardening, responsive behavior, accessibility/runtime sanity, and zero remaining FIX NOW findings. Phase 6 Insights remains not started.
 
-The verified staging baseline remains: 25 canonical migrations, zero pending migrations, zero duplicates, zero drift, Published PageDocument baselines for the four target pages, revision and Draft/Review/Published backend capability, publish/restore RPCs, role authorization, transitional `page_sections`, scoped anti-drift guards, Work isolation, and a deferred Production promotion gate.
+The verified staging baseline is 26 canonical migrations, zero pending migrations, zero duplicates, and zero targeted drift, with migration #26 exactly once. It includes Published PageDocument baselines for the four target pages, revision and Draft/Review/Published backend capability, publish/restore RPCs, role authorization, transitional `page_sections`, scoped anti-drift guards, Work isolation, and a deferred Production promotion gate.
 
 #### Approved remaining Phase 5 work packages
 
@@ -147,7 +151,7 @@ The following are descriptive completion work packages, not historical Phase 5B 
 
 ##### Work Package A — PageDocument Editor and Editorial Workflow
 
-**Current status:** Batch 1 — **Closed** after merge and staging verification. Batch 2 — **Closed** after merge and staging verification. Batch 3 — **Next, not started**.
+**Current status:** **Complete** after merge and final staging verification. Batches 1, 2, and 3 are closed.
 
 **Objective:** Build the reusable Crimson CMS editorial experience for the four approved Phase 5 pages.
 
@@ -167,6 +171,8 @@ The following are descriptive completion work packages, not historical Phase 5B 
 
 ##### Work Package B — Full Page Content CMS Staging QA, Owner Front-End Polish, and Phase 5 Closure
 
+**Current status:** **Complete** after final staging acceptance.
+
 **Objective:** Perform end-to-end editor acceptance, public staging QA, owner/client-style visual refinement, and formal Phase 5 closure after Work Package A is implemented and staging-verified.
 
 **Required acceptance:** Test owner, editor, and reviewer boundaries where applicable across Home, Services, About, and Contact. Verify structured editing, CTA and section constraints, SEO, Draft, Review, authenticated Preview, Publish, public Published-only output, revision/audit state, Restore, validation/error behavior, migration alignment, staging architecture verification, Service-reference integrity, Contact functional-boundary integrity, Work isolation, browser/runtime health, responsive behavior, accessibility sanity, and public visual regression.
@@ -184,7 +190,7 @@ Only FIX NOW and approved POLISH WINDOW items belong in Work Package B.
 
 ##### Phase 5 closure gate
 
-Phase 5 may close only when an authorized non-technical editor can manage all four approved pages through Crimson CMS without SQL Editor, Supabase dashboard, GitHub, repository edits, Codex intervention, or manual database changes. Home, Services overview, About, and Contact must each support authoritative PageDocument editing, SEO editing, usable Draft/Review/Publish/Preview/validation flows, and enforced role boundaries while Work remains legacy.
+Phase 5 closure was accepted in staging after an authorized owner session verified that Home, Services overview, About, and Contact support authoritative PageDocument editing, SEO editing, Draft/Review/Publish/Preview/validation flows, and enforced role boundaries while Work remains legacy. Production promotion remains a separate owner-controlled gate.
 
 ##### Functional boundaries retained
 
@@ -192,6 +198,18 @@ Phase 5 may close only when an authorized non-technical editor can manage all fo
 - `public.services` remains the authority for Service records. The Services overview editor controls only its PageDocument shell/wrapper and does not duplicate Service data.
 - Home may manage validated Service references/order, while Service data remains canonical in `public.services`.
 - Work remains legacy and outside Phase 5 PageDocument migration.
+
+#### Final Phase 5 staging closure — 2026-08-25
+
+- Work Package A: **Complete**.
+- Work Package B: **Acceptance pass / complete**.
+- Migration baseline: 26/26 canonical migrations; latest `20260824000000`; migration #26 exactly once; zero pending, duplicate, or targeted-drift findings.
+- Responsive acceptance: PASS at 1440×900, 768×1024, and 390×844.
+- Remaining FIX NOW findings: 0.
+- Work: legacy and intentionally outside PageDocument migration; residual performance debt deferred.
+- CMS/UI polish: separate POLISH WINDOW, not required for functional closure.
+- Production: staging verified only; Production release/promotion remains deferred.
+- Phase 6: Insights, `/insights`, `/insights/[slug]`, and `Insights / Articles`; not started.
 
 #### Phase 5B Slice 4F — Metadata / SEO and revalidation integration
 

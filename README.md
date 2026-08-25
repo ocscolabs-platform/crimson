@@ -1,6 +1,6 @@
 # OCSCO Project Crimson — Public Platform and Staging CMS Foundation
 
-Project Crimson is OCSCO's integrated public website, custom CMS, Blog / Insights, and CRM platform repository. Phase 0 through Phase 3 are complete; the approved CMS slices are implemented and the staging-to-main code merge has occurred. The current phase is post-merge Production verification and baseline stabilization before new page-content, Blog, or CRM implementation begins. The canonical roadmap is [`docs/MASTER-PLAN.md`](docs/MASTER-PLAN.md).
+Project Crimson is OCSCO's integrated public website, custom CMS, Blog / Insights, and CRM platform repository. Phase 0 through Phase 4 are complete, and Phase 5 Work Packages A and B are complete and staging-verified. The Production release/promotion gate remains deferred; Phase 6 Insights is next but not started. The canonical roadmap is [`docs/MASTER-PLAN.md`](docs/MASTER-PLAN.md).
 
 ## Stack
 
