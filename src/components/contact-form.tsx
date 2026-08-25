@@ -6,12 +6,13 @@ import { services } from "@/lib/site-content";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
-export function ContactForm() {
+export function ContactForm({ preview = false }: { preview?: boolean }) {
   const [status, setStatus] = useState<FormStatus>("idle");
   const [statusMessage, setStatusMessage] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (preview) return;
     const form = event.currentTarget;
 
     if (!form.reportValidity()) return;
@@ -71,10 +72,10 @@ export function ContactForm() {
         <p className="form-note" id="contact-message-hint">Please include at least 20 characters.</p>
       </div>
       <div className="form-actions">
-        <button className="button button-dark" type="submit" disabled={status === "submitting"}>
+        <button className="button button-dark" type={preview ? "button" : "submit"} disabled={preview || status === "submitting"}>
           {status === "submitting" ? "Sending..." : "Start a conversation"} <span aria-hidden="true">↗</span>
         </button>
-        <p className="form-note">Your inquiry is sent securely to the OCSCO inquiry database. No email app is required.</p>
+        <p className="form-note">{preview ? "Preview mode — submissions are disabled." : "Your inquiry is sent securely to the OCSCO inquiry database. No email app is required."}</p>
         <p className="form-status" role="status" aria-live="polite">
           {status === "success" ? "Thanks — your inquiry has been received. We will be in touch." : ""}
           {status === "error" ? statusMessage : ""}

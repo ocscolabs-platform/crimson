@@ -217,6 +217,7 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
                   <ValidationState issues={page.activeRevision.validationIssues} />
                   {activeDocument && page.activeRevision.status === "review" ? (
                     <>
+                      <Link className="button button-small" href={`/crimson-admin-control/content/pages/${adapter.pageKey}/preview?revision_id=${encodeURIComponent(page.activeRevision.id)}`}>Preview Review</Link>
                       <div className="admin-readonly-document-stack"><ReadOnlySeoPanel document={activeDocument} idSuffix="review" /><PageDocumentReadOnly document={activeDocument} idSuffix="review" /></div>
                       <PageDocumentPublishControl
                         pageKey={adapter.pageKey}
@@ -228,6 +229,7 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
                       <PageDocumentWorkflowControls pageKey={adapter.pageKey} revisionId={page.activeRevision.id} status="review" canMutate={canMutate} />
                     </>
                   ) : null}
+                  {activeDocument && page.activeRevision.status === "draft" ? <Link className="button button-small" href={`/crimson-admin-control/content/pages/${adapter.pageKey}/preview?revision_id=${encodeURIComponent(page.activeRevision.id)}`}>Preview Draft</Link> : null}
                 </>
               ) : <p className="admin-empty-state">No active Draft or Review revision exists for this page.</p>}
             </section>
@@ -277,7 +279,7 @@ export default async function AdminPageDocumentPage({ params }: AdminPageDocumen
           </>
         )}
 
-        <footer className="admin-footer">Publication remains controlled, authenticated Preview remains unavailable, and Restore is limited to Owners selecting eligible archived history.</footer>
+        <footer className="admin-footer">Publication remains controlled, authenticated Preview is limited to the active Draft or Review revision, and Restore is limited to Owners selecting eligible archived history.</footer>
       </div>
     </main>
   );

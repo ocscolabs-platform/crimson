@@ -17,6 +17,7 @@
     "test:phase5b:wpa:batch3b:publish": "node --test scripts/test-phase5b-wpa-batch3b-publish.mjs",
     "test:phase5b:wpa:batch3c:restore": "node --test scripts/test-phase5b-wpa-batch3c-restore.mjs",
     "test:phase5b:wpa:batch3c:restore-ui-reset": "node --test scripts/test-phase5b-wpa-batch3c-restore-ui-reset.mjs",
+    "test:phase5b:wpb:preview": "node --test scripts/test-phase5-wpb-authenticated-preview.mjs",
     "test:phase5b:slice4f:metadata": "node --test scripts/test-phase5b-slice4f-metadata.mjs",
     "test:phase5b:slice4e:home": "node --test scripts/test-phase5b-slice4e-home.mjs",
     "test:phase5b:slice4d:contact": "node --test scripts/test-phase5b-slice4d-contact.mjs",
