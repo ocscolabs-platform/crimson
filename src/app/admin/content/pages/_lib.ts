@@ -12,3 +12,14 @@ export async function requireCmsViewer() {
 
   return { user, membership };
 }
+
+export async function requireCmsInsightsEditor() {
+  const result = await requireCmsViewer();
+  if (!result.membership.insightsAccess && result.membership.accessScope !== "full_cms" && result.membership.role !== "owner") {
+    redirect("/crimson-admin-control");
+  }
+  if (result.membership.role !== "owner" && result.membership.role !== "editor") {
+    redirect("/crimson-admin-control");
+  }
+  return result;
+}

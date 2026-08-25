@@ -24,6 +24,7 @@
     "test:phase5b:slice4d:contact": "node --test scripts/test-phase5b-slice4d-contact.mjs",
     "test:phase5b:slice4c:services": "node --test scripts/test-phase5b-slice4c-services.mjs",
     "test:phase5b:slice4b:about": "node --test scripts/test-phase5b-slice4b-about.mjs",
+    "test:phase6a:foundation": "node --test scripts/test-phase6a-insights-foundation.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
   },
   "dependencies": {

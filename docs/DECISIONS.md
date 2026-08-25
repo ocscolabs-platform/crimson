@@ -428,6 +428,14 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Reason:** Application validation alone cannot protect direct RPC calls. The future PageDocument contract needs an authoritative mutation boundary without forcing legacy historical revisions or current page rows through an unfinished Phase 5 model.
 - **Consequence:** The new migration is forward-only and data-free. It creates no PageDocument rows, does not backfill or convert page content, does not publish `page_sections`, and does not change Production. Owner review and a separate staging migration application remain required before Slice 2 is considered deployed.
 
+## ADR-062 - Establish the Phase 6A Insights foundation as a separate security boundary
+
+- **Date:** 2026-08-26
+- **Status:** Implemented on the Batch 6A feature branch; staging application and merge pending Owner review
+- **Decision:** Extend the existing `cms_members` architecture with `cms_member_access`, keeping Owner, Editor, and Trusted Publisher terminology. Trusted Publisher is an Editor with the narrow `can_publish_insights` capability and an ownership-checked article publish RPC. Add separate Insights article/revision, Category, Tag, audit, and Published-only projection foundations; keep existing `cms_has_role` callers full-CMS-only so Insights-only members cannot inherit legacy administration.
+- **Reason:** The current CMS role is intentionally broad for Phase 5. A separate access scope is required to expose an Insights publishing surface without granting Pages, Global Content, Services, Work, Team, CRM, or other unrelated authority. Article-specific revisions preserve independent workflow and historical recovery boundaries.
+- **Consequence:** Batch 6A adds one forward migration after migration #26, route-level denial for Insights-only members, direct security-contract tests, and a later staging verification script. It does not add media buckets, Tiptap, autosave, public Insights routes, Production changes, or Batch 6B work.
+
 ## ADR-061 - Align PageDocument validation with the approved About and Contact contract
 
 - **Date:** 2026-08-23
