@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getPublishedPage, getPublishedSiteChrome, type SiteSettings } from "@/lib/cms-content";
+import type { PublicPage } from "@/lib/page-content";
 import type { NavigationItem } from "@/lib/site-navigation";
 
 type RouteChrome = { settings: SiteSettings; primaryNavigation: NavigationItem[]; footerNavigation: NavigationItem[] };
@@ -11,15 +12,18 @@ type RouteShellProps = {
   title: string;
   intro: string;
   pageSlug?: string;
+  page?: PublicPage;
   chrome?: RouteChrome;
   preview?: { pageLabel: string; status: "draft" | "review"; revisionId: string; returnHref: string };
   children: ReactNode;
 };
 
-export async function RouteShell({ eyebrow, title, intro, pageSlug, chrome: suppliedChrome, preview, children }: RouteShellProps) {
-  const [chrome, page] = suppliedChrome
-    ? [suppliedChrome, undefined]
-    : await Promise.all([getPublishedSiteChrome(), pageSlug ? getPublishedPage(pageSlug) : Promise.resolve(undefined)]);
+export async function RouteShell({ eyebrow, title, intro, pageSlug, page: suppliedPage, chrome: suppliedChrome, preview, children }: RouteShellProps) {
+  const [chrome, page] = suppliedChrome && suppliedPage !== undefined
+    ? [suppliedChrome, suppliedPage]
+    : suppliedChrome
+      ? [suppliedChrome, pageSlug ? await getPublishedPage(pageSlug) : undefined]
+      : await Promise.all([getPublishedSiteChrome(), pageSlug ? getPublishedPage(pageSlug) : Promise.resolve(undefined)]);
   const resolvedEyebrow = page?.hero.eyebrow || eyebrow;
   const resolvedTitle = page?.hero.title || title;
   const resolvedIntro = page?.hero.intro || intro;

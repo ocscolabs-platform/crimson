@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RouteShell } from "@/components/route-shell";
 import { ContactPageBody } from "@/components/page-document-public-bodies";
+import { getPublishedSiteChrome } from "@/lib/cms-content";
 import { createContactPageRenderData } from "@/lib/contact-page";
 import { getPublishedPageDocument } from "@/lib/page-document-loader";
 import { getPublishedPageMetadata } from "@/lib/page-metadata";
@@ -18,7 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage() {
-  const result = await getPublishedPageDocument("contact");
+  const [result, chrome] = await Promise.all([
+    getPublishedPageDocument("contact"),
+    getPublishedSiteChrome(),
+  ]);
   if (result.kind !== "document") {
     if (result.kind === "invalid") {
       console.error(`[contact] Invalid published PageDocument: ${result.issues.join("; ")}`);
@@ -33,6 +37,7 @@ export default async function ContactPage() {
       eyebrow={hero.eyebrow}
       title={hero.title}
       intro={hero.intro}
+      chrome={chrome}
     >
       <ContactPageBody body={body} />
     </RouteShell>
