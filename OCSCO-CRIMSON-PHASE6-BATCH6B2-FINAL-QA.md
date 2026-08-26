@@ -43,13 +43,13 @@ Owner then used the Owner-only Unpublish control to remove the controlled QA art
 
 ## Responsive QA
 
-The Codex in-app browser exposed no device-toolbar control through the available Browser surface. The prior scripted viewport override remained fixed at 1280x720 and was not substituted as exact-size evidence.
+Owner manually verified the authenticated PR Preview at each required breakpoint and approved the results:
 
-- 1440x900: NOT VERIFIED — device toolbar unavailable; actual viewport remained 1280x720.
-- 768x1024: NOT VERIFIED — device toolbar unavailable; actual viewport remained 1280x720.
-- 390x844: NOT VERIFIED — device toolbar unavailable; actual viewport remained 1280x720.
+- 1440x900: PASS
+- 768x1024: PASS
+- 390x844: PASS
 
-At the available 1280x720 viewport, landing, Draft, Preview, and Review had no page-level horizontal overflow and verified controls were reachable. Accessibility sanity checks passed for the Draft polite live region, navigation alertdialog, Preview landmark/banner, and read-only surfaces.
+Landing, Draft, Preview, Review, and Editor Review surfaces were confirmed usable with no page-level horizontal overflow, clipped actions, or blocked mobile controls. Accessibility sanity checks passed for the Draft polite live region, navigation alertdialog, Preview landmark/banner, and read-only surfaces.
 
 ## Regressions and scope
 
@@ -61,4 +61,4 @@ Temporary Editor account status: banned in `crimson-staging` until 27 Aug 2026 2
 
 ## Decision
 
-NO-GO for PR #84 merge solely because exact responsive evidence could not be obtained from the Codex in-app browser device surface. All other final hard gates passed. Do not merge PR #84 or begin Batch 6B3 in this task.
+GO for PR #84 merge into `staging`, subject to the separately authorized merge step. All final hard gates passed. Do not begin Batch 6B3 in this task.

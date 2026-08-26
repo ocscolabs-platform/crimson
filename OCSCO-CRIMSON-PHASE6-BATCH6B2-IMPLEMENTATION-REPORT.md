@@ -62,10 +62,10 @@ Authenticated Owner QA was run against the PR Preview:
 
 ## Responsive and accessibility QA
 
-- 1440x900: NOT VERIFIED. The in-app browser reported its fixed 1280x720 viewport after the requested override.
-- 768x1024: NOT VERIFIED. The in-app browser reported its fixed 1280x720 viewport after the requested override.
-- 390x844: NOT VERIFIED. The in-app browser reported its fixed 1280x720 viewport after the requested override.
-- At the available 1280x720 viewport, landing, Draft, Preview, and Review pages had no horizontal overflow.
+- 1440x900: PASS — Owner manual verification.
+- 768x1024: PASS — Owner manual verification.
+- 390x844: PASS — Owner manual verification.
+- Owner confirmed landing, Draft, Preview, Review, and Editor Review surfaces had no horizontal overflow or clipped/unreachable actions at the required breakpoints.
 - Accessibility sanity checks passed for the Draft `aria-live="polite"` save status, the custom `alertdialog` navigation guard, Preview landmark/banner, Return to article link, and read-only Preview controls.
 
 ## Validation
@@ -93,4 +93,4 @@ The first post-fix validation attempt exposed a Draft-only React hydration misma
 
 ## Gate decision
 
-NO-GO for PR #84 merge solely because the required exact responsive viewport evidence could not be obtained from the Codex in-app browser device surface. Editor Withdraw, Owner Publish/Unpublish, autosave, Preview, authorization, and regression gates pass. No known functional defect was observed in the verified paths.
+GO for PR #84 merge into `staging`, subject to the separately authorized merge step. Editor Withdraw, Owner Publish/Unpublish, autosave, Preview, authorization, responsive, and regression gates pass. No known functional defect was observed in the verified paths.
