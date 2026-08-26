@@ -58,13 +58,13 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
   const [slug, setSlug] = useState(article?.slug ?? "");
   const [persistedArticleId, setPersistedArticleId] = useState(article?.id ?? "");
   const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(article?.updatedAt ?? "");
+  const [bodyJson, setBodyJson] = useState(() => JSON.stringify(initial));
   const [dirty, setDirty] = useState(false);
   const [clientIssue, setClientIssue] = useState("");
   const [linkIssue, setLinkIssue] = useState("");
   const [linkHref, setLinkHref] = useState("");
   const [linkEntryOpen, setLinkEntryOpen] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
-  const bodyRef = useRef<HTMLInputElement>(null);
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -75,13 +75,17 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
     content: initial.doc,
     editorProps: { attributes: { "aria-label": "Article body", "aria-describedby": "article-body-help" } },
     onUpdate: ({ editor: currentEditor }) => {
-      if (bodyRef.current) bodyRef.current.value = JSON.stringify({ schema: "insights-body", version: 1, doc: currentEditor.getJSON() });
+      setBodyJson(JSON.stringify({ schema: "insights-body", version: 1, doc: currentEditor.getJSON() }));
       setDirty(true);
     },
   });
 
   useEffect(() => {
-    if (editor && bodyRef.current) bodyRef.current.value = JSON.stringify({ schema: "insights-body", version: 1, doc: editor.getJSON() });
+    if (editor) {
+      // The editor is the source of truth once it has mounted.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setBodyJson(JSON.stringify({ schema: "insights-body", version: 1, doc: editor.getJSON() }));
+    }
   }, [editor]);
 
   useEffect(() => {
@@ -159,7 +163,7 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
       <form className="insights-composer" action={saveAction} onSubmit={handleSubmit}>
         <input type="hidden" name="article_id" value={persistedArticleId} />
         <input type="hidden" name="expected_updated_at" value={expectedUpdatedAt} />
-        <input ref={bodyRef} type="hidden" name="body" defaultValue={JSON.stringify(initial)} />
+        <input type="hidden" name="body" value={bodyJson} readOnly />
         <div className="insights-writing-fields">
           <label className="insights-field insights-title-field">
             <span>Title</span>
