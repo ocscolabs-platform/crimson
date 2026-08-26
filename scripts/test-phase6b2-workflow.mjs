@@ -61,12 +61,13 @@ test("Needs Review queue and workflow controls remain authoritative and role-sco
   assert.match(dashboard, /Review ↗/);
   assert.match(data, /sort\(\(a, b\) => \(a\.submitted_at/);
   assert.match(page, /WorkflowControls/);
-  assert.match(page, /article\.status === "review"/);
+  assert.match(page, /article\.status === "review" \|\| article\.status === "published"/);
   assert.match(controls, /Preview ↗/);
   assert.match(controls, /Confirm Publish/);
   assert.match(controls, /Confirm Return to Draft/);
   assert.match(controls, /Confirm Withdraw to Draft/);
-  for (const rpc of ["insights_submit_for_review", "insights_withdraw_review", "insights_return_to_draft", "insights_publish_article"]) assert.match(actions, new RegExp(rpc));
+  assert.match(controls, /Confirm Unpublish/);
+  for (const rpc of ["insights_submit_for_review", "insights_withdraw_review", "insights_return_to_draft", "insights_publish_article", "insights_unpublish_article"]) assert.match(actions, new RegExp(rpc));
   assert.match(controls, /authorId === props\.viewerId/);
   assert.match(controls, /canPublishInsights/);
 });

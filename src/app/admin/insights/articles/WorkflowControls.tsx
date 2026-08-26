@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { publishInsightsArticle, returnInsightsToDraft, withdrawInsightsReview, type InsightsActionState } from "./actions";
+import { publishInsightsArticle, returnInsightsToDraft, unpublishInsightsArticle, withdrawInsightsReview, type InsightsActionState } from "./actions";
 
 const initialState: InsightsActionState = { status: "idle", message: "", issues: [] };
 
@@ -31,21 +31,24 @@ export default function WorkflowControls(props: WorkflowControlsProps) {
   const [publishState, publishAction, publishPending] = useActionState(publishInsightsArticle, initialState);
   const [returnState, returnAction, returnPending] = useActionState(returnInsightsToDraft, initialState);
   const [withdrawState, withdrawAction, withdrawPending] = useActionState(withdrawInsightsReview, initialState);
+  const [unpublishState, unpublishAction, unpublishPending] = useActionState(unpublishInsightsArticle, initialState);
   const canWithdraw = props.status === "review" && props.role === "editor" && props.authorId === props.viewerId;
   const canPublish = props.status === "review" && (props.role === "owner" || (props.role === "editor" && props.canPublishInsights && props.authorId === props.viewerId));
   const canReturn = props.status === "review" && props.role === "owner";
+  const canUnpublish = props.status === "published" && props.role === "owner";
 
   useEffect(() => {
-    if (publishState.status === "saved" || returnState.status === "saved" || withdrawState.status === "saved") router.refresh();
-  }, [publishState.status, returnState.status, router, withdrawState.status]);
+    if (publishState.status === "saved" || returnState.status === "saved" || withdrawState.status === "saved" || unpublishState.status === "saved") router.refresh();
+  }, [publishState.status, returnState.status, router, unpublishState.status, withdrawState.status]);
 
-  if (!canPublish && !canReturn && !canWithdraw && props.status !== "review") return null;
+  if (!canPublish && !canReturn && !canWithdraw && !canUnpublish && props.status !== "review") return null;
   return (
     <section className="insights-workflow-controls" aria-label="Workflow actions">
       <div className="insights-workflow-links">{props.status === "review" ? <Link className="button button-light" href={`/crimson-admin-control/insights/articles/${props.articleId}/preview`}>Preview ↗</Link> : null}</div>
       {canPublish ? <form action={publishAction}><ActionFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} /><details><summary className="button button-primary">Publish</summary><div className="insights-confirmation"><p>Publish this reviewed text-only article to the current staging publication boundary?</p><button className="button button-primary" type="submit" disabled={publishPending}>{publishPending ? "Publishing…" : "Confirm Publish"}</button></div></details><Feedback state={publishState} /></form> : null}
       {canReturn ? <form action={returnAction}><ActionFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} /><details><summary className="button button-light">Return to Draft</summary><div className="insights-confirmation"><p>Return this Review to Draft so it can be edited again?</p><button className="button button-light" type="submit" disabled={returnPending}>{returnPending ? "Returning…" : "Confirm Return to Draft"}</button></div></details><Feedback state={returnState} /></form> : null}
       {canWithdraw ? <form action={withdrawAction}><ActionFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} /><details><summary className="button button-light">Withdraw to Draft</summary><div className="insights-confirmation"><p>Withdraw your Review to Draft for further editing?</p><button className="button button-light" type="submit" disabled={withdrawPending}>{withdrawPending ? "Withdrawing…" : "Confirm Withdraw to Draft"}</button></div></details><Feedback state={withdrawState} /></form> : null}
+      {canUnpublish ? <form action={unpublishAction}><ActionFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} /><details><summary className="button button-light">Unpublish</summary><div className="insights-confirmation"><p>Remove this article from the staging publication boundary while preserving its history?</p><button className="button button-light" type="submit" disabled={unpublishPending}>{unpublishPending ? "Unpublishing…" : "Confirm Unpublish"}</button></div></details><Feedback state={unpublishState} /></form> : null}
     </section>
   );
 }

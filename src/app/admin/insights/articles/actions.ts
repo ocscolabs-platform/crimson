@@ -16,7 +16,7 @@ export type InsightsActionState = {
   savedAt?: string;
 };
 
-type WorkflowRpc = "insights_submit_for_review" | "insights_withdraw_review" | "insights_return_to_draft" | "insights_publish_article";
+type WorkflowRpc = "insights_submit_for_review" | "insights_withdraw_review" | "insights_return_to_draft" | "insights_publish_article" | "insights_unpublish_article";
 
 const MAX_TITLE_LENGTH = 160;
 const MAX_EXCERPT_LENGTH = 300;
@@ -201,4 +201,8 @@ export async function returnInsightsToDraft(_previousState: InsightsActionState,
 
 export async function publishInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
   return runWorkflowAction(formData, "insights_publish_article", "Published.");
+}
+
+export async function unpublishInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
+  return runWorkflowAction(formData, "insights_unpublish_article", "Unpublished.");
 }
