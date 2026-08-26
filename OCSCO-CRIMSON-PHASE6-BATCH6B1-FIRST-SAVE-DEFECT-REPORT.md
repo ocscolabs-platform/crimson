@@ -4,6 +4,8 @@ Date: 2026-08-26
 Branch: `codex/phase6-6b1-draft-authoring-v2`  
 PR: #83 (open, unmerged)
 
+Fix commit: `9b3509444cd9e8cdb1f5247b36d0b772c890603b`
+
 ## Investigation result
 
 The Owner-reported attempted article was not present in staging. A direct read of the staging `insights_articles` table, joined to the active revision, found no article created during the QA window and no corresponding Draft revision. The newest returned rows were older, unrelated Phase 6A smoke records. There is therefore no evidence that the reported attempt persisted a title, body, slug, article identity, or orphan revision.
@@ -27,7 +29,9 @@ No migration or schema change was required. No direct article-table mutation was
 
 ## QA status
 
-Automated regression gates pass. Authenticated first-save, refresh, second-save, failure-safety, and responsive checks at 1440×900, 768×1024, and 390×844 remain Owner-session checks and are not marked passed from this environment.
+Automated regression gates pass: migration validator 28/28; Phase 5/PageDocument 108/108; Batch 6A 6/6; slug contract 5/5; B6B1 authoring 6/6; typecheck; lint with one pre-existing warning; build; and diff check. PR validation and Preview deployment also pass.
+
+Authenticated first-save, refresh, second-save, failure-safety, and responsive checks at 1440×900, 768×1024, and 390×844 remain Owner-session checks and are not marked passed from this environment.
 
 ## Decision
 
