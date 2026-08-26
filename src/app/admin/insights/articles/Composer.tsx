@@ -8,7 +8,7 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { emptyInsightsBody, type InsightsBody } from "@/lib/insights-body";
 import { isValidInsightsSlug } from "@/lib/insights-slug";
-import { initialInsightsActionState, saveInsightsDraft, updateInsightsSlug, type InsightsActionState } from "./actions";
+import { saveInsightsDraft, updateInsightsSlug, type InsightsActionState } from "./actions";
 
 type Taxonomy = {
   categories: Array<{ id: string; name: string }>;
@@ -29,6 +29,8 @@ type ComposerProps = {
     tagIds: string[];
   };
 };
+
+const initialInsightsActionState: InsightsActionState = { status: "idle", message: "", issues: [] };
 
 function actionMessage(state: InsightsActionState) {
   if (state.status === "conflict") return "Conflict — reload required.";
@@ -64,7 +66,7 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit.configure({ heading: { levels: [2, 3] }, code: false, codeBlock: false, horizontalRule: false, strike: false, underline: false }),
+      StarterKit.configure({ heading: { levels: [2, 3] }, code: false, codeBlock: false, horizontalRule: false, strike: false, underline: false, link: false }),
       Link.configure({ openOnClick: false, autolink: false, linkOnPaste: false, HTMLAttributes: { target: "_blank", rel: "noreferrer noopener" } }),
       Placeholder.configure({ placeholder: "Write the Draft here…" }),
     ],

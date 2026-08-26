@@ -16,7 +16,6 @@ export type InsightsActionState = {
   savedAt?: string;
 };
 
-const EMPTY_STATE: InsightsActionState = { status: "idle", message: "", issues: [] };
 const MAX_TITLE_LENGTH = 160;
 const MAX_EXCERPT_LENGTH = 300;
 
@@ -147,5 +146,3 @@ export async function updateInsightsSlug(_previousState: InsightsActionState, fo
   revalidatePath(`/crimson-admin-control/insights/articles/${articleId}`);
   return { status: "saved", message: "Slug updated.", issues: [], articleId, slug: result.slug, updatedAt: result.updated_at, savedAt: new Date().toISOString() };
 }
-
-export { EMPTY_STATE as initialInsightsActionState };
