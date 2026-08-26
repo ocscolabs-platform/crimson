@@ -25,6 +25,7 @@
     "test:phase5b:slice4c:services": "node --test scripts/test-phase5b-slice4c-services.mjs",
     "test:phase5b:slice4b:about": "node --test scripts/test-phase5b-slice4b-about.mjs",
     "test:phase6a:foundation": "node --test scripts/test-phase6a-insights-foundation.mjs",
+    "test:phase6:public-projection-security": "node --test scripts/test-phase6-public-projection-security.mjs",
     "test:phase6b1:slug": "node --test scripts/test-phase6b1-insights-slug-contract.mjs",
     "test:phase6b1:authoring": "node --experimental-strip-types --test scripts/test-phase6b1-draft-authoring.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
