@@ -26,11 +26,17 @@
     "test:phase5b:slice4b:about": "node --test scripts/test-phase5b-slice4b-about.mjs",
     "test:phase6a:foundation": "node --test scripts/test-phase6a-insights-foundation.mjs",
     "test:phase6b1:slug": "node --test scripts/test-phase6b1-insights-slug-contract.mjs",
+    "test:phase6b1:authoring": "node --experimental-strip-types --test scripts/test-phase6b1-draft-authoring.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
+    "@tiptap/core": "^3.30.3",
+    "@tiptap/extension-link": "^3.30.3",
+    "@tiptap/extension-placeholder": "^3.30.3",
+    "@tiptap/react": "^3.30.3",
+    "@tiptap/starter-kit": "^3.30.3",
     "lucide-react": "^1.32.0",
     "sharp": "0.35.3",
     "next": "16.3.2",
