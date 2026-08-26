@@ -60,7 +60,13 @@ export async function proxy(request: NextRequest) {
   }
 
   const response = await updateSession(request);
-  return enforceInsightsRouteBoundary(request, response);
+  const boundaryResponse = await enforceInsightsRouteBoundary(request, response);
+  const isInsightsPreview = /^\/crimson-admin-control\/insights\/articles\/[^/]+\/preview\/?$/.test(request.nextUrl.pathname);
+  if (isInsightsPreview && boundaryResponse.status < 400) {
+    boundaryResponse.headers.set("Cache-Control", "private, no-store");
+    boundaryResponse.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  }
+  return boundaryResponse;
 }
 
 export const config = {

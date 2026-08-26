@@ -16,6 +16,8 @@ export type InsightsActionState = {
   savedAt?: string;
 };
 
+type WorkflowRpc = "insights_submit_for_review" | "insights_withdraw_review" | "insights_return_to_draft" | "insights_publish_article" | "insights_unpublish_article";
+
 const MAX_TITLE_LENGTH = 160;
 const MAX_EXCERPT_LENGTH = 300;
 
@@ -41,6 +43,44 @@ async function getAuthorizedAction() {
     return { error: errorState("This account cannot author Insights Drafts.") };
   }
   return { supabase, user, membership };
+}
+
+async function runWorkflowAction(
+  formData: FormData,
+  rpc: WorkflowRpc,
+  successMessage: string,
+): Promise<InsightsActionState> {
+  const articleId = getText(formData, "article_id").trim();
+  const expectedUpdatedAt = getText(formData, "expected_updated_at").trim() || null;
+  if (!articleId) return errorState("The article identity is missing. Reload and try again.");
+
+  try {
+    const authorized = await getAuthorizedAction();
+    if (authorized.error) return authorized.error;
+    const { error } = await authorized.supabase.rpc(rpc, {
+      p_article_id: articleId,
+      p_expected_updated_at: expectedUpdatedAt,
+    });
+    if (error) {
+      const conflict = /changed|reload/i.test(error.message);
+      return { ...errorState(conflict ? "Conflict — reload required." : error.message || "The workflow action could not be completed."), status: conflict ? "conflict" : "error", articleId };
+    }
+
+    const { data: article, error: articleError } = await authorized.supabase
+      .from("insights_articles")
+      .select("updated_at")
+      .eq("id", articleId)
+      .maybeSingle();
+    if (articleError || !article) return errorState("The workflow action completed, but the current article state could not be read.");
+
+    revalidatePath("/crimson-admin-control/insights");
+    revalidatePath(`/crimson-admin-control/insights/articles/${articleId}`);
+    revalidatePath(`/crimson-admin-control/insights/articles/${articleId}/preview`);
+    return { status: "saved", message: successMessage, issues: [], articleId, updatedAt: article.updated_at, savedAt: new Date().toISOString() };
+  } catch (error) {
+    console.error(`[insights] ${rpc} failure`, { articleId, error });
+    return { ...errorState("The workflow action could not be completed. Try again."), articleId };
+  }
 }
 
 async function validateTaxonomy(supabase: Awaited<ReturnType<typeof createClient>>, categoryId: string, tagIds: string[]) {
@@ -145,4 +185,24 @@ export async function updateInsightsSlug(_previousState: InsightsActionState, fo
   revalidatePath("/crimson-admin-control/insights");
   revalidatePath(`/crimson-admin-control/insights/articles/${articleId}`);
   return { status: "saved", message: "Slug updated.", issues: [], articleId, slug: result.slug, updatedAt: result.updated_at, savedAt: new Date().toISOString() };
+}
+
+export async function submitInsightsForReview(_previousState: InsightsActionState, formData: FormData) {
+  return runWorkflowAction(formData, "insights_submit_for_review", "Submitted for Review.");
+}
+
+export async function withdrawInsightsReview(_previousState: InsightsActionState, formData: FormData) {
+  return runWorkflowAction(formData, "insights_withdraw_review", "Returned to Draft.");
+}
+
+export async function returnInsightsToDraft(_previousState: InsightsActionState, formData: FormData) {
+  return runWorkflowAction(formData, "insights_return_to_draft", "Returned to Draft.");
+}
+
+export async function publishInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
+  return runWorkflowAction(formData, "insights_publish_article", "Published.");
+}
+
+export async function unpublishInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
+  return runWorkflowAction(formData, "insights_unpublish_article", "Unpublished.");
 }

@@ -12,9 +12,9 @@
 **Phase 4C staging baseline and QA — Complete**
 **Production release/promotion gate — Deferred release gate**
 
-**Phase 6 — Insights — IN PROGRESS / Batch 6A implementation branch under Owner review**
+**Phase 6 — Insights — Batch 6A COMPLETE / Batch 6B2 IMPLEMENTATION UNDER OWNER REVIEW**
 
-Batch 6A establishes the Insights-only access boundary, Trusted Publisher capability, article/revision workflow foundation, taxonomy, audit history, Published-only projection, and direct security-contract tests. The feature branch remains unmerged and staging Supabase application remains a separate review gate. Batch 6B, the composer, media delivery, and public Insights routes are not started.
+Batch 6A establishes the Insights-only access boundary, Trusted Publisher capability, article/revision workflow foundation, taxonomy, audit history, Published-only projection, and direct security-contract tests. Batch 6B2 adds coordinated Draft autosave, truthful conflict UX, private authenticated Preview, authoritative Owner Needs Review queue, Review workflow actions, and responsive/accessibility hardening on a feature branch targeting `staging`. Batch 6B3 media, public Insights routes, and Production remain out of scope.
 
 The canonical roadmap is [`MASTER-PLAN.md`](./MASTER-PLAN.md). This file records the current implementation state; older detailed phase documents and early task entries are historical implementation records where their statuses conflict with later verified slices.
 

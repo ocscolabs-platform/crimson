@@ -19,9 +19,9 @@ test("first-save failures stay actionable and preserve the created identity", as
   assert.match(actions, /Save failed\. Your local changes are still here\./);
   assert.match(actions, /articleId: persistedArticleId/);
   assert.doesNotMatch(actions, /export \{ EMPTY_STATE as initialInsightsActionState \}/);
-  assert.match(composer, /const \[persistedArticleId, setPersistedArticleId\]/);
-  assert.match(composer, /router\.replace\(`\/crimson-admin-control\/insights\/articles\/\$\{saveState\.articleId\}`\)/);
-  assert.match(composer, /name="article_id" value=\{persistedArticleId\}/);
+  assert.match(composer, /persistedArticleIdRef/);
+  assert.match(composer, /router\.replace\(`\/crimson-admin-control\/insights\/articles\/\$\{result\.articleId\}`\)/);
+  assert.match(composer, /name="article_id" value=\{persistedArticleIdRef\.current\}/);
   assert.doesNotMatch(composer, /window\.prompt/);
   assert.match(composer, /aria-label="Link URL"/);
   assert.match(composer, /Apply link/);
@@ -74,5 +74,5 @@ test("B6B1 application contracts remain scoped to Draft authoring", async () => 
   assert.match(source, /renderInsightsBody/);
   assert.match(source, /noreferrer noopener/);
   assert.doesNotMatch(source, /dangerouslySetInnerHTML/);
-  for (const forbidden of ["insights_publish_article", "Preview route", "<img", "ImageUpload"]) assert.doesNotMatch(source, new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  for (const forbidden of ["<img", "ImageUpload", "export const revalidate = 60", "public /insights"]) assert.doesNotMatch(source, new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });

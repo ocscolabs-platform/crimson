@@ -1,127 +1,210 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
+import LinkExtension from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { emptyInsightsBody, type InsightsBody } from "@/lib/insights-body";
 import { isValidInsightsSlug } from "@/lib/insights-slug";
-import { saveInsightsDraft, updateInsightsSlug, type InsightsActionState } from "./actions";
+import { saveInsightsDraft, submitInsightsForReview, updateInsightsSlug, type InsightsActionState } from "./actions";
 
-type Taxonomy = {
-  categories: Array<{ id: string; name: string }>;
-  tags: Array<{ id: string; name: string }>;
-};
+const AUTOSAVE_DEBOUNCE_MS = 1750;
+const AUTOSAVE_MIN_INTERVAL_MS = 5000;
 
+type Taxonomy = { categories: Array<{ id: string; name: string }>; tags: Array<{ id: string; name: string }> };
 type ComposerProps = {
   taxonomy: Taxonomy;
-  article?: {
-    id: string;
-    slug: string;
-    status: "draft";
-    updatedAt: string;
-    title: string;
-    excerpt: string;
-    body: InsightsBody;
-    categoryId: string;
-    tagIds: string[];
-  };
+  role: "owner" | "editor";
+  canPublishInsights: boolean;
+  article?: { id: string; slug: string; status: "draft"; updatedAt: string; title: string; excerpt: string; body: InsightsBody; categoryId: string; tagIds: string[] };
 };
+type SaveKind = "autosave" | "explicit";
+type SaveStatus = "saved" | "dirty" | "saving" | "error" | "conflict";
+type Snapshot = { articleId: string; expectedUpdatedAt: string; title: string; excerpt: string; categoryId: string; tagIds: string[]; bodyJson: string; version: number };
 
-const initialInsightsActionState: InsightsActionState = { status: "idle", message: "", issues: [] };
-
-function actionMessage(state: InsightsActionState) {
-  if (state.status === "conflict") return "Conflict — reload required.";
-  return state.message;
-}
+const initialActionState: InsightsActionState = { status: "idle", message: "", issues: [] };
+const subscribeToNothing = () => () => {};
 
 function formatSavedAt(value?: string) {
   if (!value) return "Not saved yet";
   return `Saved ${new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(new Date(value))}`;
 }
 
-function ToolbarButton({ label, onClick, onMouseDown, disabled = false }: { label: string; onClick: () => void; onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void; disabled?: boolean }) {
+function ToolbarButton({ label, onClick, onMouseDown, disabled = false }: { label: string; onClick: () => void; onMouseDown?: (event: ReactMouseEvent<HTMLButtonElement>) => void; disabled?: boolean }) {
   return <button className="insights-toolbar-button" type="button" onClick={onClick} onMouseDown={onMouseDown} disabled={disabled} aria-label={label} title={label}>{label}</button>;
 }
 
-export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
+function actionMessage(state: InsightsActionState) {
+  if (state.status === "conflict") return "This article changed elsewhere. Reload latest saved version.";
+  return state.message;
+}
+
+export default function InsightsComposer({ taxonomy, role, canPublishInsights, article }: ComposerProps) {
   const router = useRouter();
   const initial = article?.body ?? emptyInsightsBody();
-  const [saveState, saveAction, savePending] = useActionState(saveInsightsDraft, initialInsightsActionState);
-  const [slugState, slugAction, slugPending] = useActionState(updateInsightsSlug, initialInsightsActionState);
   const [title, setTitle] = useState(article?.title ?? "");
   const [excerpt, setExcerpt] = useState(article?.excerpt ?? "");
   const [categoryId, setCategoryId] = useState(article?.categoryId ?? "");
   const [tagIds, setTagIds] = useState(article?.tagIds ?? []);
   const [slug, setSlug] = useState(article?.slug ?? "");
-  const [persistedArticleId, setPersistedArticleId] = useState(article?.id ?? "");
-  const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(article?.updatedAt ?? "");
   const [bodyJson, setBodyJson] = useState(() => JSON.stringify(initial));
-  const [dirty, setDirty] = useState(false);
+  const [dirty, setDirty] = useState(!article);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>(article ? "saved" : "dirty");
+  const [saveState, setSaveState] = useState<InsightsActionState>(initialActionState);
+  const [lastSavedAt, setLastSavedAt] = useState(article?.updatedAt);
+  const hasMounted = useSyncExternalStore(subscribeToNothing, () => true, () => false);
   const [clientIssue, setClientIssue] = useState("");
   const [linkIssue, setLinkIssue] = useState("");
   const [linkHref, setLinkHref] = useState("");
   const [linkEntryOpen, setLinkEntryOpen] = useState(false);
+  const [slugState, setSlugState] = useState<InsightsActionState>(initialActionState);
+  const [slugPending, setSlugPending] = useState(false);
+  const [submitState, setSubmitState] = useState<InsightsActionState>(initialActionState);
+  const [workflowPending, setWorkflowPending] = useState(false);
+  const [leaveHref, setLeaveHref] = useState("");
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null);
   const titleRef = useRef<HTMLInputElement>(null);
+  const persistedArticleIdRef = useRef(article?.id ?? "");
+  const expectedUpdatedAtRef = useRef(article?.updatedAt ?? "");
+  const changeVersionRef = useRef(0);
+  const latestSnapshotRef = useRef<Snapshot | null>(null);
+  const inFlightRef = useRef<Promise<InsightsActionState> | null>(null);
+  const queuedSaveRef = useRef<{ kind: SaveKind; snapshot: Snapshot; resolve: (result: InsightsActionState) => void } | null>(null);
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastAutosaveCompletedRef = useRef(0);
+  const autosaveStoppedRef = useRef(false);
+
+  function markDirty() {
+    changeVersionRef.current += 1;
+    autosaveStoppedRef.current = false;
+    setDirty(true);
+    setSaveStatus("dirty");
+  }
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] }, code: false, codeBlock: false, horizontalRule: false, strike: false, underline: false, link: false }),
-      Link.configure({ openOnClick: false, autolink: false, linkOnPaste: false, HTMLAttributes: { target: "_blank", rel: "noreferrer noopener" } }),
+      LinkExtension.configure({ openOnClick: false, autolink: false, linkOnPaste: false, HTMLAttributes: { target: "_blank", rel: "noreferrer noopener" } }),
       Placeholder.configure({ placeholder: "Write the Draft here…" }),
     ],
     content: initial.doc,
     editorProps: { attributes: { "aria-label": "Article body", "aria-describedby": "article-body-help" } },
     onUpdate: ({ editor: currentEditor }) => {
       setBodyJson(JSON.stringify({ schema: "insights-body", version: 1, doc: currentEditor.getJSON() }));
-      setDirty(true);
+      markDirty();
     },
   });
 
-  useEffect(() => {
-    if (editor) {
-      // The editor is the source of truth once it has mounted.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setBodyJson(JSON.stringify({ schema: "insights-body", version: 1, doc: editor.getJSON() }));
+  latestSnapshotRef.current = { articleId: persistedArticleIdRef.current, expectedUpdatedAt: expectedUpdatedAtRef.current, title, excerpt, categoryId, tagIds: [...tagIds], bodyJson, version: changeVersionRef.current };
+
+  function makeFormData(snapshot: Snapshot) {
+    const data = new FormData();
+    data.set("article_id", snapshot.articleId);
+    data.set("expected_updated_at", snapshot.expectedUpdatedAt);
+    data.set("title", snapshot.title);
+    data.set("excerpt", snapshot.excerpt);
+    data.set("category_id", snapshot.categoryId);
+    data.set("body", snapshot.bodyJson);
+    snapshot.tagIds.forEach((tagId) => data.append("tag_ids", tagId));
+    return data;
+  }
+
+  async function runSave(kind: SaveKind, snapshot: Snapshot): Promise<InsightsActionState> {
+    setSaveStatus("saving");
+    setSaveState({ ...initialActionState, status: "idle" });
+    const result = await saveInsightsDraft(initialActionState, makeFormData(snapshot));
+    if (kind === "autosave") lastAutosaveCompletedRef.current = Date.now();
+    if (result.status === "saved") {
+      if (result.articleId) persistedArticleIdRef.current = result.articleId;
+      if (result.updatedAt) expectedUpdatedAtRef.current = result.updatedAt;
+      setLastSavedAt(result.savedAt ?? new Date().toISOString());
+      setSaveState(result);
+      if (changeVersionRef.current === snapshot.version) {
+        setDirty(false);
+        setSaveStatus("saved");
+      } else {
+        setDirty(true);
+        setSaveStatus("dirty");
+      }
+      if (!article && result.articleId) router.replace(`/crimson-admin-control/insights/articles/${result.articleId}`);
+    } else {
+      setSaveState(result);
+      setDirty(true);
+      setSaveStatus(result.status === "conflict" ? "conflict" : "error");
+      if (result.status === "conflict") autosaveStoppedRef.current = true;
     }
-  }, [editor]);
+    return result;
+  }
+
+  function requestSave(kind: SaveKind, suppliedSnapshot?: Snapshot): Promise<InsightsActionState> {
+    const snapshot = suppliedSnapshot ?? latestSnapshotRef.current;
+    if (!snapshot) return Promise.resolve({ ...initialActionState, status: "error", message: "The Draft snapshot is unavailable.", issues: [] });
+    if (kind === "explicit" && autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+    if (inFlightRef.current) return new Promise((resolve) => { queuedSaveRef.current = { kind, snapshot, resolve }; });
+    if (kind === "autosave") {
+      const wait = AUTOSAVE_MIN_INTERVAL_MS - (Date.now() - lastAutosaveCompletedRef.current);
+      if (wait > 0) return new Promise((resolve) => { autosaveTimerRef.current = setTimeout(() => { autosaveTimerRef.current = null; requestSave(kind, snapshot).then(resolve); }, wait); });
+    }
+    const promise = runSave(kind, snapshot);
+    inFlightRef.current = promise;
+    promise.then((result) => {
+      inFlightRef.current = null;
+      const queued = queuedSaveRef.current;
+      queuedSaveRef.current = null;
+      if (!queued) return;
+      if (result.status === "conflict") queued.resolve(result);
+      else requestSave(queued.kind, queued.snapshot).then(queued.resolve);
+    }).catch(() => { inFlightRef.current = null; });
+    return promise;
+  }
+
+  async function flushPendingSave() {
+    if (inFlightRef.current) return inFlightRef.current;
+    if (dirty) return requestSave("explicit");
+    return { ...initialActionState, status: "saved" as const, message: "Draft is already saved." };
+  }
 
   useEffect(() => {
-    if (saveState.articleId && saveState.articleId !== persistedArticleId) {
-      // Preserve a server-created identity if the follow-up Draft save needs a retry.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPersistedArticleId(saveState.articleId);
-    }
-    if (saveState.status === "saved") {
-      // Server confirmation is the point at which local dirty state can safely clear.
-      setDirty(false);
-      if (saveState.updatedAt) setExpectedUpdatedAt(saveState.updatedAt);
-      if (!article && saveState.articleId) router.replace(`/crimson-admin-control/insights/articles/${saveState.articleId}`);
-    }
-  }, [article, persistedArticleId, router, saveState]);
+    if (!article || !dirty || autosaveStoppedRef.current) return;
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    autosaveTimerRef.current = setTimeout(() => { autosaveTimerRef.current = null; requestSave("autosave"); }, AUTOSAVE_DEBOUNCE_MS);
+    return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current); };
+    // The latest snapshot is intentionally read from a ref by the coordinator.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [article, dirty, title, excerpt, categoryId, tagIds, bodyJson]);
 
   useEffect(() => {
-    if (slugState.status === "saved") {
-      // The returned timestamp is the concurrency token for the next slug update.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (slugState.slug) setSlug(slugState.slug);
-      if (slugState.updatedAt) setExpectedUpdatedAt(slugState.updatedAt);
-    }
-  }, [slugState]);
-
-  useEffect(() => {
-    if (!dirty) return;
+    if (!dirty && !inFlightRef.current && saveStatus !== "error" && saveStatus !== "conflict") return;
     const onBeforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [dirty]);
+  }, [dirty, saveStatus]);
+
+  useEffect(() => {
+    const onDocumentClick = (event: MouseEvent) => {
+      if (!(dirty || inFlightRef.current || saveStatus === "error" || saveStatus === "conflict")) return;
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      const anchor = target?.closest("a");
+      if (!anchor || anchor.dataset.leaveConfirmed !== undefined || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (anchor.origin !== window.location.origin || anchor.hash) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setLeaveHref(anchor.href);
+    };
+    document.addEventListener("click", onDocumentClick, true);
+    return () => document.removeEventListener("click", onDocumentClick, true);
+  }, [dirty, saveStatus]);
 
   function toggleTag(tagId: string) {
     setTagIds((current) => current.includes(tagId) ? current.filter((value) => value !== tagId) : [...current, tagId]);
-    setDirty(true);
+    markDirty();
   }
 
   function beginLink() {
@@ -145,73 +228,64 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
     setLinkIssue("");
   }
 
-  function cancelLink() {
-    setLinkHref("");
-    setLinkEntryOpen(false);
-    setLinkIssue("");
+  function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!title.trim()) { setClientIssue("Enter a Title before saving this Draft."); titleRef.current?.focus(); return; }
+    setClientIssue("");
+    requestSave("explicit");
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    if (!title.trim()) {
-      event.preventDefault();
-      setClientIssue("Enter a Title before saving this Draft.");
-      titleRef.current?.focus();
-      return;
-    }
-    setClientIssue("");
+  async function handleSubmitForReview() {
+    if (!persistedArticleIdRef.current) return;
+    const saved = await flushPendingSave();
+    if (saved.status !== "saved") return;
+    setWorkflowPending(true);
+    const data = new FormData();
+    data.set("article_id", persistedArticleIdRef.current);
+    data.set("expected_updated_at", expectedUpdatedAtRef.current);
+    const result = await submitInsightsForReview(initialActionState, data);
+    setSubmitState(result);
+    setWorkflowPending(false);
+    if (result.status === "saved") router.refresh();
+  }
+
+  async function handleSlugSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const saved = await flushPendingSave();
+    if (saved.status !== "saved") return;
+    if (!isValidInsightsSlug(slug)) { setSlugState({ ...initialActionState, status: "error", message: "Enter a valid lowercase kebab-case slug." }); return; }
+    setSlugPending(true);
+    const data = new FormData();
+    data.set("article_id", persistedArticleIdRef.current);
+    data.set("expected_updated_at", expectedUpdatedAtRef.current);
+    data.set("slug", slug);
+    const result = await updateInsightsSlug(initialActionState, data);
+    setSlugState(result);
+    setSlugPending(false);
+    if (result.status === "saved" && result.slug) setSlug(result.slug);
+    if (result.status === "saved" && result.updatedAt) expectedUpdatedAtRef.current = result.updatedAt;
   }
 
   const saveFeedback = saveState.status === "error" || saveState.status === "conflict" ? saveState : null;
   const slugFeedback = slugState.status === "error" || slugState.status === "conflict" ? slugState : null;
+  const canSubmit = Boolean(article) && (role === "owner" || role === "editor");
+  const canPublishDraft = Boolean(article) && role === "editor" && canPublishInsights;
 
   return (
     <div className="insights-composer-layout">
-      <form className="insights-composer" action={saveAction} onSubmit={handleSubmit}>
-        <input type="hidden" name="article_id" value={persistedArticleId} />
-        <input type="hidden" name="expected_updated_at" value={expectedUpdatedAt} />
-        <input type="hidden" name="body" value={bodyJson} readOnly />
+      <form className="insights-composer" onSubmit={handleSave}>
+        <input type="hidden" name="article_id" value={persistedArticleIdRef.current} /><input type="hidden" name="expected_updated_at" value={expectedUpdatedAtRef.current} /><input type="hidden" name="body" value={bodyJson} readOnly />
         <div className="insights-writing-fields">
-          <label className="insights-field insights-title-field">
-            <span>Title</span>
-            <input ref={titleRef} className="insights-title-input" name="title" value={title} onChange={(event) => { setTitle(event.target.value); setDirty(true); }} maxLength={160} placeholder="Give this article a clear working title" aria-invalid={Boolean(clientIssue)} aria-describedby={clientIssue ? "title-error" : undefined} />
-          </label>
+          <label className="insights-field insights-title-field"><span>Title</span><input ref={titleRef} className="insights-title-input" name="title" value={title} onChange={(event) => { setTitle(event.target.value); markDirty(); }} maxLength={160} placeholder="Give this article a clear working title" aria-invalid={Boolean(clientIssue)} aria-describedby={clientIssue ? "title-error" : undefined} /></label>
           {clientIssue ? <p className="insights-field-error" id="title-error" role="alert">{clientIssue}</p> : null}
-          <div className="insights-editor-block">
-            <div className="insights-field-heading"><span className="insights-field-label">Body</span><span id="article-body-help">Text-first editor. Images, embeds, and HTML are not available in this Draft foundation.</span></div>
-            <div className="insights-toolbar" aria-label="Text formatting">
-              <ToolbarButton label="H2" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} disabled={!editor} />
-              <ToolbarButton label="H3" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} disabled={!editor} />
-              <ToolbarButton label="Bold" onClick={() => editor?.chain().focus().toggleBold().run()} disabled={!editor} />
-              <ToolbarButton label="Italic" onClick={() => editor?.chain().focus().toggleItalic().run()} disabled={!editor} />
-              <ToolbarButton label="Link" onClick={beginLink} onMouseDown={(event) => event.preventDefault()} disabled={!editor} />
-              <ToolbarButton label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()} disabled={!editor} />
-              <ToolbarButton label="Numbered list" onClick={() => editor?.chain().focus().toggleOrderedList().run()} disabled={!editor} />
-              <ToolbarButton label="Blockquote" onClick={() => editor?.chain().focus().toggleBlockquote().run()} disabled={!editor} />
-              <span className="insights-toolbar-spacer" />
-              <ToolbarButton label="Undo" onClick={() => editor?.chain().focus().undo().run()} disabled={!editor} />
-              <ToolbarButton label="Redo" onClick={() => editor?.chain().focus().redo().run()} disabled={!editor} />
-            </div>
-            {linkEntryOpen ? <div className="insights-link-entry"><label><span>Link URL</span><input aria-label="Link URL" value={linkHref} onChange={(event) => setLinkHref(event.target.value)} placeholder="https://example.com" inputMode="url" autoFocus /></label><button type="button" className="button button-light" onClick={applyLink}>Apply link</button><button type="button" className="button button-light" onClick={cancelLink}>Cancel</button></div> : null}
-            <div id="article-body-editor" className="insights-editor-surface"><EditorContent editor={editor} /></div>
-            {linkIssue ? <p className="insights-field-error" role="alert">{linkIssue}</p> : null}
-          </div>
-          <label className="insights-field">
-            <span>Excerpt <small>Optional · max 300 characters</small></span>
-            <textarea name="excerpt" value={excerpt} onChange={(event) => { setExcerpt(event.target.value); setDirty(true); }} maxLength={300} placeholder="A short introduction for article lists" />
-          </label>
+          <div className="insights-editor-block"><div className="insights-field-heading"><span className="insights-field-label">Body</span><span id="article-body-help">Text-first editor. Images, embeds, and HTML are not available in this Draft foundation.</span></div><div className="insights-toolbar" aria-label="Text formatting"><ToolbarButton label="H2" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} disabled={!editor} /><ToolbarButton label="H3" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} disabled={!editor} /><ToolbarButton label="Bold" onClick={() => editor?.chain().focus().toggleBold().run()} disabled={!editor} /><ToolbarButton label="Italic" onClick={() => editor?.chain().focus().toggleItalic().run()} disabled={!editor} /><ToolbarButton label="Link" onClick={beginLink} onMouseDown={(event) => event.preventDefault()} disabled={!editor} /><ToolbarButton label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()} disabled={!editor} /><ToolbarButton label="Numbered list" onClick={() => editor?.chain().focus().toggleOrderedList().run()} disabled={!editor} /><ToolbarButton label="Blockquote" onClick={() => editor?.chain().focus().toggleBlockquote().run()} disabled={!editor} /><span className="insights-toolbar-spacer" /><ToolbarButton label="Undo" onClick={() => editor?.chain().focus().undo().run()} disabled={!editor} /><ToolbarButton label="Redo" onClick={() => editor?.chain().focus().redo().run()} disabled={!editor} /></div>{linkEntryOpen ? <div className="insights-link-entry"><label><span>Link URL</span><input aria-label="Link URL" value={linkHref} onChange={(event) => setLinkHref(event.target.value)} placeholder="https://example.com" inputMode="url" autoFocus /></label><button type="button" className="button button-light" onClick={applyLink}>Apply link</button><button type="button" className="button button-light" onClick={() => { setLinkHref(""); setLinkEntryOpen(false); setLinkIssue(""); }}>Cancel</button></div> : null}<div id="article-body-editor" className="insights-editor-surface"><EditorContent editor={editor} /></div>{linkIssue ? <p className="insights-field-error" role="alert">{linkIssue}</p> : null}</div>
+          <label className="insights-field"><span>Excerpt <small>Optional · max 300 characters</small></span><textarea name="excerpt" value={excerpt} onChange={(event) => { setExcerpt(event.target.value); markDirty(); }} maxLength={300} placeholder="A short introduction for article lists" /></label>
         </div>
-
-        <aside className="insights-metadata-panel" aria-label="Article metadata">
-          <div className="insights-panel-heading"><div><p className="admin-kicker admin-kicker-green">Draft metadata</p><h2>Make it findable.</h2></div><span>Optional until review</span></div>
-          <label className="insights-field"><span>Primary Category</span><select name="category_id" value={categoryId} onChange={(event) => { setCategoryId(event.target.value); setDirty(true); }}><option value="">No category yet</option>{taxonomy.categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
-          <fieldset className="insights-tags-field"><legend>Tags <small>Optional</small></legend>{taxonomy.tags.length ? <div className="insights-tag-grid">{taxonomy.tags.map((tag) => <label className="insights-check" key={tag.id}><input type="checkbox" name="tag_ids" value={tag.id} checked={tagIds.includes(tag.id)} onChange={() => toggleTag(tag.id)} /><span>{tag.name}</span></label>)}</div> : <p className="insights-muted">No approved Tags are available yet.</p>}</fieldset>
-          {saveFeedback ? <div className="insights-error" role="alert"><strong>{actionMessage(saveFeedback)}</strong>{saveFeedback.issues.length ? <ul>{saveFeedback.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}</div> : null}
-          {saveState.status === "saved" ? <div className="insights-success" role="status">{saveState.message} <span>{formatSavedAt(saveState.savedAt)}</span></div> : null}
-          <div className="insights-save-row"><div className="insights-save-copy" aria-live="polite"><strong>{savePending ? "Saving…" : dirty ? "Unsaved changes" : formatSavedAt(saveState.savedAt)}</strong><span>{saveState.status === "conflict" ? "The server changed this Draft." : "Explicit Save Draft only; no autosave."}</span></div><button className="button button-primary insights-save-button" type="submit" disabled={savePending || saveState.status === "saved" && !dirty}>{savePending ? "Saving…" : "Save Draft"} <span aria-hidden="true">↗</span></button></div>
-        </aside>
+        <aside className="insights-metadata-panel" aria-label="Article metadata"><div className="insights-panel-heading"><div><p className="admin-kicker admin-kicker-green">Draft metadata</p><h2>Make it findable.</h2></div><span>Optional until review</span></div><label className="insights-field"><span>Primary Category</span><select name="category_id" value={categoryId} onChange={(event) => { setCategoryId(event.target.value); markDirty(); }}><option value="">No category yet</option>{taxonomy.categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label><fieldset className="insights-tags-field"><legend>Tags <small>Optional</small></legend>{taxonomy.tags.length ? <div className="insights-tag-grid">{taxonomy.tags.map((tag) => <label className="insights-check" key={tag.id}><input type="checkbox" name="tag_ids" value={tag.id} checked={tagIds.includes(tag.id)} onChange={() => toggleTag(tag.id)} /><span>{tag.name}</span></label>)}</div> : <p className="insights-muted">No approved Tags are available yet.</p>}</fieldset>{saveFeedback ? <div className="insights-error" role="alert"><strong>{actionMessage(saveFeedback)}</strong>{saveFeedback.issues.length ? <ul>{saveFeedback.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}<button className="button button-light insights-retry-button" type="button" onClick={() => requestSave("explicit")}>Retry</button></div> : null}<div className="insights-save-row"><div className="insights-save-copy" aria-live="polite"><strong>{saveStatus === "saving" ? "Saving…" : saveStatus === "dirty" ? "Unsaved changes" : saveStatus === "conflict" ? "Conflict — reload required" : saveStatus === "error" ? "Save failed" : hasMounted ? formatSavedAt(lastSavedAt) : article ? "Saved" : "Not saved yet"}</strong><span>{saveStatus === "conflict" ? "Your local changes were not overwritten." : saveStatus === "error" ? "Your local changes are still here." : "Autosaves after a short pause; explicit Save Draft remains available."}</span></div><button className="button button-primary insights-save-button" type="submit" disabled={saveStatus === "saving" && !inFlightRef.current}>{saveStatus === "saving" ? "Saving…" : "Save Draft"} <span aria-hidden="true">↗</span></button></div>{saveStatus === "conflict" ? <button className="button button-light insights-reload-button" type="button" onClick={() => router.refresh()}>Reload latest saved version</button> : null}</aside>
       </form>
-
-      {article ? <details className="insights-advanced"><summary>Advanced: slug</summary><div className="insights-advanced-body"><p>Keep this stable once the article is published. The server remains authoritative for ownership, Draft status, concurrency, and uniqueness.</p><form action={slugAction} className="insights-slug-form"><input type="hidden" name="article_id" value={article.id} /><input type="hidden" name="expected_updated_at" value={expectedUpdatedAt} /><label className="insights-field"><span>Slug</span><input name="slug" value={slug} onChange={(event) => setSlug(event.target.value)} maxLength={120} aria-describedby="slug-help" /></label><span id="slug-help" className="insights-muted">Lowercase letters, numbers, and hyphens.</span><button className="button button-light insights-slug-button" type="submit" disabled={slugPending || !isValidInsightsSlug(slug) || slugState.status === "saved" && slug === article.slug}>{slugPending ? "Updating…" : "Update slug"}</button></form>{slugFeedback ? <div className="insights-error" role="alert">{actionMessage(slugFeedback)}</div> : null}{slugState.status === "saved" ? <div className="insights-success" role="status">Slug updated.</div> : null}</div></details> : null}
+      {article ? <div className="insights-composer-actions"><Link className="button button-light" href={`/crimson-admin-control/insights/articles/${article.id}/preview`}>Preview ↗</Link>{canSubmit ? <button className="button button-light" type="button" onClick={handleSubmitForReview} disabled={workflowPending || saveStatus === "saving"}>{workflowPending ? "Submitting…" : "Submit for Review"}</button> : null}{canPublishDraft ? <span className="insights-muted">Trusted Publisher publishing remains ownership-checked by the existing staging workflow.</span> : null}{submitState.status !== "idle" ? <p className={submitState.status === "saved" ? "insights-success" : "insights-error"} role={submitState.status === "saved" ? "status" : "alert"}>{actionMessage(submitState)}</p> : null}</div> : null}
+      {article ? <details className="insights-advanced"><summary>Advanced: slug</summary><div className="insights-advanced-body"><p>Keep this stable once the article is published. The server remains authoritative for ownership, Draft status, concurrency, and uniqueness.</p><form onSubmit={handleSlugSubmit} className="insights-slug-form"><input type="hidden" name="article_id" value={article.id} /><label className="insights-field"><span>Slug</span><input name="slug" value={slug} onChange={(event) => setSlug(event.target.value)} maxLength={120} aria-describedby="slug-help" /></label><span id="slug-help" className="insights-muted">Lowercase letters, numbers, and hyphens.</span><button className="button button-light insights-slug-button" type="submit" disabled={slugPending || !isValidInsightsSlug(slug) || slugState.status === "saved" && slug === article.slug}>{slugPending ? "Updating…" : "Update slug"}</button></form>{slugFeedback ? <div className="insights-error" role="alert">{actionMessage(slugFeedback)}</div> : null}{slugState.status === "saved" ? <div className="insights-success" role="status">Slug updated.</div> : null}</div></details> : null}
+      {leaveHref ? <div className="insights-leave-dialog" role="alertdialog" aria-modal="true" aria-labelledby="leave-dialog-title"><h2 id="leave-dialog-title">Unsaved changes</h2><p>Your local changes have not been confirmed by the server.</p><div><button className="button button-light" type="button" onClick={() => setLeaveHref("")}>Stay</button><a className="button button-primary" data-leave-confirmed href={leaveHref}>Leave without saving</a></div></div> : null}
     </div>
   );
 }
