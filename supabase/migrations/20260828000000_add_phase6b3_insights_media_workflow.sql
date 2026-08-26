@@ -508,7 +508,10 @@ begin
 end;
 $$;
 
-create or replace function public.insights_submit_for_review(uuid, timestamptz)
+create or replace function public.insights_submit_for_review(
+  p_article_id uuid,
+  p_expected_updated_at timestamptz
+)
 returns uuid
 language plpgsql
 security definer
@@ -519,10 +522,10 @@ declare
   revision public.insights_article_revisions%rowtype;
 begin
   if not public.cms_can_submit_insights() then raise exception 'This member cannot submit Insights articles'; end if;
-  select * into article from public.insights_articles where id = $1 for update;
+  select * into article from public.insights_articles where id = p_article_id for update;
   if article.id is null then raise exception 'The Insight article does not exist'; end if;
   if not public.cms_has_full_cms_access() and article.author_id <> auth.uid() then raise exception 'Editors may only submit their own Insight articles'; end if;
-  if $2 is not null and article.updated_at <> $2 then raise exception 'The Insight changed. Reload before submitting'; end if;
+  if p_expected_updated_at is not null and article.updated_at <> p_expected_updated_at then raise exception 'The Insight changed. Reload before submitting'; end if;
   if article.status <> 'draft' then raise exception 'Only a Draft can be submitted'; end if;
   select * into revision from public.insights_article_revisions where id = article.active_revision_id for update;
   if revision.id is null or revision.status <> 'draft' then raise exception 'The active Draft revision is missing'; end if;
@@ -608,7 +611,10 @@ begin
 end;
 $$;
 
-create or replace function public.insights_unpublish_article(uuid, timestamptz)
+create or replace function public.insights_unpublish_article(
+  p_article_id uuid,
+  p_expected_updated_at timestamptz
+)
 returns uuid
 language plpgsql
 security definer
@@ -619,9 +625,9 @@ declare
   previous_revision_id uuid;
 begin
   if not public.cms_can_unpublish_insights() then raise exception 'Only the owner can unpublish Insights'; end if;
-  select * into article from public.insights_articles where id = $1 for update;
+  select * into article from public.insights_articles where id = p_article_id for update;
   if article.id is null then raise exception 'The Insight article does not exist'; end if;
-  if $2 is not null and article.updated_at <> $2 then raise exception 'The Insight changed. Reload before unpublishing'; end if;
+  if p_expected_updated_at is not null and article.updated_at <> p_expected_updated_at then raise exception 'The Insight changed. Reload before unpublishing'; end if;
   if article.published_revision_id is null then raise exception 'The Insight is not currently published'; end if;
   previous_revision_id := article.published_revision_id;
   update public.insights_article_revisions set status = 'archived', updated_at = now() where id = previous_revision_id and status = 'published';
@@ -645,7 +651,10 @@ begin
 end;
 $$;
 
-create or replace function public.insights_restore_revision(uuid, uuid)
+create or replace function public.insights_restore_revision(
+  p_article_id uuid,
+  p_source_revision_id uuid
+)
 returns uuid
 language plpgsql
 security definer
@@ -659,9 +668,9 @@ declare
   next_revision integer;
 begin
   if not public.cms_can_restore_insights() then raise exception 'Only the owner can restore Insights'; end if;
-  select * into article from public.insights_articles where id = $1 for update;
+  select * into article from public.insights_articles where id = p_article_id for update;
   if article.id is null then raise exception 'The Insight article does not exist'; end if;
-  select * into source_revision from public.insights_article_revisions where id = $2 and article_id = article.id and status in ('published', 'archived') for update;
+  select * into source_revision from public.insights_article_revisions where id = p_source_revision_id and article_id = article.id and status in ('published', 'archived') for update;
   if source_revision.id is null then raise exception 'That historical Insight revision cannot be restored'; end if;
   if article.active_revision_id is not null then
     select * into active_revision from public.insights_article_revisions where id = article.active_revision_id for update;
