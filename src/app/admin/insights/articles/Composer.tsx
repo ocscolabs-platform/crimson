@@ -61,6 +61,8 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
   const [dirty, setDirty] = useState(false);
   const [clientIssue, setClientIssue] = useState("");
   const [linkIssue, setLinkIssue] = useState("");
+  const [linkHref, setLinkHref] = useState("");
+  const [linkEntryOpen, setLinkEntryOpen] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLInputElement>(null);
   const editor = useEditor({
@@ -117,12 +119,25 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
     setDirty(true);
   }
 
-  function setLink() {
+  function beginLink() {
     if (!editor) return;
-    const href = window.prompt("Paste an http(s) link");
-    if (href === null) return;
+    setLinkIssue("");
+    setLinkEntryOpen(true);
+  }
+
+  function applyLink() {
+    if (!editor) return;
+    const href = linkHref.trim();
     if (!/^https?:\/\/[^\s]+$/i.test(href)) { setLinkIssue("Use a full http(s) link."); return; }
     editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
+    setLinkHref("");
+    setLinkEntryOpen(false);
+    setLinkIssue("");
+  }
+
+  function cancelLink() {
+    setLinkHref("");
+    setLinkEntryOpen(false);
     setLinkIssue("");
   }
 
@@ -158,7 +173,7 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
               <ToolbarButton label="H3" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} disabled={!editor} />
               <ToolbarButton label="Bold" onClick={() => editor?.chain().focus().toggleBold().run()} disabled={!editor} />
               <ToolbarButton label="Italic" onClick={() => editor?.chain().focus().toggleItalic().run()} disabled={!editor} />
-              <ToolbarButton label="Link" onClick={setLink} disabled={!editor} />
+              <ToolbarButton label="Link" onClick={beginLink} disabled={!editor} />
               <ToolbarButton label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()} disabled={!editor} />
               <ToolbarButton label="Numbered list" onClick={() => editor?.chain().focus().toggleOrderedList().run()} disabled={!editor} />
               <ToolbarButton label="Blockquote" onClick={() => editor?.chain().focus().toggleBlockquote().run()} disabled={!editor} />
@@ -166,6 +181,7 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
               <ToolbarButton label="Undo" onClick={() => editor?.chain().focus().undo().run()} disabled={!editor} />
               <ToolbarButton label="Redo" onClick={() => editor?.chain().focus().redo().run()} disabled={!editor} />
             </div>
+            {linkEntryOpen ? <div className="insights-link-entry"><label><span>Link URL</span><input aria-label="Link URL" value={linkHref} onChange={(event) => setLinkHref(event.target.value)} placeholder="https://example.com" inputMode="url" autoFocus /></label><button type="button" className="button button-light" onClick={applyLink}>Apply link</button><button type="button" className="button button-light" onClick={cancelLink}>Cancel</button></div> : null}
             <div id="article-body-editor" className="insights-editor-surface"><EditorContent editor={editor} /></div>
             {linkIssue ? <p className="insights-field-error" role="alert">{linkIssue}</p> : null}
           </div>

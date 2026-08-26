@@ -22,6 +22,9 @@ test("first-save failures stay actionable and preserve the created identity", as
   assert.match(composer, /const \[persistedArticleId, setPersistedArticleId\]/);
   assert.match(composer, /router\.replace\(`\/crimson-admin-control\/insights\/articles\/\$\{saveState\.articleId\}`\)/);
   assert.match(composer, /name="article_id" value=\{persistedArticleId\}/);
+  assert.doesNotMatch(composer, /window\.prompt/);
+  assert.match(composer, /aria-label="Link URL"/);
+  assert.match(composer, /Apply link/);
 });
 
 test("body validator rejects H1, code blocks, unknown nodes, and unsafe links", () => {

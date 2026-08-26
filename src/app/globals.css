@@ -757,6 +757,10 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .insights-toolbar-button:hover, .insights-toolbar-button:focus-visible { border-color: var(--green); color: var(--green); }
 .insights-toolbar-button:disabled { cursor: not-allowed; opacity: .45; }
 .insights-toolbar-spacer { flex: 1; }
+.insights-link-entry { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; border: 1px solid rgb(255 255 255 / 14%); border-top: 0; background: #151515; padding: 10px; }
+.insights-link-entry label { display: grid; flex: 1 1 240px; gap: 4px; color: #aaa; font-size: .72rem; font-weight: 700; }
+.insights-link-entry input { min-height: 38px; border: 1px solid rgb(255 255 255 / 18%); border-radius: 6px; background: #0b0b0b; color: var(--white); font: inherit; padding: 8px 10px; }
+.insights-link-entry .button { min-height: 38px; }
 .insights-editor-surface { min-height: 360px; border: 1px solid rgb(255 255 255 / 18%); border-radius: 0 0 8px 8px; background: #0b0b0b; padding: 22px 24px; }
 .insights-editor-surface .ProseMirror { min-height: 310px; color: #ededed; font-size: .96rem; line-height: 1.75; outline: none; }
 .insights-editor-surface .ProseMirror p { margin: 0 0 16px; }
