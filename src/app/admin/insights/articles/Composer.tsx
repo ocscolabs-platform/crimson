@@ -64,6 +64,7 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
   const [linkIssue, setLinkIssue] = useState("");
   const [linkHref, setLinkHref] = useState("");
   const [linkEntryOpen, setLinkEntryOpen] = useState(false);
+  const linkSelectionRef = useRef<{ from: number; to: number } | null>(null);
   const titleRef = useRef<HTMLInputElement>(null);
   const editor = useEditor({
     immediatelyRender: false,
@@ -125,6 +126,7 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
 
   function beginLink() {
     if (!editor) return;
+    linkSelectionRef.current = { from: editor.state.selection.from, to: editor.state.selection.to };
     setLinkIssue("");
     setLinkEntryOpen(true);
   }
@@ -133,7 +135,11 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
     if (!editor) return;
     const href = linkHref.trim();
     if (!/^https?:\/\/[^\s]+$/i.test(href)) { setLinkIssue("Use a full http(s) link."); return; }
-    editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
+    const selection = linkSelectionRef.current;
+    const chain = editor.chain().focus();
+    if (selection) chain.setTextSelection(selection);
+    chain.extendMarkRange("link").setLink({ href }).run();
+    linkSelectionRef.current = null;
     setLinkHref("");
     setLinkEntryOpen(false);
     setLinkIssue("");

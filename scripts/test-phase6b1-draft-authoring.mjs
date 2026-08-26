@@ -25,6 +25,7 @@ test("first-save failures stay actionable and preserve the created identity", as
   assert.doesNotMatch(composer, /window\.prompt/);
   assert.match(composer, /aria-label="Link URL"/);
   assert.match(composer, /Apply link/);
+  assert.match(composer, /linkSelectionRef/);
   assert.match(composer, /name="body" value=\{bodyJson\} readOnly/);
 });
 
