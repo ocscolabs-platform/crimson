@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- private/public media URLs are runtime-resolved. */
 import type { ReactNode } from "react";
 import { isSafeInsightsLink, type InsightsBody, type InsightsMark, type InsightsNode, validateInsightsBody } from "@/lib/insights-body";
 
@@ -19,6 +20,13 @@ function renderInline(node: InsightsNode, key: string): ReactNode {
 
 function renderNode(node: InsightsNode, key: string): ReactNode {
   if (node.type === "text" || node.type === "hardBreak") return renderInline(node, key);
+  if (node.type === "image") {
+    const src = typeof node.attrs?.src === "string" ? node.attrs.src : "";
+    const alt = typeof node.attrs?.alt === "string" ? node.attrs.alt : "";
+    const caption = typeof node.attrs?.caption === "string" ? node.attrs.caption : "";
+    if (!src) return <p key={key} className="insights-media-unavailable">Image unavailable in this preview.</p>;
+    return <figure className="insights-rendered-image" key={key}><img src={src} alt={alt} />{caption ? <figcaption>{caption}</figcaption> : null}</figure>;
+  }
   const children = (node.content ?? []).map((child, index) => renderNode(child, `${key}-${index}`));
   if (node.type === "doc") return <>{children}</>;
   if (node.type === "paragraph") return <p key={key}>{children}</p>;

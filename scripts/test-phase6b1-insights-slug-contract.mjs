@@ -14,10 +14,11 @@ test("Batch 6B1 remains migration #28 without changing the prior baseline", asyn
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 29);
-  assert.equal(files.at(-3), "20260826000000_add_phase6a_insights_foundation.sql");
-  assert.equal(files.at(-2), "20260826010000_add_phase6b1_insights_slug_update_contract.sql");
-  assert.equal(files.at(-1), "20260827000000_add_phase6_insights_public_projection_security.sql");
+  assert.equal(files.length, 30);
+  assert.equal(files.at(-4), "20260826000000_add_phase6a_insights_foundation.sql");
+  assert.equal(files.at(-3), "20260826010000_add_phase6b1_insights_slug_update_contract.sql");
+  assert.equal(files.at(-2), "20260827000000_add_phase6_insights_public_projection_security.sql");
+  assert.equal(files.at(-1), "20260828000000_add_phase6b3_insights_media_workflow.sql");
 });
 
 test("The slug RPC is authenticated, narrow, and optimistic-concurrency protected", async () => {

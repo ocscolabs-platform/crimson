@@ -58,7 +58,7 @@ test("server slug generation is lowercase, bounded, and deterministic", () => {
   assert.equal(getUniqueInsightsSlugCandidate("a".repeat(120), 10).length, 120);
 });
 
-test("B6B1 application contracts remain scoped to Draft authoring", async () => {
+test("B6B1 application contracts remain intact after later media work", async () => {
   const files = await Promise.all([
     "../src/app/admin/insights/page.tsx",
     "../src/app/admin/insights/articles/new/page.tsx",
@@ -74,5 +74,5 @@ test("B6B1 application contracts remain scoped to Draft authoring", async () => 
   assert.match(source, /renderInsightsBody/);
   assert.match(source, /noreferrer noopener/);
   assert.doesNotMatch(source, /dangerouslySetInnerHTML/);
-  for (const forbidden of ["<img", "ImageUpload", "export const revalidate = 60", "public /insights"]) assert.doesNotMatch(source, new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  for (const forbidden of ["export const revalidate = 60", "public /insights"]) assert.doesNotMatch(source, new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });

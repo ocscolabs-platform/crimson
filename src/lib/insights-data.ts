@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { emptyInsightsBody, validateInsightsBody, type InsightsBody } from "@/lib/insights-body";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type InsightsCategory = { id: string; name: string; slug: string; is_active: boolean };
 export type InsightsTag = { id: string; name: string; slug: string };
@@ -32,7 +33,60 @@ export type InsightsArticleEditorData = {
   tagIds: string[];
   categoryName: string;
   tagNames: string[];
+  coverMedia: InsightsMedia | null;
+  inlineMedia: InsightsMedia[];
 };
+
+export type InsightsMedia = {
+  id: string;
+  kind: "cover" | "inline";
+  altText: string;
+  caption: string | null;
+  width: number;
+  height: number;
+  previewUrl: string | null;
+};
+
+function withMediaPreviewUrls(body: InsightsBody, media: { inlineMedia: InsightsMedia[] }): InsightsBody {
+  const urls = new Map(media.inlineMedia.map((item) => [item.id, item.previewUrl]));
+  function walk(node: InsightsBody["doc"]): InsightsBody["doc"] {
+    const attrs = node.type === "image" && node.attrs && typeof node.attrs.mediaId === "string"
+      ? { ...node.attrs, src: urls.get(node.attrs.mediaId) ?? null }
+      : node.attrs;
+    return { ...node, ...(attrs ? { attrs } : {}), ...(node.content ? { content: node.content.map(walk) } : {}) };
+  }
+  return { ...body, doc: walk(body.doc) };
+}
+
+async function getRevisionMedia(supabase: Awaited<ReturnType<typeof createClient>>, articleId: string, revisionId: string | null) {
+  if (!revisionId) return { coverMedia: null, inlineMedia: [] as InsightsMedia[] };
+  const { data: relations, error: relationError } = await supabase.from("insights_revision_media").select("media_id, role").eq("revision_id", revisionId);
+  if (relationError || !relations?.length) return { coverMedia: null, inlineMedia: [] as InsightsMedia[] };
+  const mediaIds = relations.map((relation) => relation.media_id as string);
+  const { data: assets, error: assetError } = await supabase.from("insights_media_assets").select("id, kind, alt_text, caption, width, height, storage_path").eq("article_id", articleId).in("id", mediaIds).eq("status", "ready");
+  if (assetError) return { coverMedia: null, inlineMedia: [] as InsightsMedia[] };
+  let admin: ReturnType<typeof createAdminClient> | null = null;
+  try { admin = createAdminClient(); } catch { admin = null; }
+  const resolved = await Promise.all((assets ?? []).map(async (asset) => {
+    let previewUrl: string | null = null;
+    if (admin) {
+      const { data } = await admin.storage.from("insights-private-media").createSignedUrl(asset.storage_path as string, 900);
+      previewUrl = data?.signedUrl ?? null;
+    }
+    return {
+      id: asset.id as string,
+      kind: asset.kind as InsightsMedia["kind"],
+      altText: asset.alt_text as string,
+      caption: (asset.caption as string | null) ?? null,
+      width: asset.width as number,
+      height: asset.height as number,
+      previewUrl,
+    } satisfies InsightsMedia;
+  }));
+  const mediaMap = new Map(resolved.map((media) => [media.id, media]));
+  const coverId = relations.find((relation) => relation.role === "cover")?.media_id as string | undefined;
+  return { coverMedia: coverId ? mediaMap.get(coverId) ?? null : null, inlineMedia: relations.filter((relation) => relation.role === "inline").map((relation) => mediaMap.get(relation.media_id as string)).filter((media): media is InsightsMedia => Boolean(media)) };
+}
 
 export async function getInsightsTaxonomy() {
   const supabase = await createClient();
@@ -128,6 +182,7 @@ export async function getInsightsArticleEditorData(articleId: string): Promise<I
   const category = taxonomy.categories.find((item) => item.id === revision?.primary_category_id);
   const bodyValidation = revision?.body ? validateInsightsBody(revision.body) : { success: true as const, value: emptyInsightsBody() };
   const { data: author } = await supabase.from("cms_members").select("public_display_name").eq("user_id", article.author_id).maybeSingle();
+  const media = await getRevisionMedia(supabase, article.id, revision?.id ?? null);
 
   return {
     id: article.id,
@@ -139,11 +194,12 @@ export async function getInsightsArticleEditorData(articleId: string): Promise<I
     submittedAt: article.submitted_at,
     title: revision?.title ?? "",
     excerpt: revision?.excerpt ?? "",
-    body: bodyValidation.success ? bodyValidation.value : emptyInsightsBody(),
+    body: bodyValidation.success ? withMediaPreviewUrls(bodyValidation.value, media) : emptyInsightsBody(),
     categoryId: revision?.primary_category_id ?? "",
     tagIds,
     categoryName: category?.name ?? "No category",
     tagNames: taxonomy.tags.filter((tag) => tagIds.includes(tag.id)).map((tag) => tag.name),
+    ...media,
   };
 }
 
@@ -174,6 +230,7 @@ export async function getInsightsArticlePreviewData(articleId: string): Promise<
   const bodyValidation = validateInsightsBody(revision.body);
   if (!bodyValidation.success) return null;
   const { data: author } = await supabase.from("cms_members").select("public_display_name").eq("user_id", article.author_id).maybeSingle();
+  const media = await getRevisionMedia(supabase, article.id, revision.id);
 
   return {
     id: article.id,
@@ -185,10 +242,11 @@ export async function getInsightsArticlePreviewData(articleId: string): Promise<
     submittedAt: article.submitted_at,
     title: revision.title ?? "",
     excerpt: revision.excerpt ?? "",
-    body: bodyValidation.value,
+    body: withMediaPreviewUrls(bodyValidation.value, media),
     categoryId: revision.primary_category_id ?? "",
     tagIds: (relationRows ?? []).map((row) => row.tag_id as string),
     categoryName: category?.name ?? "No category",
     tagNames: taxonomy.tags.filter((tag) => (relationRows ?? []).some((row) => row.tag_id === tag.id)).map((tag) => tag.name),
+    ...media,
   };
 }
