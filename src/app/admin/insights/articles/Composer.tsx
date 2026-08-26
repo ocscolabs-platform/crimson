@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import LinkExtension from "@tiptap/extension-link";
@@ -26,6 +26,7 @@ type SaveStatus = "saved" | "dirty" | "saving" | "error" | "conflict";
 type Snapshot = { articleId: string; expectedUpdatedAt: string; title: string; excerpt: string; categoryId: string; tagIds: string[]; bodyJson: string; version: number };
 
 const initialActionState: InsightsActionState = { status: "idle", message: "", issues: [] };
+const subscribeToNothing = () => () => {};
 
 function formatSavedAt(value?: string) {
   if (!value) return "Not saved yet";
@@ -54,7 +55,7 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
   const [saveStatus, setSaveStatus] = useState<SaveStatus>(article ? "saved" : "dirty");
   const [saveState, setSaveState] = useState<InsightsActionState>(initialActionState);
   const [lastSavedAt, setLastSavedAt] = useState(article?.updatedAt);
-  const [hasMounted, setHasMounted] = useState(false);
+  const hasMounted = useSyncExternalStore(subscribeToNothing, () => true, () => false);
   const [clientIssue, setClientIssue] = useState("");
   const [linkIssue, setLinkIssue] = useState("");
   const [linkHref, setLinkHref] = useState("");
@@ -75,8 +76,6 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastAutosaveCompletedRef = useRef(0);
   const autosaveStoppedRef = useRef(false);
-
-  useEffect(() => setHasMounted(true), []);
 
   function markDirty() {
     changeVersionRef.current += 1;
