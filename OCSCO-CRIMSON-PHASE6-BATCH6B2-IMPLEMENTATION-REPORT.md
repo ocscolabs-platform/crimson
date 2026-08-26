@@ -15,7 +15,7 @@ PR state at handoff: OPEN, not merged
 - Authenticated private Preview for Draft and Needs Review revisions, reusing the read-only article renderer.
 - Private Preview `no-store`/`noindex` protections and visible unpublished-content treatment.
 - Owner Needs Review count and oldest-first queue with author, submission, category, and Review entry point.
-- Owner Review mode with read-only content and confirmed Publish / Return to Draft actions.
+- Owner Review mode with read-only content and confirmed Publish / Return to Draft / Unpublish actions.
 - Editor Withdraw-to-Draft workflow wiring and role-scoped server RPC use.
 - Responsive and accessibility-oriented styling and semantics within the existing admin surface.
 
@@ -29,7 +29,9 @@ No migration was added for Batch 6B2. The existing Phase 6A / Batch 6B1 baseline
 
 - `3f436cda06e11f57e5304308a6da4c5e1a7bb795` — Implement Batch 6B2 Insights workflow
 - `7b0393b31b4e9d8a5987192a953cf36fd7fa070e` — Fix Draft save status hydration
-- `85365f3` — Satisfy Draft hydration lint
+- `85365f378eef2c578e754f60dab4691f7eb49d36` — Satisfy Draft hydration lint
+- `285b27f486860a963fda93e9884a5409d8f0ae4c` — Record Batch 6B2 implementation report
+- `aee8502aedc7dcfa42d2d09ee119388b4393af9f` — Add Owner Insights unpublish control
 
 ## Preview QA
 
@@ -53,8 +55,10 @@ Authenticated Owner QA was run against the PR Preview:
 - Preview QA: PASS.
 - Needs Review QA: PASS.
 - Owner Review QA: PASS. Return to Draft was executed on article `0d2026eb-0dc4-483d-89a0-a789a6966dcd`, the article became editable Draft, and Submit for Review restored it to the queue with count 1.
-- Editor Withdraw QA: NOT VERIFIED. No Editor-authenticated browser session was available and no credentials were accessed. The role-scoped source contract and RPC wiring passed automated checks.
-- Owner Publish controls were present behind explicit confirmation on Needs Review. Publish was not executed so the staging QA article was not promoted unnecessarily.
+- Editor Withdraw QA: PASS. A temporary staging-only Editor account was configured as `insights_only` with `can_publish_insights = false`. Editor-owned article `8ea732da-ad00-4a60-aa8b-55f8b40a8a93` was submitted to Review, confirmed read-only, withdrawn to Draft, and verified from the Owner session. The Editor could not Publish, Return another user's Review, access Pages, or access broad `/admin`.
+- Owner Publish UI QA: PASS. Article `0d2026eb-0dc4-483d-89a0-a789a6966dcd` was published and then unpublished through the Owner-only UI.
+- Direct staging verification showed final statuses `unpublished` and `draft`; the Owner QA audit sequence includes `published, unpublished`, and the Editor QA sequence includes `submitted, withdrawn_to_draft`.
+- Temporary Editor account status: banned in `crimson-staging` until 27 Aug 2026 23:16 (+0800); active QA sessions were signed out. Credentials are not recorded.
 
 ## Responsive and accessibility QA
 
@@ -89,4 +93,4 @@ The first post-fix validation attempt exposed a Draft-only React hydration misma
 
 ## Gate decision
 
-NO-GO for Owner review handoff at this point. The implementation and Owner-path QA are ready, but the Editor Withdraw browser path and the three exact responsive viewports remain unverified because the required authenticated Editor session and effective viewport controls were unavailable in the current browser session. No known functional defect was observed in the verified Owner path.
+NO-GO for PR #84 merge solely because the required exact responsive viewport evidence could not be obtained from the Codex in-app browser device surface. Editor Withdraw, Owner Publish/Unpublish, autosave, Preview, authorization, and regression gates pass. No known functional defect was observed in the verified paths.
