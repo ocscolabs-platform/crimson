@@ -65,7 +65,7 @@ function validateAttrs(node: InsightsNode, issues: string[], path: string) {
     return;
   }
   if (node.type === "orderedList") {
-    if (attrs !== undefined && (!isRecord(attrs) || Object.keys(attrs).some((key) => key !== "start") || (attrs.start !== undefined && (!Number.isInteger(attrs.start) || Number(attrs.start) < 1 || Number(attrs.start) > 100)))) {
+    if (attrs !== undefined && (!isRecord(attrs) || Object.keys(attrs).some((key) => !["start", "type"].includes(key)) || (attrs.start !== undefined && (!Number.isInteger(attrs.start) || Number(attrs.start) < 1 || Number(attrs.start) > 100)) || (attrs.type !== undefined && attrs.type !== null))) {
       issues.push(`${path} ordered list attributes are invalid.`);
     }
     return;

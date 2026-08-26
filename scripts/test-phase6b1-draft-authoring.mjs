@@ -40,6 +40,7 @@ test("body validator rejects H1, code blocks, unknown nodes, and unsafe links", 
     assert.equal(validateInsightsBody({ ...body, doc: { type: "doc", content: [node] } }).success, false);
   }
   assert.equal(validateInsightsBody({ ...body, doc: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Safe", marks: [{ type: "link", attrs: { href: "https://example.com", target: "_blank", rel: "noreferrer noopener", class: null, title: null } }] }] }] } }).success, true);
+  assert.equal(validateInsightsBody({ ...body, doc: { type: "doc", content: [{ type: "orderedList", attrs: { start: 1, type: null }, content: [{ type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Safe" }] }] }] }] } }).success, true);
 });
 
 test("body validator rejects unknown attributes and pathological depth", () => {
