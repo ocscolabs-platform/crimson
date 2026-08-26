@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -44,6 +45,7 @@ function ToolbarButton({ label, onClick, disabled = false }: { label: string; on
 }
 
 export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
+  const router = useRouter();
   const initial = article?.body ?? emptyInsightsBody();
   const [saveState, saveAction, savePending] = useActionState(saveInsightsDraft, initialInsightsActionState);
   const [slugState, slugAction, slugPending] = useActionState(updateInsightsSlug, initialInsightsActionState);
@@ -52,6 +54,7 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
   const [categoryId, setCategoryId] = useState(article?.categoryId ?? "");
   const [tagIds, setTagIds] = useState(article?.tagIds ?? []);
   const [slug, setSlug] = useState(article?.slug ?? "");
+  const [persistedArticleId, setPersistedArticleId] = useState(article?.id ?? "");
   const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(article?.updatedAt ?? "");
   const [dirty, setDirty] = useState(false);
   const [clientIssue, setClientIssue] = useState("");
@@ -78,13 +81,18 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
   }, [editor]);
 
   useEffect(() => {
+    if (saveState.articleId && saveState.articleId !== persistedArticleId) {
+      // Preserve a server-created identity if the follow-up Draft save needs a retry.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPersistedArticleId(saveState.articleId);
+    }
     if (saveState.status === "saved") {
       // Server confirmation is the point at which local dirty state can safely clear.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDirty(false);
       if (saveState.updatedAt) setExpectedUpdatedAt(saveState.updatedAt);
+      if (!article && saveState.articleId) router.replace(`/crimson-admin-control/insights/articles/${saveState.articleId}`);
     }
-  }, [saveState]);
+  }, [article, persistedArticleId, router, saveState]);
 
   useEffect(() => {
     if (slugState.status === "saved") {
@@ -132,7 +140,7 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
   return (
     <div className="insights-composer-layout">
       <form className="insights-composer" action={saveAction} onSubmit={handleSubmit}>
-        <input type="hidden" name="article_id" value={article?.id ?? ""} />
+        <input type="hidden" name="article_id" value={persistedArticleId} />
         <input type="hidden" name="expected_updated_at" value={expectedUpdatedAt} />
         <input ref={bodyRef} type="hidden" name="body" defaultValue={JSON.stringify(initial)} />
         <div className="insights-writing-fields">

@@ -3,7 +3,7 @@
 Date: 2026-08-26
 Branch: `codex/phase6-6b1-draft-authoring-v2`
 Base: `733547852a7b2d22c56d4759fff1a24dabe29f75`
-Implementation commit: `07919e9641b94d23aaf3a89a6a032aae935dce29`
+Implementation commit: `07919e9641b94d23aaf3a89a6a032aae935dce29`; first-save defect follow-up commit is recorded in the handoff.
 
 ## Implementation summary
 
@@ -51,14 +51,20 @@ No image/media extension was added.
 
 Authoring stays behind the existing canonical `/crimson-admin-control` boundary and authenticated Insights capability. Server actions call the approved RPCs and do not write article or revision tables directly. RLS and backend ownership rules remain authoritative. Anonymous and direct `/admin` protections remain unchanged. Review and Published states render read-only and are not silently converted into Drafts.
 
+## First-save defect follow-up
+
+The Owner-reported attempted article was checked directly in staging and was not present: no matching recent `insights_articles` row or active Draft revision was found, so no title, body, slug, or orphan revision from that attempt was observed.
+
+The submitted composer did not navigate a successful new-article save to the returned persisted article route, and unexpected Server Action exceptions were not contained. The fix adds safe server-side exception handling and logging, preserves a server-created article identity across retryable errors, and routes successful first saves to `/crimson-admin-control/insights/articles/[id]`. A focused regression test covers these behaviors. The exact Owner runtime stack could not be captured because the available browser session was not authenticated to the CMS; Owner re-test remains required.
+
 ## Responsive QA result
 
 Responsive CSS is implemented for desktop, tablet, and mobile breakpoints, including one-column mobile authoring, reachable metadata, usable toolbar wrapping, and full-width Save Draft access. Local browser verification confirmed the canonical sign-in gate with no page-level overflow at the available browser viewport. Authenticated composer interaction at 1440×900, 768×1024, and 390×844 could not be completed because the available local browser session has no CMS sign-in; no credentials were available to perform that session step.
 
 ## Known issue / blocker
 
-Authenticated browser QA and live first-save persistence remain Owner-review checks requiring a signed-in CMS session. The implementation is otherwise locally compiled and contract-tested.
+Authenticated browser QA and live first-save persistence remain Owner-review checks requiring a signed-in CMS session. The implementation is otherwise locally compiled and contract-tested. Keep PR #83 unmerged until the Owner repeats the first-save and responsive checks.
 
 ## Review decision
 
-**GO for Owner review of the unmerged PR.** Keep the PR unmerged until the Owner completes authenticated composer and responsive QA. Do not begin B6B2 or B6B3 from this branch.
+**NO-GO for merge pending Owner authenticated re-test.** Do not begin B6B2 or B6B3 from this branch.

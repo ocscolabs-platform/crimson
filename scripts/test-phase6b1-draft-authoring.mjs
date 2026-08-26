@@ -10,6 +10,19 @@ test("body schema accepts the empty v1 envelope", () => {
   assert.equal(validateInsightsBody(body).success, true);
 });
 
+test("first-save failures stay actionable and preserve the created identity", async () => {
+  const [actions, composer] = await Promise.all([
+    readFile(new URL("../src/app/admin/insights/articles/actions.ts", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/admin/insights/articles/Composer.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(actions, /unexpected Draft save failure/);
+  assert.match(actions, /Save failed\. Your local changes are still here\./);
+  assert.match(actions, /articleId: persistedArticleId/);
+  assert.match(composer, /const \[persistedArticleId, setPersistedArticleId\]/);
+  assert.match(composer, /router\.replace\(`\/crimson-admin-control\/insights\/articles\/\$\{saveState\.articleId\}`\)/);
+  assert.match(composer, /name="article_id" value=\{persistedArticleId\}/);
+});
+
 test("body validator rejects H1, code blocks, unknown nodes, and unsafe links", () => {
   for (const node of [
     { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "No" }] },

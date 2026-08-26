@@ -68,57 +68,61 @@ async function createArticleWithUniqueSlug(supabase: Awaited<ReturnType<typeof c
 }
 
 export async function saveInsightsDraft(_previousState: InsightsActionState, formData: FormData): Promise<InsightsActionState> {
-  const authorized = await getAuthorizedAction();
-  if (authorized.error) return authorized.error;
-  const { supabase } = authorized;
-  const title = getText(formData, "title").trim();
-  const excerpt = getText(formData, "excerpt").trim();
-  const articleId = getText(formData, "article_id").trim();
-  const categoryId = getText(formData, "category_id").trim();
-  const tagIds = formData.getAll("tag_ids").filter((value): value is string => typeof value === "string" && value.length > 0);
-  const body = parseInsightsBody(getText(formData, "body"));
-
-  if (!title) return errorState("A meaningful Title is required before the first Draft save.", ["Enter a Title to create this Draft."]);
-  if (title.length > MAX_TITLE_LENGTH) return errorState("Shorten the Title before saving.", [`Title must be ${MAX_TITLE_LENGTH} characters or fewer.`]);
-  if (excerpt.length > MAX_EXCERPT_LENGTH) return errorState("Shorten the Excerpt before saving.", [`Excerpt must be ${MAX_EXCERPT_LENGTH} characters or fewer.`]);
-  if (!body.success) return errorState("Review the article body before saving.", body.issues);
-  if (body.value.doc && JSON.stringify(body.value).length > MAX_INSIGHTS_BODY_TEXT * 6) return errorState("The article body is too large to save.");
-  const taxonomyIssue = await validateTaxonomy(supabase, categoryId, tagIds);
-  if (taxonomyIssue) return errorState(taxonomyIssue);
-
-  let persistedArticleId = articleId;
+  let persistedArticleId = getText(formData, "article_id").trim();
   let persistedSlug = "";
-  if (!persistedArticleId) {
-    const created = await createArticleWithUniqueSlug(supabase, title);
-    if (!("articleId" in created)) return errorState(created.error);
-    persistedArticleId = created.articleId as string;
-    persistedSlug = created.slug as string;
-    const { data: article, error: articleError } = await supabase.from("insights_articles").select("updated_at").eq("id", persistedArticleId).maybeSingle();
-    if (articleError || !article) return errorState("The new Draft was created but could not be loaded for its first save. Reload and try again.");
-    formData.set("expected_updated_at", article.updated_at as string);
-  }
-  if (!persistedArticleId) return errorState("The Draft identity is missing. Reload and try again.");
+  try {
+    const authorized = await getAuthorizedAction();
+    if (authorized.error) return authorized.error;
+    const { supabase } = authorized;
+    const title = getText(formData, "title").trim();
+    const excerpt = getText(formData, "excerpt").trim();
+    const categoryId = getText(formData, "category_id").trim();
+    const tagIds = formData.getAll("tag_ids").filter((value): value is string => typeof value === "string" && value.length > 0);
+    const body = parseInsightsBody(getText(formData, "body"));
 
-  const expected = getText(formData, "expected_updated_at").trim() || null;
-  const { error: saveError } = await supabase.rpc("insights_save_draft", {
-    p_article_id: persistedArticleId,
-    p_expected_updated_at: expected,
-    p_title: title,
-    p_excerpt: excerpt || null,
-    p_body: body.value,
-    p_primary_category_id: categoryId || null,
-    p_tag_ids: [...new Set(tagIds)],
-  });
-  if (saveError) {
-    const conflict = /changed|reload/i.test(saveError.message);
-    return { ...errorState(conflict ? "Conflict — reload required." : "Save failed. Your local changes are still here."), status: conflict ? "conflict" : "error" };
-  }
+    if (!title) return errorState("A meaningful Title is required before the first Draft save.", ["Enter a Title to create this Draft."]);
+    if (title.length > MAX_TITLE_LENGTH) return errorState("Shorten the Title before saving.", [`Title must be ${MAX_TITLE_LENGTH} characters or fewer.`]);
+    if (excerpt.length > MAX_EXCERPT_LENGTH) return errorState("Shorten the Excerpt before saving.", [`Excerpt must be ${MAX_EXCERPT_LENGTH} characters or fewer.`]);
+    if (!body.success) return errorState("Review the article body before saving.", body.issues);
+    if (body.value.doc && JSON.stringify(body.value).length > MAX_INSIGHTS_BODY_TEXT * 6) return errorState("The article body is too large to save.");
+    const taxonomyIssue = await validateTaxonomy(supabase, categoryId, tagIds);
+    if (taxonomyIssue) return errorState(taxonomyIssue);
 
-  const { data: savedArticle, error: savedArticleError } = await supabase.from("insights_articles").select("slug, updated_at").eq("id", persistedArticleId).maybeSingle();
-  if (savedArticleError || !savedArticle) return errorState("The Draft saved, but its current status could not be read. Reload before continuing.");
-  revalidatePath("/crimson-admin-control/insights");
-  revalidatePath(`/crimson-admin-control/insights/articles/${persistedArticleId}`);
-  return { status: "saved", message: "Draft saved.", issues: [], articleId: persistedArticleId, slug: persistedSlug || savedArticle.slug, updatedAt: savedArticle.updated_at, savedAt: new Date().toISOString() };
+    if (!persistedArticleId) {
+      const created = await createArticleWithUniqueSlug(supabase, title);
+      if (!("articleId" in created)) return errorState(created.error);
+      persistedArticleId = created.articleId as string;
+      persistedSlug = created.slug as string;
+      const { data: article, error: articleError } = await supabase.from("insights_articles").select("updated_at").eq("id", persistedArticleId).maybeSingle();
+      if (articleError || !article) return { ...errorState("The new Draft was created but could not be loaded for its first save. Try Save Draft again."), articleId: persistedArticleId, slug: persistedSlug };
+      formData.set("expected_updated_at", article.updated_at as string);
+    }
+    if (!persistedArticleId) return errorState("The Draft identity is missing. Reload and try again.");
+
+    const expected = getText(formData, "expected_updated_at").trim() || null;
+    const { error: saveError } = await supabase.rpc("insights_save_draft", {
+      p_article_id: persistedArticleId,
+      p_expected_updated_at: expected,
+      p_title: title,
+      p_excerpt: excerpt || null,
+      p_body: body.value,
+      p_primary_category_id: categoryId || null,
+      p_tag_ids: [...new Set(tagIds)],
+    });
+    if (saveError) {
+      const conflict = /changed|reload/i.test(saveError.message);
+      return { ...errorState(conflict ? "Conflict — reload required." : "Save failed. Your local changes are still here."), status: conflict ? "conflict" : "error", articleId: persistedArticleId, slug: persistedSlug || undefined };
+    }
+
+    const { data: savedArticle, error: savedArticleError } = await supabase.from("insights_articles").select("slug, updated_at").eq("id", persistedArticleId).maybeSingle();
+    if (savedArticleError || !savedArticle) return { ...errorState("The Draft saved, but its current status could not be read. Try Save Draft again."), articleId: persistedArticleId, slug: persistedSlug || undefined };
+    revalidatePath("/crimson-admin-control/insights");
+    revalidatePath(`/crimson-admin-control/insights/articles/${persistedArticleId}`);
+    return { status: "saved", message: "Draft saved.", issues: [], articleId: persistedArticleId, slug: persistedSlug || savedArticle.slug, updatedAt: savedArticle.updated_at, savedAt: new Date().toISOString() };
+  } catch (error) {
+    console.error("[insights] unexpected Draft save failure", { articleId: persistedArticleId || null, error });
+    return { ...errorState("Save failed. Your local changes are still here."), articleId: persistedArticleId || undefined, slug: persistedSlug || undefined };
+  }
 }
 
 export async function updateInsightsSlug(_previousState: InsightsActionState, formData: FormData): Promise<InsightsActionState> {
