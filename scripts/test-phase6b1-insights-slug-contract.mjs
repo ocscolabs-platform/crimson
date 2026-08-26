@@ -8,15 +8,16 @@ const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const migrationPath = "supabase/migrations/20260826010000_add_phase6b1_insights_slug_update_contract.sql";
 const read = (file) => readFile(path.join(root, file), "utf8");
 
-test("Batch 6B1 adds migration #28 without changing the prior baseline", async () => {
+test("Batch 6B1 remains migration #28 without changing the prior baseline", async () => {
   const { readdir } = await import("node:fs/promises");
   const files = (await readdir(path.join(root, "supabase", "migrations")))
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 28);
-  assert.equal(files.at(-2), "20260826000000_add_phase6a_insights_foundation.sql");
-  assert.equal(files.at(-1), "20260826010000_add_phase6b1_insights_slug_update_contract.sql");
+  assert.equal(files.length, 29);
+  assert.equal(files.at(-3), "20260826000000_add_phase6a_insights_foundation.sql");
+  assert.equal(files.at(-2), "20260826010000_add_phase6b1_insights_slug_update_contract.sql");
+  assert.equal(files.at(-1), "20260827000000_add_phase6_insights_public_projection_security.sql");
 });
 
 test("The slug RPC is authenticated, narrow, and optimistic-concurrency protected", async () => {
