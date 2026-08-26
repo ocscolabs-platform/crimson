@@ -443,3 +443,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Persist `about_people` with exactly `eyebrow`, `heading`, and `cta`; it has no `body` field. Persist Contact process items with exactly `title` and `body`. Numbering and prefixes such as `01 /` remain code-controlled presentation and are rejected as unknown PageDocument fields.
 - **Reason:** The approved Phase 5A contract intentionally preserves the existing About placeholder without inventing body copy and keeps Contact numbering in the renderer. The Slice 1 application validator and Slice 2 database helper incorrectly required `about_people.body`; the correction restores one shared strict contract before any PageDocument backfill.
 - **Consequence:** A forward, data-free validator correction is required before Slice 3. Save, publish, restore, authorization, legacy arrays, `page_sections`, Work, and all current page data remain unchanged. No PageDocument backfill is included in this decision.
+
+## ADR-063 - Keep Batch 6B2 authoring reliable without opening media or public Insights
+
+- **Date:** 2026-08-26
+- **Status:** Implemented on the Batch 6B2 feature branch; staging review pending
+- **Decision:** Extend the existing Insights Draft save action with a client-side coordinator that debounces Draft autosave, serializes explicit saves, preserves local state on stale conflicts, and protects navigation while changes are unconfirmed. Add a private, no-store, noindex Preview that loads only the authorized active Draft/Review revision through the shared Insights renderer. Add an Owner Needs Review queue and Review-state workflow controls using the existing Batch 6A RPCs. Do not create a migration, media path, public Insights route, or alternate article renderer.
+- **Reason:** The text-only authoring foundation needs a reliable review loop before media and public publication artifacts are introduced. Keeping all writes on the existing Server Action/RPC boundaries preserves authorization, optimistic concurrency, and the future B6B3 Cover-media publication gate.
+- **Consequence:** B6B2 remains a staging-only editorial reliability slice. Text-only Submit/Publish behavior is explicitly foundation QA behavior; media validation and the final public artifact contract remain deferred to B6B3. No Production or `main` changes are permitted.

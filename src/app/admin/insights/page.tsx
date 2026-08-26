@@ -21,6 +21,10 @@ function updatedLabel(value: string) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
+function submittedLabel(value: string | null) {
+  return value ? updatedLabel(value) : "Not submitted";
+}
+
 export default async function InsightsLandingPage({ searchParams }: { searchParams?: Promise<{ view?: string }> }) {
   const { user, membership } = await requireCmsInsightsEditor();
   const requestedView = (await searchParams)?.view;
@@ -41,15 +45,17 @@ export default async function InsightsLandingPage({ searchParams }: { searchPara
         </section>
 
         <nav className="insights-view-nav" aria-label="Article views">
-          {views.map((item) => <Link key={item.key} className={view === item.key ? "is-active" : ""} href={item.key === "all" ? "/crimson-admin-control/insights" : `/crimson-admin-control/insights?view=${item.key}`} aria-current={view === item.key ? "page" : undefined}>{item.label}{item.key === "review" && data.reviewCount > 0 ? <span className="insights-count">{data.reviewCount}</span> : null}</Link>)}
+          {views.map((item) => <Link key={item.key} className={view === item.key ? "is-active" : ""} href={item.key === "all" ? "/crimson-admin-control/insights" : `/crimson-admin-control/insights?view=${item.key}`} aria-current={view === item.key ? "page" : undefined}>{item.label}{item.key === "review" && data.reviewCount > 0 ? <span className="insights-count" aria-label={`${data.reviewCount} articles need review`}>{data.reviewCount}</span> : null}</Link>)}
         </nav>
+
+        {membership.role === "owner" ? <section className="insights-review-queue" aria-labelledby="needs-review-heading"><div className="admin-section-heading"><div><p className="admin-kicker admin-kicker-green">Owner attention</p><h2 id="needs-review-heading">Needs Review <span className="insights-count" aria-label={`${data.reviewCount} articles need review`}>{data.reviewCount}</span></h2></div><p className="admin-section-note">Submitted articles are shown oldest first. Review is read-only until you choose a workflow action.</p></div>{data.reviewQueue.length ? <div className="insights-review-list">{data.reviewQueue.map((article) => <article className="insights-review-row" key={article.id}><div><span className="insights-status insights-status-review">Needs Review</span><h3>{article.title}</h3></div><dl><div><dt>Author</dt><dd>{article.authorLabel}</dd></div><div><dt>Submitted</dt><dd>{submittedLabel(article.submittedAt)}</dd></div><div><dt>Category</dt><dd>{article.categoryName}</dd></div></dl><Link className="button button-light" href={`/crimson-admin-control/insights/articles/${article.id}`}>Review ↗</Link></article>)}</div> : <p className="insights-empty-copy">No articles are waiting for review.</p>}</section> : null}
 
         <section className="admin-section insights-list-section" aria-labelledby="article-list-title">
           <div className="admin-section-heading"><div><p className="admin-kicker">{view === "all" ? "Article library" : views.find((item) => item.key === view)?.label}</p><h2 id="article-list-title">{data.articles.length} {data.articles.length === 1 ? "article" : "articles"}</h2></div><p className="admin-section-note">Titles and statuses come from the protected article boundary. Open an item to continue a Draft or read its current workflow state.</p></div>
           {data.articles.length ? <div className="insights-article-list">{data.articles.map((article) => <article className="insights-article-row" key={article.id}><div className="insights-article-main"><span className={`insights-status insights-status-${article.status}`}>{statusLabel(article.status)}</span><h3>{article.title}</h3><p>{article.excerpt || "No excerpt yet."}</p></div><div className="insights-article-meta"><span>{article.authorLabel}</span><time dateTime={article.updatedAt}>{updatedLabel(article.updatedAt)}</time><Link className="admin-panel-link" href={`/crimson-admin-control/insights/articles/${article.id}`}>{article.status === "draft" ? "Open Draft" : "Open article"} ↗</Link></div></article>)}</div> : <div className="insights-empty"><h3>Nothing here yet.</h3><p>Start with a Draft and keep the first save explicit. Opening New Article never creates an empty record.</p><Link className="button button-light" href="/crimson-admin-control/insights/articles/new">Start a Draft <span aria-hidden="true">↗</span></Link></div>}
         </section>
 
-        <section className="insights-guidance" aria-label="Draft guidance"><div><p className="admin-kicker admin-kicker-green">B6B1 boundary</p><h2>Write → Save Draft.</h2></div><p>Submit, Publish, media, Preview, and public Insights remain outside this authoring foundation. Your local writing stays in the browser until an explicit save succeeds.</p></section>
+        <section className="insights-guidance" aria-label="Draft guidance"><div><p className="admin-kicker admin-kicker-green">B6B2 workflow</p><h2>Write → Review.</h2></div><p>Draft autosave and private Preview support a reliable review loop. Media and public Insights remain outside this batch, and the final publication contract remains a later gate.</p></section>
         <footer className="admin-footer">Insights access is controlled by role and article ownership.</footer>
       </div>
     </main>
