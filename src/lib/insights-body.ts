@@ -8,7 +8,7 @@ export const MAX_INSIGHTS_BODY_TEXT = 50_000;
 export type InsightsMark =
   | { type: "bold" }
   | { type: "italic" }
-  | { type: "link"; attrs: { href: string; target?: "_blank" | null } };
+  | { type: "link"; attrs: { href: string; target?: "_blank" | null; rel?: "noreferrer noopener" | null; class?: null; title?: string | null } };
 
 export type InsightsNode = {
   type: string;
@@ -91,7 +91,7 @@ function validateMarks(node: InsightsNode, issues: string[], path: string) {
     const mark = markValue as InsightsMark & { attrs?: Record<string, unknown> };
     if (mark.type === "link") {
       const attrs = mark.attrs;
-      if (!isRecord(attrs) || Object.keys(attrs).some((key) => !["href", "target", "class"].includes(key)) || typeof attrs.href !== "string" || !isSafeLink(attrs.href) || (attrs.target !== undefined && attrs.target !== null && attrs.target !== "_blank")) {
+      if (!isRecord(attrs) || Object.keys(attrs).some((key) => !["href", "target", "rel", "class", "title"].includes(key)) || typeof attrs.href !== "string" || !isSafeLink(attrs.href) || (attrs.target !== undefined && attrs.target !== null && attrs.target !== "_blank") || (attrs.rel !== undefined && attrs.rel !== null && attrs.rel !== "noreferrer noopener") || (attrs.class !== undefined && attrs.class !== null) || (attrs.title !== undefined && attrs.title !== null && typeof attrs.title !== "string")) {
         issues.push(`${markPath} link must use an http(s) URL.`);
       }
     } else if (mark.attrs !== undefined && (!isRecord(mark.attrs) || Object.keys(mark.attrs).length > 0)) {
