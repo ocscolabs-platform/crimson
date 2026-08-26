@@ -42,8 +42,8 @@ function formatSavedAt(value?: string) {
   return `Saved ${new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(new Date(value))}`;
 }
 
-function ToolbarButton({ label, onClick, disabled = false }: { label: string; onClick: () => void; disabled?: boolean }) {
-  return <button className="insights-toolbar-button" type="button" onClick={onClick} disabled={disabled} aria-label={label} title={label}>{label}</button>;
+function ToolbarButton({ label, onClick, onMouseDown, disabled = false }: { label: string; onClick: () => void; onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void; disabled?: boolean }) {
+  return <button className="insights-toolbar-button" type="button" onClick={onClick} onMouseDown={onMouseDown} disabled={disabled} aria-label={label} title={label}>{label}</button>;
 }
 
 export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
@@ -183,7 +183,7 @@ export default function InsightsComposer({ taxonomy, article }: ComposerProps) {
               <ToolbarButton label="H3" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} disabled={!editor} />
               <ToolbarButton label="Bold" onClick={() => editor?.chain().focus().toggleBold().run()} disabled={!editor} />
               <ToolbarButton label="Italic" onClick={() => editor?.chain().focus().toggleItalic().run()} disabled={!editor} />
-              <ToolbarButton label="Link" onClick={beginLink} disabled={!editor} />
+              <ToolbarButton label="Link" onClick={beginLink} onMouseDown={(event) => event.preventDefault()} disabled={!editor} />
               <ToolbarButton label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()} disabled={!editor} />
               <ToolbarButton label="Numbered list" onClick={() => editor?.chain().focus().toggleOrderedList().run()} disabled={!editor} />
               <ToolbarButton label="Blockquote" onClick={() => editor?.chain().focus().toggleBlockquote().run()} disabled={!editor} />
