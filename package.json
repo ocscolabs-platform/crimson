@@ -32,6 +32,7 @@
     "test:phase6b3:media": "node --test scripts/test-phase6b3-insights-media.mjs",
     "test:phase6b3:cover-alt": "node --test scripts/test-phase6b3-cover-alt-hotfix.mjs",
     "test:phase6b3:restore-media": "node --test scripts/test-phase6b3-restore-media-hotfix.mjs",
+    "test:phase6b3:restore-media-validity": "node --test scripts/test-phase6b3-restore-media-validity-fix.mjs",
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
   },
