@@ -47,6 +47,13 @@ export type InsightsMedia = {
   previewUrl: string | null;
 };
 
+export type InsightsRevisionHistory = {
+  id: string;
+  revisionNumber: number;
+  status: "published" | "archived";
+  publishedAt: string | null;
+};
+
 function withMediaPreviewUrls(body: InsightsBody, media: { inlineMedia: InsightsMedia[] }): InsightsBody {
   const urls = new Map(media.inlineMedia.map((item) => [item.id, item.previewUrl]));
   function walk(node: InsightsBody["doc"]): InsightsBody["doc"] {
@@ -86,6 +93,23 @@ async function getRevisionMedia(supabase: Awaited<ReturnType<typeof createClient
   const mediaMap = new Map(resolved.map((media) => [media.id, media]));
   const coverId = relations.find((relation) => relation.role === "cover")?.media_id as string | undefined;
   return { coverMedia: coverId ? mediaMap.get(coverId) ?? null : null, inlineMedia: relations.filter((relation) => relation.role === "inline").map((relation) => mediaMap.get(relation.media_id as string)).filter((media): media is InsightsMedia => Boolean(media)) };
+}
+
+export async function getInsightsRevisionHistory(articleId: string): Promise<InsightsRevisionHistory[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("insights_article_revisions")
+    .select("id, revision_number, status, published_at")
+    .eq("article_id", articleId)
+    .in("status", ["published", "archived"])
+    .order("revision_number", { ascending: false });
+  if (error) return [];
+  return (data ?? []).map((revision) => ({
+    id: revision.id as string,
+    revisionNumber: revision.revision_number as number,
+    status: revision.status as InsightsRevisionHistory["status"],
+    publishedAt: revision.published_at as string | null,
+  }));
 }
 
 export async function getInsightsTaxonomy() {

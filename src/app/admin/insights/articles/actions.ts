@@ -440,3 +440,25 @@ export async function unpublishInsightsArticle(_previousState: InsightsActionSta
   }
   return cleanupWarning ? { ...result, message: `${result.message}${cleanupWarning}` } : result;
 }
+
+export async function restoreInsightsRevision(_previousState: InsightsActionState, formData: FormData): Promise<InsightsActionState> {
+  const articleId = getText(formData, "article_id").trim();
+  const sourceRevisionId = getText(formData, "source_revision_id").trim();
+  if (!articleId || !sourceRevisionId) return errorState("Choose a historical Published revision to restore.");
+  try {
+    const authorized = await getAuthorizedAction();
+    if (authorized.error) return authorized.error;
+    if (authorized.membership.role !== "owner") return errorState("Only the Owner can restore Insights revisions.");
+    const { error } = await authorized.supabase.rpc("insights_restore_revision", { p_article_id: articleId, p_source_revision_id: sourceRevisionId });
+    if (error) return { ...errorState(error.message || "The historical revision could not be restored."), articleId };
+    const { data: article, error: articleError } = await authorized.supabase.from("insights_articles").select("updated_at").eq("id", articleId).maybeSingle();
+    if (articleError || !article) return errorState("The historical revision was restored, but the current article state could not be read.");
+    revalidatePath("/crimson-admin-control/insights");
+    revalidatePath(`/crimson-admin-control/insights/articles/${articleId}`);
+    revalidatePath(`/crimson-admin-control/insights/articles/${articleId}/preview`);
+    return { status: "saved", message: "Historical revision restored as a new Draft.", issues: [], articleId, updatedAt: article.updated_at, savedAt: new Date().toISOString() };
+  } catch (error) {
+    console.error("[insights] restore revision failure", { articleId, sourceRevisionId, error });
+    return { ...errorState("The historical revision could not be restored. Try again."), articleId };
+  }
+}
