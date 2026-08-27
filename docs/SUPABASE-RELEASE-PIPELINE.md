@@ -26,7 +26,8 @@ The Supabase projects remain separate. A Git merge moves application code and mi
 2. Preserve existing migration filenames and contents after they have been applied. Do not rename, delete, or rewrite historical migrations for cosmetic cleanup.
 3. Keep migrations environment-neutral. Project URLs, keys, passwords, users, memberships, SMTP settings, and Auth callback values do not belong in SQL migrations.
 4. Run `npm run validate:migrations` in CI and before release work.
-5. Use `supabase migration list --linked` and `supabase db push --linked --dry-run` to detect unapplied migrations before applying them.
+5. Use `supabase migration list --linked` and `supabase db push --linked --dry-run` to inspect the release plan before applying it.
+6. After a staging apply, compare the ordered canonical timestamp set with `supabase_migrations.schema_migrations`; parity, zero duplicates, and zero pending versions are required for success. The read-only PostgreSQL check uses the approved direct staging host with an IPv4 address resolved at runtime so a runner without IPv6 routing cannot fail the transport gate.
 
 ## Staging
 
@@ -34,8 +35,12 @@ On a push to `staging` that changes the migration surface, the workflow:
 
 1. runs lint, typecheck, migration validation, and the production build;
 2. links to the project ref configured in the protected `staging-supabase` GitHub Environment;
-3. records migration status and runs a dry run;
-4. applies the pending canonical migrations to `crimson-staging`.
+3. confirms the configured Supabase project identity is `crimson-staging`;
+4. records migration status and runs a dry run;
+5. applies all pending canonical migrations in order through `supabase db push --linked --yes`;
+6. verifies exact repository/database migration parity and fails closed on duplicates, unexpected remote versions, or pending versions.
+
+The workflow path itself is included in the staging trigger so a pipeline correction is exercised by the next protected `staging` push. If no migrations are pending, the apply command is an idempotent no-op and the same parity gate still passes. The staging job cannot apply unless the event ref is exactly `refs/heads/staging`, the target project identity check passes, and the staging environment configuration is present.
 
 The staging environment must provide only owner-managed GitHub Environment configuration. No Supabase access token, database password, or project-specific secret is committed.
 

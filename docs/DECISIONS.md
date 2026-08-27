@@ -459,3 +459,35 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Add an Insights-specific media boundary with private canonical WebP objects and a separate private published-artifact bucket. Store opaque media IDs in the v2 body contract; resolve private signed URLs only for authenticated CMS authoring and Preview. On Publish, copy only the active revision's Cover and referenced inline media to deterministic public artifacts, sanitize the public body to artifact paths, and delete those artifacts on Unpublish while retaining canonical objects and revision history. All Storage writes remain server-trusted and all editorial mutations remain authorization-checked RPCs.
 - **Reason:** Editorial media must survive Draft editing, Review, Unpublish, and Restore without exposing source paths or signed URLs. A separate artifact boundary prevents a future public projection from accidentally serving Draft or historical canonical files.
 - **Consequence:** Migration #30 is additive after migrations 1-29. The editor supports JPEG, PNG, WebP, and AVIF source validation, server-side normalization, Cover/inline replacement and removal, meaningful alt text, and exact publication cleanup semantics. Public `/insights` routes remain deferred to Phase 7; staging application and Owner QA are required before this decision is considered deployed.
+
+## ADR-065 - Restore Insights media by cloning revision metadata
+
+- **Date:** 2026-08-27
+- **Status:** Proposed for staging review in Batch 6B3 restore hotfix; not applied to staging or Production
+- **Decision:** Restore a historical Insights revision into a new Draft with fresh media metadata IDs and new revision ownership. Reuse the immutable private canonical object path only after cloning its metadata, copy the source Cover and inline role associations, rewrite body `mediaId` references, and strip any resolved `src` values. Do not mutate historical media/revision rows or copy public artifact fields; validate the complete restored Draft with `insights_revision_is_publishable` before changing the article pointer.
+- **Reason:** The original Restore RPC copied revision links to historical media rows without changing their revision ownership, so required media validation rejected the restored Draft. A metadata clone preserves historical evidence while giving the new Draft an independently editable media boundary. Private canonical objects are lifecycle-safe to share because media removal changes metadata state and public artifact cleanup is separate.
+- **Consequence:** Migration #31 is a forward-only staging change. Restore is transactional and fail-closed for missing, removed, cross-revision, or otherwise invalid media. The source revision remains unchanged, restored media starts without public artifacts, and no Production or `main` change is permitted until the dedicated staging PR and Owner QA gates pass.
+
+## ADR-066 - Automatically apply canonical migrations on protected staging pushes
+
+- **Date:** 2026-08-27
+- **Status:** Proposed for staging review; Production behavior unchanged
+- **Decision:** Make `.github/workflows/supabase-release.yml` apply all pending canonical migrations on a protected push to `staging` after validation and a dry run. Before linking, verify the configured project identity is `crimson-staging`; after applying, compare the ordered repository migration timestamps with the staging `supabase_migrations.schema_migrations` ledger and require exact parity with zero duplicates and zero pending versions. Keep Production dry-run-only on `main` pushes and separately gated behind manual dispatch plus the protected Production environment.
+- **Reason:** The former staging push path stopped after dry-run, while the manual dispatch path was not available from the repository's default `main` branch. That left a protected merge able to introduce a canonical migration without a normal staging application path.
+- **Consequence:** Future migration-bearing merges to `staging` use one repeatable, idempotent, staging-only release path that supports multiple pending migrations in canonical order and fails closed on target mismatch or ledger drift. The workflow correction is included in its own staging trigger so it can recover the current pending migration without a manual SQL workaround. No account-specific project ref, credential, Production connection, or `main` change is added to the repository.
+
+## ADR-067 - Resolve the staging parity connection over IPv4 at runtime
+
+- **Date:** 2026-08-27
+- **Status:** Proposed for staging review; migration application and Production behavior unchanged
+- **Decision:** Keep the existing approved direct `db.<project-ref>.supabase.co` staging connection for the read-only parity query, but resolve an IPv4 address at runtime with `getent ahostsv4` and provide it as `PGHOSTADDR`. Fail closed when no IPv4 address is available. Do not add a pooler URL or new credential until the current project configuration explicitly provides and authorizes one.
+- **Reason:** The merged staging pipeline applied migration #31 successfully through the Supabase CLI, but the GitHub-hosted runner could not route to the direct database hostname’s IPv6 address during the post-apply `psql` parity check. The current authorized GitHub Environment exposes the access token, database password, and project ref, but no current pooler endpoint.
+- **Consequence:** The parity query uses the same staging project and password without changing migration semantics, weakening parity, modifying the ledger, or exposing credentials. Future no-pending staging pushes exercise the same idempotent apply and exact parity gate. Production remains in its separate dry-run/manual-approval path, and `main` is untouched.
+
+## ADR-068 - Traverse the Insights body document during Restore
+
+- **Date:** 2026-08-28
+- **Status:** Proposed for staging review in the migration-32 Restore validity fix; not applied to staging or Production
+- **Decision:** Keep migration #31's revision-owned media cloning and the canonical publishability validator unchanged, but make the additive Restore RPC traverse `source_revision.body->'doc'` when checking and rewriting inline media IDs. Reinsert the rewritten document node into the unchanged body envelope before final validation.
+- **Reason:** Migration #31 passed the full `{schema, version, doc}` body envelope into helpers designed for a document node. Because those helpers recurse through `content`, they did not reach `doc.content`; the new Draft therefore retained the historical inline media ID while its cloned relation pointed at a new media ID. The final validator correctly rejected the incomplete restored Draft.
+- **Consequence:** Migration #32 fixes only the Restore construction path. It preserves fresh media identities and revision ownership, reuses the immutable private canonical object path, preserves alt/caption metadata, strips resolved URLs, leaves historical rows untouched, and validates the fully constructed Draft with the existing fail-closed validator before advancing the article pointer.

@@ -41,7 +41,7 @@ feature/* → CI validation → staging → owner QA → main → Production mig
                                              explicit owner-approved apply
 ```
 
-`.github/workflows/supabase-release.yml` validates lint, typecheck, migration filenames, and the production build. A push to `staging` applies the same versioned migrations to the staging project after a dry run. A push to `main` only plans and reports pending Production migrations; Production changes require a manual workflow dispatch with `apply=true` and approval from the protected `production-supabase` GitHub Environment. This is intentionally separate from Vercel deployment and from CMS content promotion.
+`.github/workflows/supabase-release.yml` validates lint, typecheck, migration filenames, and the production build. A push to `staging` confirms the configured project is `crimson-staging`, performs a dry run, applies all pending canonical migrations, and verifies exact migration-ledger parity. A push to `main` only plans and reports pending Production migrations; Production changes require a manual workflow dispatch with `apply=true` and approval from the protected `production-supabase` GitHub Environment. The staging apply boundary and Production job are separate, and this is intentionally separate from Vercel deployment and CMS content promotion.
 
 The read-only contract in [`../supabase/verification/release-contract.sql`](../supabase/verification/release-contract.sql) checks the expected schema, RLS, functions, triggers, grants, Storage bucket, and Storage policies. It must be run against both projects during the deferred Production release gate. The row-copy CMS bridge remains transitional and must not be used as a substitute for migration application.
 
