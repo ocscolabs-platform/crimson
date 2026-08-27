@@ -247,6 +247,32 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
 
+      - name: Configure Production database URL for ledger adoption
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          SUPABASE_DB_URL="$(node -e 'const u = new URL("postgresql://postgres@db." + process.env.SUPABASE_PROJECT_REF + ".supabase.co:5432/postgres?sslmode=require"); u.password = process.env.SUPABASE_DB_PASSWORD; process.stdout.write(u.toString())')"
+          printf 'SUPABASE_DB_URL=%s\n' "$SUPABASE_DB_URL" >> "$GITHUB_ENV"
+
+      - name: Adopt the absent Production migration ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          for version in \
+            20260819000000 20260820000000 20260820010000 20260820020000 \
+            20260820040000 20260820050000 20260820060000 20260820070000 \
+            20260820080000 20260820090000 20260820100000 20260820110000 \
+            20260820120000 20260820130000 20260821000000 20260821010000 \
+            20260821020000 20260821030000 20260821040000 20260821050000 \
+            20260821060000 20260823000000 20260823010000 20260823020000 \
+            20260823030000 20260824000000 20260826000000 20260826010000 \
+            20260827000000 20260828000000 20260829000000 20260830000000; do
+            supabase migration repair "$version" --status applied --db-url "$SUPABASE_DB_URL"
+          done
+
       - name: Show Production migration status
         run: supabase migration list --linked
 
