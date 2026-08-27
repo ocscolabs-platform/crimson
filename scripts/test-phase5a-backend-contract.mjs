@@ -16,12 +16,13 @@ test("Batch 3A remains at the historical migration boundary", async () => {
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 30);
-  assert.equal(files.at(-5), migrationName);
-  assert.match(files.at(-4), /^20260826000000_add_phase6a_insights_foundation\.sql$/);
-  assert.match(files.at(-3), /^20260826010000_add_phase6b1_insights_slug_update_contract\.sql$/);
-  assert.match(files.at(-2), /^20260827000000_add_phase6_insights_public_projection_security\.sql$/);
-  assert.match(files.at(-1), /^20260828000000_add_phase6b3_insights_media_workflow\.sql$/);
+  assert.equal(files.length, 33);
+  assert.equal(files.at(-8), migrationName);
+  assert.match(files.at(-7), /^20260826000000_add_phase6a_insights_foundation\.sql$/);
+  assert.match(files.at(-6), /^20260826010000_add_phase6b1_insights_slug_update_contract\.sql$/);
+  assert.match(files.at(-5), /^20260827000000_add_phase6_insights_public_projection_security\.sql$/);
+  assert.match(files.at(-4), /^20260828000000_add_phase6b3_insights_media_workflow\.sql$/);
+  assert.match(files.at(-1), /^20260831000000_reconcile_production_legacy_baseline\.sql$/);
 });
 
 test("Batch 3A exposes the approved PageDocument RPC contracts", async () => {

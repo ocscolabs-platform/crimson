@@ -13,10 +13,11 @@ test("Restore media hotfix is the single additive migration after the staging ba
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 32);
-  assert.equal(files.at(-3), "20260828000000_add_phase6b3_insights_media_workflow.sql");
-  assert.equal(files.at(-2), migrationName);
-  assert.equal(files.at(-1), "20260830000000_fix_phase6b3_restore_media_validity.sql");
+  assert.equal(files.length, 33);
+  assert.equal(files.at(-4), "20260828000000_add_phase6b3_insights_media_workflow.sql");
+  assert.equal(files.at(-3), migrationName);
+  assert.equal(files.at(-2), "20260830000000_fix_phase6b3_restore_media_validity.sql");
+  assert.equal(files.at(-1), "20260831000000_reconcile_production_legacy_baseline.sql");
 });
 
 test("Restore clones canonical media metadata with fresh revision-owned IDs", async () => {
