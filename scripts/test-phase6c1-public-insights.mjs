@@ -18,6 +18,8 @@ test("6C1 public Insights routes use the published boundary", async () => {
   assert.match(publicLoader, /from\("insights_published_articles"\)/);
   assert.doesNotMatch(publicLoader, /insights_articles|insights_article_revisions|insights_media_assets|cms_members|cms_member_access/);
   assert.match(publicLoader, /order\("published_at", \{ ascending: false \}\)/);
+  assert.match(data, /normalizePublicInsightsMediaPaths/);
+  assert.match(data, /validateInsightsBody\(normalizePublicInsightsMediaPaths\(row\.body\)\)/);
   assert.match(data, /insights-published-media/);
   assert.match(navigation, /label: "Insights"/);
   assert.match(navigation, /href: "\/insights"/);
