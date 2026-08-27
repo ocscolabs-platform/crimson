@@ -66,12 +66,13 @@ function actionMessage(state: InsightsActionState) {
 export default function InsightsComposer({ taxonomy, role, canPublishInsights, article }: ComposerProps) {
   const router = useRouter();
   const initial = article?.body ?? emptyInsightsBody();
+  const persistedInitial = stripResolvedInsightsMedia(initial);
   const [title, setTitle] = useState(article?.title ?? "");
   const [excerpt, setExcerpt] = useState(article?.excerpt ?? "");
   const [categoryId, setCategoryId] = useState(article?.categoryId ?? "");
   const [tagIds, setTagIds] = useState(article?.tagIds ?? []);
   const [slug, setSlug] = useState(article?.slug ?? "");
-  const [bodyJson, setBodyJson] = useState(() => JSON.stringify(initial));
+  const [bodyJson, setBodyJson] = useState(() => JSON.stringify(persistedInitial));
   const [dirty, setDirty] = useState(!article);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>(article ? "saved" : "dirty");
   const [saveState, setSaveState] = useState<InsightsActionState>(initialActionState);
