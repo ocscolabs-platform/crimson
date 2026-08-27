@@ -38,6 +38,7 @@ export default async function InsightsArticlePreviewPage({ params }: { params: P
         <article className="insights-preview-article">
           <header className="insights-preview-heading"><p className="admin-kicker admin-kicker-green">{statusLabel(article.status)}</p><h1>{article.title || "Untitled article"}</h1><p className="insights-preview-byline">By {article.authorId === user.id ? "You" : article.authorLabel} · {submittedLabel(article.submittedAt)}</p></header>
           <dl className="insights-readonly-summary"><div><dt>Excerpt</dt><dd>{article.excerpt || "No excerpt."}</dd></div><div><dt>Category</dt><dd>{article.categoryName}</dd></div><div><dt>Tags</dt><dd>{article.tagNames.length ? article.tagNames.join(", ") : "No tags."}</dd></div></dl>
+          {article.coverMedia?.previewUrl ? <figure className="insights-preview-cover"><img src={article.coverMedia.previewUrl} alt={article.coverMedia.altText} /></figure> : null}
           <div className="insights-preview-content"><ReadOnlyArticleBody body={article.body} /></div>
         </article>
         <footer className="admin-footer">Preview is private, read-only, and unpublished.</footer>

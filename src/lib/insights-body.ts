@@ -1,5 +1,6 @@
 export const INSIGHTS_BODY_SCHEMA = "insights-body" as const;
-export const INSIGHTS_BODY_VERSION = 1 as const;
+export const INSIGHTS_BODY_VERSION = 2 as const;
+export const LEGACY_INSIGHTS_BODY_VERSION = 1 as const;
 export const MAX_INSIGHTS_BODY_BYTES = 256_000;
 export const MAX_INSIGHTS_BODY_NODES = 500;
 export const MAX_INSIGHTS_BODY_DEPTH = 12;
@@ -20,7 +21,7 @@ export type InsightsNode = {
 
 export type InsightsBody = {
   schema: typeof INSIGHTS_BODY_SCHEMA;
-  version: typeof INSIGHTS_BODY_VERSION;
+  version: typeof LEGACY_INSIGHTS_BODY_VERSION | typeof INSIGHTS_BODY_VERSION;
   doc: InsightsNode;
 };
 
@@ -38,6 +39,7 @@ const allowedNodeTypes = new Set([
   "listItem",
   "blockquote",
   "hardBreak",
+  "image",
 ]);
 
 const allowedMarkTypes = new Set(["bold", "italic", "link"]);
@@ -56,11 +58,21 @@ function isSafeLink(value: string): boolean {
   }
 }
 
-function validateAttrs(node: InsightsNode, issues: string[], path: string) {
+function validateAttrs(node: InsightsNode, issues: string[], path: string, version: InsightsBody["version"]) {
   const attrs = node.attrs;
   if (node.type === "heading") {
     if (!isRecord(attrs) || Object.keys(attrs).some((key) => key !== "level") || ![2, 3].includes(attrs.level as number)) {
       issues.push(`${path} heading level must be 2 or 3.`);
+    }
+    return;
+  }
+  if (node.type === "image") {
+    if (version !== INSIGHTS_BODY_VERSION) {
+      issues.push(`${path} image nodes require Insights body schema v2.`);
+      return;
+    }
+    if (!isRecord(attrs) || Object.keys(attrs).some((key) => !["mediaId", "alt", "caption", "src"].includes(key)) || (typeof attrs.mediaId !== "string" && typeof attrs.src !== "string") || (attrs.mediaId !== undefined && attrs.mediaId !== null && (typeof attrs.mediaId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(attrs.mediaId))) || (attrs.src !== undefined && attrs.src !== null && (typeof attrs.src !== "string" || (!attrs.src.startsWith("/") && !isSafeLink(attrs.src)))) || typeof attrs.alt !== "string" || attrs.alt.trim().length < 8 || (attrs.caption !== undefined && attrs.caption !== null && (typeof attrs.caption !== "string" || attrs.caption.length > 300))) {
+      issues.push(`${path} image requires a media ID and meaningful alternative text.`);
     }
     return;
   }
@@ -100,7 +112,7 @@ function validateMarks(node: InsightsNode, issues: string[], path: string) {
   }
 }
 
-function validateNode(value: unknown, issues: string[], path: string, depth: number, state: { nodes: number; text: number }) {
+function validateNode(value: unknown, issues: string[], path: string, depth: number, state: { nodes: number; text: number }, version: InsightsBody["version"]) {
   if (!isRecord(value) || typeof value.type !== "string" || !allowedNodeTypes.has(value.type)) {
     issues.push(`${path} is not an allowed node.`);
     return;
@@ -115,7 +127,7 @@ function validateNode(value: unknown, issues: string[], path: string, depth: num
     issues.push("The article body is nested too deeply.");
     return;
   }
-  validateAttrs(node, issues, path);
+  validateAttrs(node, issues, path, version);
   validateMarks(node, issues, path);
 
   if (node.type === "text") {
@@ -131,6 +143,10 @@ function validateNode(value: unknown, issues: string[], path: string, depth: num
     if (node.content !== undefined || node.text !== undefined || node.marks !== undefined) issues.push(`${path} hard breaks cannot contain attributes or text.`);
     return;
   }
+  if (node.type === "image") {
+    if (node.content !== undefined || node.text !== undefined || node.marks !== undefined) issues.push(`${path} image nodes cannot contain text, content, or marks.`);
+    return;
+  }
   if (node.type === "heading" && (!node.content || node.content.some((child) => !isRecord(child) || child.type !== "text"))) {
     issues.push(`${path} headings may contain text only.`);
   }
@@ -141,7 +157,7 @@ function validateNode(value: unknown, issues: string[], path: string, depth: num
   if (node.type !== "doc" && node.type !== "paragraph" && node.type !== "heading" && node.type !== "bulletList" && node.type !== "orderedList" && node.type !== "listItem" && node.type !== "blockquote" && node.content === undefined) {
     issues.push(`${path} content is required.`);
   }
-  for (const [index, child] of (node.content ?? []).entries()) validateNode(child, issues, `${path}.content[${index}]`, depth + 1, state);
+  for (const [index, child] of (node.content ?? []).entries()) validateNode(child, issues, `${path}.content[${index}]`, depth + 1, state, version);
 }
 
 export function emptyInsightsBody(): InsightsBody {
@@ -154,12 +170,13 @@ export function emptyInsightsBody(): InsightsBody {
 
 export function validateInsightsBody(value: unknown): InsightsBodyValidation {
   const issues: string[] = [];
-  if (!isRecord(value) || value.schema !== INSIGHTS_BODY_SCHEMA || value.version !== INSIGHTS_BODY_VERSION || !isRecord(value.doc)) {
-    return { success: false, issues: ["The article body must use the Insights body schema v1 envelope."] };
+  if (!isRecord(value) || value.schema !== INSIGHTS_BODY_SCHEMA || ![LEGACY_INSIGHTS_BODY_VERSION, INSIGHTS_BODY_VERSION].includes(value.version as 1 | 2) || !isRecord(value.doc)) {
+    return { success: false, issues: ["The article body must use the Insights body schema v1 or v2 envelope."] };
   }
+  const version = value.version as InsightsBody["version"];
   const serialized = JSON.stringify(value);
   if (serialized.length > MAX_INSIGHTS_BODY_BYTES) return { success: false, issues: ["The article body is too large."] };
-  validateNode(value.doc, issues, "doc", 0, { nodes: 0, text: 0 });
+  validateNode(value.doc, issues, "doc", 0, { nodes: 0, text: 0 }, version);
   return issues.length > 0 ? { success: false, issues: [...new Set(issues)] } : { success: true, value: value as InsightsBody };
 }
 
@@ -173,4 +190,41 @@ export function parseInsightsBody(value: string): InsightsBodyValidation {
 
 export function isSafeInsightsLink(value: string): boolean {
   return isSafeLink(value);
+}
+
+export type InsightsImageReference = { mediaId: string; alt: string; caption?: string | null };
+
+export function collectInsightsImageReferences(body: InsightsBody): InsightsImageReference[] {
+  const references: InsightsImageReference[] = [];
+  function walk(node: InsightsNode) {
+    if (node.type === "image" && node.attrs && typeof node.attrs.mediaId === "string" && typeof node.attrs.alt === "string") {
+      references.push({ mediaId: node.attrs.mediaId, alt: node.attrs.alt, caption: typeof node.attrs.caption === "string" ? node.attrs.caption : null });
+    }
+    for (const child of node.content ?? []) walk(child);
+  }
+  walk(body.doc);
+  return references;
+}
+
+export function hasMeaningfulInsightsBody(body: InsightsBody): boolean {
+  let hasText = false;
+  function walk(node: InsightsNode) {
+    if (node.type === "text" && typeof node.text === "string" && node.text.trim()) hasText = true;
+    for (const child of node.content ?? []) walk(child);
+  }
+  walk(body.doc);
+  return hasText;
+}
+
+export function stripResolvedInsightsMedia(value: unknown): unknown {
+  if (!isRecord(value)) return value;
+  const result: Record<string, unknown> = { ...value };
+  if (isRecord(result.attrs) && result.type === "image") {
+    const attrs = { ...result.attrs };
+    delete attrs.src;
+    result.attrs = attrs;
+  }
+  if (isRecord(result.doc)) result.doc = stripResolvedInsightsMedia(result.doc);
+  if (Array.isArray(result.content)) result.content = result.content.map(stripResolvedInsightsMedia);
+  return result;
 }

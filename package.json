@@ -29,6 +29,7 @@
     "test:phase6b1:slug": "node --test scripts/test-phase6b1-insights-slug-contract.mjs",
     "test:phase6b1:authoring": "node --experimental-strip-types --test scripts/test-phase6b1-draft-authoring.mjs",
     "test:phase6b2:workflow": "node --test scripts/test-phase6b2-workflow.mjs",
+    "test:phase6b3:media": "node --test scripts/test-phase6b3-insights-media.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
   },
   "dependencies": {

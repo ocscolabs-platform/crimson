@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
+import { Node, mergeAttributes } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import LinkExtension from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import { emptyInsightsBody, type InsightsBody } from "@/lib/insights-body";
+import { emptyInsightsBody, stripResolvedInsightsMedia, type InsightsBody } from "@/lib/insights-body";
 import { isValidInsightsSlug } from "@/lib/insights-slug";
-import { saveInsightsDraft, submitInsightsForReview, updateInsightsSlug, type InsightsActionState } from "./actions";
+import { publishInsightsArticle, removeInsightsMedia, saveInsightsDraft, submitInsightsForReview, updateInsightsMediaAlt, updateInsightsSlug, uploadInsightsMedia, type InsightsActionState, type InsightsMediaActionState } from "./actions";
 
 const AUTOSAVE_DEBOUNCE_MS = 1750;
 const AUTOSAVE_MIN_INTERVAL_MS = 5000;
@@ -19,14 +20,34 @@ type ComposerProps = {
   taxonomy: Taxonomy;
   role: "owner" | "editor";
   canPublishInsights: boolean;
-  article?: { id: string; slug: string; status: "draft"; updatedAt: string; title: string; excerpt: string; body: InsightsBody; categoryId: string; tagIds: string[] };
+  article?: { id: string; slug: string; status: "draft"; updatedAt: string; title: string; excerpt: string; body: InsightsBody; categoryId: string; tagIds: string[]; coverMedia: InsightsMedia | null; inlineMedia: InsightsMedia[] };
 };
+type InsightsMedia = { id: string; kind: "cover" | "inline"; altText: string; caption: string | null; width: number; height: number; previewUrl: string | null };
 type SaveKind = "autosave" | "explicit";
 type SaveStatus = "saved" | "dirty" | "saving" | "error" | "conflict";
 type Snapshot = { articleId: string; expectedUpdatedAt: string; title: string; excerpt: string; categoryId: string; tagIds: string[]; bodyJson: string; version: number };
 
 const initialActionState: InsightsActionState = { status: "idle", message: "", issues: [] };
+const initialMediaState: InsightsMediaActionState = { status: "idle", message: "" };
 const subscribeToNothing = () => () => {};
+
+const InsightsImage = Node.create({
+  name: "image",
+  group: "block",
+  atom: true,
+  selectable: true,
+  draggable: false,
+  addAttributes() {
+    return {
+      mediaId: { default: null },
+      alt: { default: "" },
+      caption: { default: null },
+      src: { default: null },
+    };
+  },
+  parseHTML() { return [{ tag: "img[data-insights-media]" }]; },
+  renderHTML({ HTMLAttributes }) { return ["img", mergeAttributes({ "data-insights-media": "true" }, HTMLAttributes)]; },
+});
 
 function formatSavedAt(value?: string) {
   if (!value) return "Not saved yet";
@@ -45,12 +66,13 @@ function actionMessage(state: InsightsActionState) {
 export default function InsightsComposer({ taxonomy, role, canPublishInsights, article }: ComposerProps) {
   const router = useRouter();
   const initial = article?.body ?? emptyInsightsBody();
+  const persistedInitial = stripResolvedInsightsMedia(initial);
   const [title, setTitle] = useState(article?.title ?? "");
   const [excerpt, setExcerpt] = useState(article?.excerpt ?? "");
   const [categoryId, setCategoryId] = useState(article?.categoryId ?? "");
   const [tagIds, setTagIds] = useState(article?.tagIds ?? []);
   const [slug, setSlug] = useState(article?.slug ?? "");
-  const [bodyJson, setBodyJson] = useState(() => JSON.stringify(initial));
+  const [bodyJson, setBodyJson] = useState(() => JSON.stringify(persistedInitial));
   const [dirty, setDirty] = useState(!article);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>(article ? "saved" : "dirty");
   const [saveState, setSaveState] = useState<InsightsActionState>(initialActionState);
@@ -63,6 +85,16 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
   const [slugState, setSlugState] = useState<InsightsActionState>(initialActionState);
   const [slugPending, setSlugPending] = useState(false);
   const [submitState, setSubmitState] = useState<InsightsActionState>(initialActionState);
+  const [publishState, setPublishState] = useState<InsightsActionState>(initialActionState);
+  const [coverMedia, setCoverMedia] = useState<InsightsMedia | null>(article?.coverMedia ?? null);
+  const [inlineMedia, setInlineMedia] = useState<InsightsMedia[]>(article?.inlineMedia ?? []);
+  const [mediaAlt, setMediaAlt] = useState("");
+  const [mediaCaption, setMediaCaption] = useState("");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaKind, setMediaKind] = useState<"cover" | "inline">("cover");
+  const [mediaState, setMediaState] = useState<InsightsMediaActionState>(initialMediaState);
+  const [mediaPending, startMediaTransition] = useTransition();
+  const mediaFileRef = useRef<HTMLInputElement>(null);
   const [workflowPending, setWorkflowPending] = useState(false);
   const [leaveHref, setLeaveHref] = useState("");
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null);
@@ -88,13 +120,14 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] }, code: false, codeBlock: false, horizontalRule: false, strike: false, underline: false, link: false }),
+      InsightsImage,
       LinkExtension.configure({ openOnClick: false, autolink: false, linkOnPaste: false, HTMLAttributes: { target: "_blank", rel: "noreferrer noopener" } }),
       Placeholder.configure({ placeholder: "Write the Draft here…" }),
     ],
     content: initial.doc,
     editorProps: { attributes: { "aria-label": "Article body", "aria-describedby": "article-body-help" } },
     onUpdate: ({ editor: currentEditor }) => {
-      setBodyJson(JSON.stringify({ schema: "insights-body", version: 1, doc: currentEditor.getJSON() }));
+      setBodyJson(JSON.stringify(stripResolvedInsightsMedia({ schema: "insights-body", version: 2, doc: currentEditor.getJSON() })));
       markDirty();
     },
   });
@@ -110,6 +143,7 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
     data.set("category_id", snapshot.categoryId);
     data.set("body", snapshot.bodyJson);
     snapshot.tagIds.forEach((tagId) => data.append("tag_ids", tagId));
+    if (coverMedia?.id) data.set("cover_media_id", coverMedia.id);
     return data;
   }
 
@@ -266,24 +300,126 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
     if (result.status === "saved" && result.updatedAt) expectedUpdatedAtRef.current = result.updatedAt;
   }
 
+  function mediaFormData(kind: "cover" | "inline", mediaId?: string) {
+    const data = new FormData();
+    data.set("article_id", persistedArticleIdRef.current);
+    data.set("expected_updated_at", expectedUpdatedAtRef.current);
+    data.set("media_kind", kind);
+    data.set("media_alt", mediaAlt.trim());
+    data.set("media_caption", mediaCaption.trim());
+    if (mediaFile) data.set("media_file", mediaFile);
+    if (mediaId) data.set("media_id", mediaId);
+    return data;
+  }
+
+  function handleMediaUpload(kind: "cover" | "inline" = mediaKind) {
+    if (!mediaFile || !persistedArticleIdRef.current) {
+      setMediaState({ ...initialMediaState, status: "error", message: "Save the Draft and choose an image before uploading." });
+      return;
+    }
+    const alt = mediaAlt.trim();
+    const caption = mediaCaption.trim();
+    startMediaTransition(async () => {
+      const result = await uploadInsightsMedia(initialMediaState, mediaFormData(kind));
+      setMediaState(result);
+      if (result.status !== "saved" || !result.mediaId) return;
+      if (result.updatedAt) expectedUpdatedAtRef.current = result.updatedAt;
+      if (kind === "cover") {
+        setCoverMedia({ id: result.mediaId, kind: "cover", altText: alt, caption: caption || null, width: 0, height: 0, previewUrl: result.previewUrl ?? null });
+      } else if (editor) {
+        editor.chain().focus().insertContent({ type: "image", attrs: { mediaId: result.mediaId, alt, caption: caption || null, src: result.previewUrl ?? null } }).run();
+        setInlineMedia((current) => [...current, { id: result.mediaId!, kind: "inline", altText: alt, caption: caption || null, width: 0, height: 0, previewUrl: result.previewUrl ?? null }]);
+      }
+      setMediaFile(null);
+      if (mediaFileRef.current) mediaFileRef.current.value = "";
+      setMediaAlt("");
+      setMediaCaption("");
+      router.refresh();
+    });
+  }
+
+  function removeMedia(mediaId: string, kind: "cover" | "inline") {
+    if (!persistedArticleIdRef.current) return;
+    const data = new FormData();
+    data.set("article_id", persistedArticleIdRef.current);
+    data.set("expected_updated_at", expectedUpdatedAtRef.current);
+    data.set("media_id", mediaId);
+    startMediaTransition(async () => {
+      const result = await removeInsightsMedia(initialMediaState, data);
+      setMediaState(result);
+      if (result.status !== "saved") return;
+      if (result.updatedAt) expectedUpdatedAtRef.current = result.updatedAt;
+      if (kind === "cover") setCoverMedia(null);
+      else {
+        setInlineMedia((current) => current.filter((item) => item.id !== mediaId));
+        let position: number | null = null;
+        editor?.state.doc.descendants((node, nodePosition) => {
+          if (position === null && node.type.name === "image" && node.attrs.mediaId === mediaId) position = nodePosition;
+        });
+        if (editor && position !== null) {
+          const target = editor.state.doc.nodeAt(position);
+          if (target) editor.commands.deleteRange({ from: position, to: position + target.nodeSize });
+        }
+      }
+      router.refresh();
+    });
+  }
+
+  function updateSelectedInlineAlt() {
+    const selected = editor && "node" in editor.state.selection ? editor.state.selection.node as { type: { name: string }; attrs: Record<string, unknown> } : null;
+    const mediaId = selected?.type.name === "image" && typeof selected.attrs.mediaId === "string" ? selected.attrs.mediaId : null;
+    if (!mediaId || !mediaAlt.trim()) {
+      setMediaState({ ...initialMediaState, status: "error", message: "Select an inline image and enter meaningful alternative text." });
+      return;
+    }
+    const data = new FormData();
+    data.set("article_id", persistedArticleIdRef.current);
+    data.set("expected_updated_at", expectedUpdatedAtRef.current);
+    data.set("media_id", mediaId);
+    data.set("media_alt", mediaAlt.trim());
+    startMediaTransition(async () => {
+      const result = await updateInsightsMediaAlt(initialMediaState, data);
+      setMediaState(result);
+      if (result.status !== "saved") return;
+      editor?.commands.updateAttributes("image", { alt: mediaAlt.trim() });
+      if (result.updatedAt) expectedUpdatedAtRef.current = result.updatedAt;
+      setMediaAlt("");
+      router.refresh();
+    });
+  }
+
   const saveFeedback = saveState.status === "error" || saveState.status === "conflict" ? saveState : null;
   const slugFeedback = slugState.status === "error" || slugState.status === "conflict" ? slugState : null;
   const canSubmit = Boolean(article) && (role === "owner" || role === "editor");
   const canPublishDraft = Boolean(article) && role === "editor" && canPublishInsights;
 
+  async function handlePublishOwnDraft() {
+    const saved = await flushPendingSave();
+    if (saved.status !== "saved") return;
+    setWorkflowPending(true);
+    const data = new FormData();
+    data.set("article_id", persistedArticleIdRef.current);
+    data.set("expected_updated_at", expectedUpdatedAtRef.current);
+    const result = await publishInsightsArticle(initialActionState, data);
+    setPublishState(result);
+    setWorkflowPending(false);
+    if (result.status === "saved") router.refresh();
+  }
+
   return (
     <div className="insights-composer-layout">
       <form className="insights-composer" onSubmit={handleSave}>
-        <input type="hidden" name="article_id" value={persistedArticleIdRef.current} /><input type="hidden" name="expected_updated_at" value={expectedUpdatedAtRef.current} /><input type="hidden" name="body" value={bodyJson} readOnly />
+        <input type="hidden" name="article_id" value={persistedArticleIdRef.current} /><input type="hidden" name="expected_updated_at" value={expectedUpdatedAtRef.current} /><input type="hidden" name="body" value={bodyJson} readOnly /><input type="hidden" name="cover_media_id" value={coverMedia?.id ?? ""} />
         <div className="insights-writing-fields">
           <label className="insights-field insights-title-field"><span>Title</span><input ref={titleRef} className="insights-title-input" name="title" value={title} onChange={(event) => { setTitle(event.target.value); markDirty(); }} maxLength={160} placeholder="Give this article a clear working title" aria-invalid={Boolean(clientIssue)} aria-describedby={clientIssue ? "title-error" : undefined} /></label>
           {clientIssue ? <p className="insights-field-error" id="title-error" role="alert">{clientIssue}</p> : null}
-          <div className="insights-editor-block"><div className="insights-field-heading"><span className="insights-field-label">Body</span><span id="article-body-help">Text-first editor. Images, embeds, and HTML are not available in this Draft foundation.</span></div><div className="insights-toolbar" aria-label="Text formatting"><ToolbarButton label="H2" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} disabled={!editor} /><ToolbarButton label="H3" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} disabled={!editor} /><ToolbarButton label="Bold" onClick={() => editor?.chain().focus().toggleBold().run()} disabled={!editor} /><ToolbarButton label="Italic" onClick={() => editor?.chain().focus().toggleItalic().run()} disabled={!editor} /><ToolbarButton label="Link" onClick={beginLink} onMouseDown={(event) => event.preventDefault()} disabled={!editor} /><ToolbarButton label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()} disabled={!editor} /><ToolbarButton label="Numbered list" onClick={() => editor?.chain().focus().toggleOrderedList().run()} disabled={!editor} /><ToolbarButton label="Blockquote" onClick={() => editor?.chain().focus().toggleBlockquote().run()} disabled={!editor} /><span className="insights-toolbar-spacer" /><ToolbarButton label="Undo" onClick={() => editor?.chain().focus().undo().run()} disabled={!editor} /><ToolbarButton label="Redo" onClick={() => editor?.chain().focus().redo().run()} disabled={!editor} /></div>{linkEntryOpen ? <div className="insights-link-entry"><label><span>Link URL</span><input aria-label="Link URL" value={linkHref} onChange={(event) => setLinkHref(event.target.value)} placeholder="https://example.com" inputMode="url" autoFocus /></label><button type="button" className="button button-light" onClick={applyLink}>Apply link</button><button type="button" className="button button-light" onClick={() => { setLinkHref(""); setLinkEntryOpen(false); setLinkIssue(""); }}>Cancel</button></div> : null}<div id="article-body-editor" className="insights-editor-surface"><EditorContent editor={editor} /></div>{linkIssue ? <p className="insights-field-error" role="alert">{linkIssue}</p> : null}</div>
+          <div className="insights-editor-block"><div className="insights-field-heading"><span className="insights-field-label">Body</span><span id="article-body-help">Write the article and add approved private media. Public URLs are never saved in the Draft body.</span></div><div className="insights-toolbar" aria-label="Text formatting"><ToolbarButton label="H2" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} disabled={!editor} /><ToolbarButton label="H3" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} disabled={!editor} /><ToolbarButton label="Bold" onClick={() => editor?.chain().focus().toggleBold().run()} disabled={!editor} /><ToolbarButton label="Italic" onClick={() => editor?.chain().focus().toggleItalic().run()} disabled={!editor} /><ToolbarButton label="Link" onClick={beginLink} onMouseDown={(event) => event.preventDefault()} disabled={!editor} /><ToolbarButton label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()} disabled={!editor} /><ToolbarButton label="Numbered list" onClick={() => editor?.chain().focus().toggleOrderedList().run()} disabled={!editor} /><ToolbarButton label="Blockquote" onClick={() => editor?.chain().focus().toggleBlockquote().run()} disabled={!editor} /><span className="insights-toolbar-spacer" /><ToolbarButton label="Undo" onClick={() => editor?.chain().focus().undo().run()} disabled={!editor} /><ToolbarButton label="Redo" onClick={() => editor?.chain().focus().redo().run()} disabled={!editor} /></div>{linkEntryOpen ? <div className="insights-link-entry"><label><span>Link URL</span><input aria-label="Link URL" value={linkHref} onChange={(event) => setLinkHref(event.target.value)} placeholder="https://example.com" inputMode="url" autoFocus /></label><button type="button" className="button button-light" onClick={applyLink}>Apply link</button><button type="button" className="button button-light" onClick={() => { setLinkHref(""); setLinkEntryOpen(false); setLinkIssue(""); }}>Cancel</button></div> : null}<div id="article-body-editor" className="insights-editor-surface"><EditorContent editor={editor} /></div>{linkIssue ? <p className="insights-field-error" role="alert">{linkIssue}</p> : null}</div>
+          <section className="insights-media-authoring" aria-labelledby="insights-media-heading"><div className="insights-field-heading"><span className="insights-field-label" id="insights-media-heading">Media</span><span>JPEG, PNG, WebP, or AVIF · source and normalized output up to 2 MB.</span></div><div className="insights-media-grid"><div className="insights-media-card"><strong>Cover image</strong>{coverMedia?.previewUrl ? <img className="insights-cover-preview" src={coverMedia.previewUrl} alt={coverMedia.altText} /> : <div className="insights-media-empty">No Cover selected</div>}<label className="insights-field"><span>Cover file</span><input ref={mediaKind === "cover" ? mediaFileRef : undefined} type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { setMediaKind("cover"); setMediaFile(event.target.files?.[0] ?? null); }} /></label><label className="insights-field"><span>Alternative text</span><input value={mediaKind === "cover" ? mediaAlt : ""} onChange={(event) => { setMediaKind("cover"); setMediaAlt(event.target.value); }} placeholder="Describe the Cover image" maxLength={300} /></label><div className="insights-media-actions"><button className="button button-light" type="button" onClick={() => { setMediaKind("cover"); handleMediaUpload(); }} disabled={mediaPending}>{coverMedia ? "Replace Cover" : "Add Cover"}</button>{coverMedia ? <button className="button button-light" type="button" onClick={() => removeMedia(coverMedia.id, "cover")} disabled={mediaPending}>Remove Cover</button> : null}</div></div><div className="insights-media-card"><strong>Inline image</strong><p className="insights-muted">Upload, then insert the image at the current cursor position.</p><label className="insights-field"><span>Inline file</span><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { setMediaKind("inline"); setMediaFile(event.target.files?.[0] ?? null); }} /></label><label className="insights-field"><span>Alternative text</span><input value={mediaKind === "inline" ? mediaAlt : ""} onChange={(event) => { setMediaKind("inline"); setMediaAlt(event.target.value); }} placeholder="Describe the inline image" maxLength={300} /></label><label className="insights-field"><span>Caption <small>Optional · max 300 characters</small></span><input value={mediaKind === "inline" ? mediaCaption : ""} onChange={(event) => { setMediaKind("inline"); setMediaCaption(event.target.value); }} maxLength={300} /></label><button className="button button-light" type="button" onClick={() => { setMediaKind("inline"); handleMediaUpload(); }} disabled={mediaPending}>Insert inline image</button></div></div>{inlineMedia.length ? <div className="insights-inline-media-list"><strong>Inline media in this Draft</strong>{inlineMedia.map((media) => <div className="insights-inline-media-item" key={media.id}><span>{media.altText}</span><button className="button button-light" type="button" onClick={() => removeMedia(media.id, "inline")} disabled={mediaPending}>Remove</button></div>)}</div> : null}<div className="insights-media-edit-row"><label className="insights-field"><span>Selected inline image alternative text</span><input value={mediaAlt} onChange={(event) => setMediaAlt(event.target.value)} placeholder="Select an inline image in the editor" maxLength={300} /></label><button className="button button-light" type="button" onClick={updateSelectedInlineAlt} disabled={mediaPending}>Update selected alt</button></div>{mediaState.status !== "idle" ? <p className={mediaState.status === "saved" ? "insights-success" : "insights-error"} role={mediaState.status === "saved" ? "status" : "alert"}>{mediaState.message}</p> : null}</section>
           <label className="insights-field"><span>Excerpt <small>Optional · max 300 characters</small></span><textarea name="excerpt" value={excerpt} onChange={(event) => { setExcerpt(event.target.value); markDirty(); }} maxLength={300} placeholder="A short introduction for article lists" /></label>
         </div>
         <aside className="insights-metadata-panel" aria-label="Article metadata"><div className="insights-panel-heading"><div><p className="admin-kicker admin-kicker-green">Draft metadata</p><h2>Make it findable.</h2></div><span>Optional until review</span></div><label className="insights-field"><span>Primary Category</span><select name="category_id" value={categoryId} onChange={(event) => { setCategoryId(event.target.value); markDirty(); }}><option value="">No category yet</option>{taxonomy.categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label><fieldset className="insights-tags-field"><legend>Tags <small>Optional</small></legend>{taxonomy.tags.length ? <div className="insights-tag-grid">{taxonomy.tags.map((tag) => <label className="insights-check" key={tag.id}><input type="checkbox" name="tag_ids" value={tag.id} checked={tagIds.includes(tag.id)} onChange={() => toggleTag(tag.id)} /><span>{tag.name}</span></label>)}</div> : <p className="insights-muted">No approved Tags are available yet.</p>}</fieldset>{saveFeedback ? <div className="insights-error" role="alert"><strong>{actionMessage(saveFeedback)}</strong>{saveFeedback.issues.length ? <ul>{saveFeedback.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}<button className="button button-light insights-retry-button" type="button" onClick={() => requestSave("explicit")}>Retry</button></div> : null}<div className="insights-save-row"><div className="insights-save-copy" aria-live="polite"><strong>{saveStatus === "saving" ? "Saving…" : saveStatus === "dirty" ? "Unsaved changes" : saveStatus === "conflict" ? "Conflict — reload required" : saveStatus === "error" ? "Save failed" : hasMounted ? formatSavedAt(lastSavedAt) : article ? "Saved" : "Not saved yet"}</strong><span>{saveStatus === "conflict" ? "Your local changes were not overwritten." : saveStatus === "error" ? "Your local changes are still here." : "Autosaves after a short pause; explicit Save Draft remains available."}</span></div><button className="button button-primary insights-save-button" type="submit" disabled={saveStatus === "saving" && !inFlightRef.current}>{saveStatus === "saving" ? "Saving…" : "Save Draft"} <span aria-hidden="true">↗</span></button></div>{saveStatus === "conflict" ? <button className="button button-light insights-reload-button" type="button" onClick={() => router.refresh()}>Reload latest saved version</button> : null}</aside>
       </form>
-      {article ? <div className="insights-composer-actions"><Link className="button button-light" href={`/crimson-admin-control/insights/articles/${article.id}/preview`}>Preview ↗</Link>{canSubmit ? <button className="button button-light" type="button" onClick={handleSubmitForReview} disabled={workflowPending || saveStatus === "saving"}>{workflowPending ? "Submitting…" : "Submit for Review"}</button> : null}{canPublishDraft ? <span className="insights-muted">Trusted Publisher publishing remains ownership-checked by the existing staging workflow.</span> : null}{submitState.status !== "idle" ? <p className={submitState.status === "saved" ? "insights-success" : "insights-error"} role={submitState.status === "saved" ? "status" : "alert"}>{actionMessage(submitState)}</p> : null}</div> : null}
+      {article ? <div className="insights-composer-actions"><Link className="button button-light" href={`/crimson-admin-control/insights/articles/${article.id}/preview`}>Preview ↗</Link>{canSubmit ? <button className="button button-light" type="button" onClick={handleSubmitForReview} disabled={workflowPending || saveStatus === "saving"}>{workflowPending ? "Submitting…" : "Submit for Review"}</button> : null}{canPublishDraft ? <button className="button button-primary" type="button" onClick={handlePublishOwnDraft} disabled={workflowPending || saveStatus === "saving"}>{workflowPending ? "Publishing…" : "Publish own Draft"}</button> : null}{submitState.status !== "idle" ? <p className={submitState.status === "saved" ? "insights-success" : "insights-error"} role={submitState.status === "saved" ? "status" : "alert"}>{actionMessage(submitState)}</p> : null}{publishState.status !== "idle" ? <p className={publishState.status === "saved" ? "insights-success" : "insights-error"} role={publishState.status === "saved" ? "status" : "alert"}>{actionMessage(publishState)}</p> : null}</div> : null}
       {article ? <details className="insights-advanced"><summary>Advanced: slug</summary><div className="insights-advanced-body"><p>Keep this stable once the article is published. The server remains authoritative for ownership, Draft status, concurrency, and uniqueness.</p><form onSubmit={handleSlugSubmit} className="insights-slug-form"><input type="hidden" name="article_id" value={article.id} /><label className="insights-field"><span>Slug</span><input name="slug" value={slug} onChange={(event) => setSlug(event.target.value)} maxLength={120} aria-describedby="slug-help" /></label><span id="slug-help" className="insights-muted">Lowercase letters, numbers, and hyphens.</span><button className="button button-light insights-slug-button" type="submit" disabled={slugPending || !isValidInsightsSlug(slug) || slugState.status === "saved" && slug === article.slug}>{slugPending ? "Updating…" : "Update slug"}</button></form>{slugFeedback ? <div className="insights-error" role="alert">{actionMessage(slugFeedback)}</div> : null}{slugState.status === "saved" ? <div className="insights-success" role="status">Slug updated.</div> : null}</div></details> : null}
       {leaveHref ? <div className="insights-leave-dialog" role="alertdialog" aria-modal="true" aria-labelledby="leave-dialog-title"><h2 id="leave-dialog-title">Unsaved changes</h2><p>Your local changes have not been confirmed by the server.</p><div><button className="button button-light" type="button" onClick={() => setLeaveHref("")}>Stay</button><a className="button button-primary" data-leave-confirmed href={leaveHref}>Leave without saving</a></div></div> : null}
     </div>
