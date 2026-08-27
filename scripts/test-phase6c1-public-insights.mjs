@@ -35,8 +35,8 @@ test("6C1 public Insights routes use the published boundary", async () => {
   assert.doesNotMatch(detail, /tiptap|Tiptap|use client|article\.id|revision/i);
 });
 
-test("6C1 does not add a migration", async () => {
+test("6C1 does not add a migration after the current staging baseline", async () => {
   const files = (await readdir(path.join(root, "supabase/migrations"))).filter((file) => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 30);
-  assert.equal(files.at(-1), "20260828000000_add_phase6b3_insights_media_workflow.sql");
+  assert.equal(files.length, 32);
+  assert.equal(files.at(-1), "20260830000000_fix_phase6b3_restore_media_validity.sql");
 });
