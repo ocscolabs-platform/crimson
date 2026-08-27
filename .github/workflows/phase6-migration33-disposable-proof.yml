@@ -155,6 +155,7 @@ jobs:
 
           invalid_url="$(create_db m33_invalid)"
           seed_legacy "$invalid_url"
+          psql "$invalid_url" -v ON_ERROR_STOP=1 -c "alter table public.pages drop constraint if exists legacy_pages_content_array" >/dev/null
           psql "$invalid_url" -v ON_ERROR_STOP=1 -c "update public.pages set content = '{}'::jsonb where slug = 'home'" >/dev/null
           repair_1_to_32_applied "$invalid_url"
           if supabase db push --db-url "$invalid_url" --yes; then
