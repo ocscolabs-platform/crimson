@@ -2,11 +2,11 @@
 
 This queue records approved next-step work before implementation. Tasks in this file are not production changes until they are implemented, reviewed in staging, and explicitly promoted to `main`.
 
-## Current roadmap overlay — 2026-08-22
+## Current roadmap overlay — 2026-08-24
 
 `docs/MASTER-PLAN.md` is now the canonical source of truth for phase order and release readiness. The detailed `PH4-001` through `PH4-016` entries below preserve the implementation history and acceptance criteria of the original CMS slices; some early entries retain their historical “pending” wording even though later entries document the verified staging implementation. Use the master plan and `STATUS.md` for the current state.
 
-The current gate is **PH4-017 — Post-merge release verification and baseline stabilization**. The staging-to-main code merge has already occurred; this task now verifies the Production boundary and synchronizes staging to the approved main baseline. No Blog implementation is authorized by this roadmap update. Full page-body editing is Phase 5, Blog / Insights is Phase 6, and CRM is Phase 7.
+Owner approval closes the staging portion of **PH4-017 — Post-merge release verification and baseline stabilization**. The clean `crimson-staging` rebuild and Phase 4C QA evidence are complete. Phase 5 Work Packages A and B are now complete and staging-verified. The Production boundary and promotion checks remain a separate deferred release gate. Insights is Phase 6, CRM is Phase 7, and hardening/reusable-platform work is Phase 8.
 
 ## PH4-018 — Remediate the administrator invitation callback
 
@@ -18,8 +18,8 @@ The current gate is **PH4-017 — Post-merge release verification and baseline s
 
 ## PH4-017 — Verify the post-merge CMS release boundary
 
-- **Status:** In progress / current post-merge release gate
-- **Goal:** Verify the merged Production code/data boundary, retire or explicitly retain temporary promotion infrastructure, and establish a clean synchronized baseline before adding new product features.
+- **Status:** Staging baseline and QA complete; Production release gate deferred
+- **Goal:** Record the completed staging baseline while preserving the owner-controlled Production verification and promotion requirements.
 - **Reference:** `docs/MASTER-PLAN.md` and `docs/RELEASE-READINESS.md`
 
 ### Acceptance criteria
@@ -35,22 +35,65 @@ The current gate is **PH4-017 — Post-merge release verification and baseline s
 - `/crimson-admin-control` remains protected and `/admin` plus `/admin/*` return normal `404` responses.
 - The temporary promotion bridge is retired or retained with an explicit owner-approved runbook and rollback path.
 - Remote `staging` is synchronized to the approved `main` baseline.
-- Final owner sign-off, verified commit/configuration baseline, and rollback steps are recorded before Phase 5 begins.
+- The staging baseline acceptance is recorded; Production owner sign-off, verified commit/configuration baseline, and rollback steps remain required before Production CMS/schema promotion.
 
-## PH5-001 — Complete the page-content editor
+## PH5-001 — Complete the Full Page Content CMS
 
-- **Status:** Planned / not started
-- **Goal:** Make Home, About, Services, and Contact body content editable through approved structured CMS sections.
-- **Scope:** Copy, headings, supporting text, CTAs, approved section variants, SEO metadata, Open Graph image, preview, draft/review/published revisions, validation, responsive/public QA.
-- **Constraint:** Do not introduce a freeform page builder or arbitrary component creation.
+- **Status:** Complete in staging; Production release gate deferred
+- **Goal:** Make Home, About, Services, and Contact body content editable through approved structured PageDocument CMS sections.
+- **Constraint:** Do not introduce a freeform page builder, arbitrary component creation, Work migration, Insights, CRM, or Production controls.
 
-## PH6-001 — Add the Blog / Insights data model
+The public PageDocument architecture and editor workflow are complete for Home, Services, About, and Contact, and Work remains legacy. Final staging acceptance passed with 26/26 migrations, responsive QA at all required dimensions, workflow/history/role verification, zero targeted drift, and zero remaining FIX NOW findings. Neither work package is a historical Slice 4G.
+
+### Work Package A — PageDocument Editor and Editorial Workflow
+
+**Current status:** **Complete** after merge and staging verification. Batches 1, 2, and 3 are closed.
+
+**Objective:** Build the reusable Crimson CMS editorial experience for the four approved Phase 5 pages.
+
+**Scope:**
+
+- Shared PageDocument page-management shell.
+- Home editor, Services overview PageDocument editor, About editor, and Contact marketing-content editor.
+- Page-specific structured field forms for approved Hero and section content.
+- Constrained CTA controls, section order, and allowed visibility controls.
+- Authoritative PageDocument SEO title, SEO description, and approved Open Graph reference control.
+- Home Service-reference controls and Services wrapper controls without duplicating canonical `public.services` records.
+- Draft save/update, Review workflow, owner-only Publish, owner-only Restore, role-aware controls, revision/audit status, validation UX, and authenticated Draft/Review Preview.
+- Protection of all code-controlled functionality.
+
+**Explicit exclusions:** Work migration; freeform page builder; arbitrary sections, components, or routes; Contact form-builder behavior; Service-record duplication; scheduled publishing; version comparison; bulk editing; Insights; CRM; and Production.
+
+### Work Package B — Full Page Content CMS Staging QA, Owner Front-End Polish, and Phase 5 Closure
+
+**Current status:** **Complete — final staging acceptance passed.**
+
+**Objective:** After Work Package A is implemented and staging-verified, perform end-to-end editor acceptance, public staging QA, owner/client-style visual refinement, and formal Phase 5 closure.
+
+**Editorial acceptance:** Test owner, editor, and reviewer boundaries where applicable. A non-technical authorized user must be able to open each page, edit structured content and CTAs, manage approved order/visibility, edit SEO, save Draft, move through Review, use authenticated Preview, Publish, verify public output, inspect revision/audit state, Restore, and receive understandable validation/error feedback without SQL Editor, Supabase dashboard, GitHub, repository edits, Codex intervention, or manual database changes.
+
+**Final QA:** Verify Home, Services, About, and Contact for CMS usability, Draft/Review/Publish/Restore, Preview, PageDocument SEO, CTA and section constraints, validation UX, role boundaries, public Published-only behavior, responsive and accessibility sanity, browser/runtime health, public visual regression, Service-reference integrity, Contact functional-boundary integrity, Work isolation, migration alignment, staging architecture verification, and audit/revision preservation. Use the Codex browser device toolbar at 1440×900, 768×1024, and 390×844.
+
+**Owner Front-End Polish checkpoint:** During staging acceptance, classify every observation as:
+
+- **FIX NOW** — implementation bug, regression, broken responsive behavior, accessibility defect, or mismatch against the approved design.
+- **POLISH WINDOW** — small visual or UX adjustment with no architecture, schema, product-behavior, or workflow change.
+- **NEW SCOPE** — new feature, component type, CMS capability, workflow, database behavior, integration, or functional requirement; requires separate owner approval and must not silently expand Phase 5.
+- **DEFER** — useful enhancement not required for Phase 5 acceptance.
+
+Only FIX NOW and approved POLISH WINDOW items belong in Work Package B.
+
+**Phase 5 closure gate:** Phase 5 may close only when an authorized non-technical editor can manage Home, Services overview, About, and Contact through Crimson CMS with authoritative PageDocument editing, SEO editing, usable Draft/Review/Publish/Preview/validation flows, and enforced role boundaries. Work remains legacy. ContactForm behavior remains code-controlled, and canonical Service records remain separately managed through the existing Services CMS.
+
+**Closure evidence:** Final staging HEAD `1434210079b2c0bed94b0776a49d490f4fc98341`; 26/26 migrations with migration #26 exactly once, zero pending/duplicate/targeted-drift findings; responsive PASS at 1440×900, 768×1024, and 390×844; remaining FIX NOW findings: 0. Production release/promotion, CMS/UI polish, legacy Work performance debt, Work migration, and Phase 6 Insights remain outside this closure.
+
+## PH6-001 — Add the Insights data model
 
 - **Status:** Planned / not started
 - **Goal:** Add articles, categories, tags, article-to-tag relationships, authors, publication state/dates, SEO metadata, and revision/media references using the existing CMS architecture.
 - **Acceptance criteria:** Stable slugs, unique category/tag relationships, author ownership rules, draft/review/published boundary, published-only public reads, and RLS/audit coverage.
 
-## PH6-002 — Add the Blog / Insights CMS editor
+## PH6-002 — Add the Insights CMS editor
 
 - **Status:** Planned / not started
 - **Goal:** Let authorized users create/edit articles, save drafts, assign category/tags/author, manage featured/social media, edit content, manage SEO fields, preview, publish, and unpublish through the existing revision workflow.
@@ -67,7 +110,7 @@ The current gate is **PH4-017 — Post-merge release verification and baseline s
 - **Status:** Planned / not started
 - **Goal:** Provide `/insights/[slug]` with title, excerpt, featured image, author, dates, category, tags, formatted content, SEO metadata, Open Graph image, related articles, accessible media, and draft privacy.
 
-## PH6-005 — Blog QA and release gate
+## PH6-005 — Insights QA and release gate
 
 - **Status:** Planned / not started
 - **Goal:** Verify editor permissions, revisions, preview, slug conflicts, media constraints, public published-only behavior, search/filter/pagination, responsive/accessibility behavior, SEO output, and deployment configuration before publication.
@@ -369,7 +412,7 @@ The current gate is **PH4-017 — Post-merge release verification and baseline s
 - Each published case study has an explicit identity, media, claims, testimonial, external-link, and related-capability decision.
 - Contact form field language, privacy/consent copy, response-time expectation, inquiry owner, and retention expectation are approved.
 - Desktop, tablet/mobile, keyboard, focus, and screen-reader review is completed or exceptions are documented and accepted.
-- The owner explicitly authorized promotion to `main` on 2026-08-21; the live remote refs now confirm that the code merge occurred. Supabase data/configuration promotion remains a separate verification boundary.
+- The owner explicitly authorized promotion to `main` on 2026-08-21 and the repository history records that code merge. The latest remote comparison is `origin/main...origin/staging = 3 1`, so the branches are divergent; the current remediation branch is based on `origin/main` and must enter `staging` through a normal pull request. Supabase data/configuration promotion remains a separate verification boundary handled by the approval-gated migration pipeline.
 
 ### Approval record
 

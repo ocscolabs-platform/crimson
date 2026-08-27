@@ -1,0 +1,203 @@
+name: Migration 33 disposable proof
+
+on:
+  pull_request:
+    branches: [staging]
+    paths:
+      - "supabase/migrations/20260831000000_reconcile_production_legacy_baseline.sql"
+      - "scripts/fixtures/phase6-migration33-*.sql"
+      - "scripts/test-phase6-migration33.mjs"
+      - ".github/workflows/phase6-migration33-disposable-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  disposable-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Set up pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.111.0
+
+      - name: Install PostgreSQL client
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Confirm pinned toolchain
+        run: |
+          set -euo pipefail
+          supabase --version
+          docker --version
+          psql --version
+
+      - name: Run local Migration #33 contract proof
+        run: npm run test:phase6:migration33
+
+      - name: Start disposable local Supabase stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime="$RUNNER_TEMP/crimson-m33-runtime"
+          mkdir -p "$runtime/supabase/migrations"
+          cp supabase/config.toml "$runtime/supabase/config.toml"
+          (
+            cd "$runtime"
+            supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector
+          )
+
+      - name: Prove legacy adoption, fail-closed rollback, and canonical no-op
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          root_db_url="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+          fixture_schema="scripts/fixtures/phase6-migration33-legacy-schema.sql"
+          fixture_data="scripts/fixtures/phase6-migration33-legacy.sql"
+          repo_root="$PWD"
+
+          create_db() {
+            local db="$1"
+            psql "$root_db_url" -v ON_ERROR_STOP=1 -c "create database $db" >/dev/null
+            printf 'postgresql://postgres:postgres@127.0.0.1:54322/%s\n' "$db"
+          }
+
+          bootstrap_supabase_schemas() {
+            local db_url="$1"
+            pg_dump "$root_db_url" \
+              --schema-only \
+              --no-owner \
+              --no-privileges \
+              --schema=auth \
+              --schema=extensions \
+              --schema=storage \
+              | psql "$db_url" -v ON_ERROR_STOP=1 >/dev/null
+          }
+
+          seed_legacy() {
+            local db_url="$1"
+            bootstrap_supabase_schemas "$db_url"
+            psql "$db_url" -v ON_ERROR_STOP=1 -f "$fixture_schema" >/dev/null
+            psql "$db_url" -v ON_ERROR_STOP=1 -f "$fixture_data" >/dev/null
+          }
+
+          repair_1_to_32_applied() {
+            local db_url="$1"
+            for version in \
+              20260819000000 20260820000000 20260820010000 20260820020000 \
+              20260820040000 20260820050000 20260820060000 20260820070000 \
+              20260820080000 20260820090000 20260820100000 20260820110000 \
+              20260820120000 20260820130000 20260821000000 20260821010000 \
+              20260821020000 20260821030000 20260821040000 20260821050000 \
+              20260821060000 20260823000000 20260823010000 20260823020000 \
+              20260823030000 20260824000000 20260826000000 20260826010000 \
+              20260827000000 20260828000000 20260829000000 20260830000000; do
+              supabase migration repair "$version" --status applied --db-url "$db_url"
+            done
+          }
+
+          repair_all_reverted() {
+            local db_url="$1"
+            for version in \
+              20260831000000 20260830000000 20260829000000 20260828000000 \
+              20260827000000 20260826010000 20260826000000 20260824000000 \
+              20260823030000 20260823020000 20260823010000 20260823000000 \
+              20260822000000 20260821060000 20260821050000 20260821040000 \
+              20260821030000 20260821020000 20260821010000 20260821000000 \
+              20260820130000 20260820120000 20260820110000 20260820100000 \
+              20260820090000 20260820080000 20260820070000 20260820060000 \
+              20260820050000 20260820040000 20260820020000 20260820010000 \
+              20260820000000 20260819000000; do
+              supabase migration repair "$version" --status reverted --db-url "$db_url" || true
+            done
+          }
+
+          legacy_url="$(create_db m33_legacy)"
+          seed_legacy "$legacy_url"
+          echo "Legacy migration list before adoption (ledger is absent):"
+          set +e
+          supabase migration list --db-url "$legacy_url"
+          absent_list_status=$?
+          set -e
+          echo "ABSENT-LEDGER LIST STATUS: $absent_list_status"
+          repair_1_to_32_applied "$legacy_url"
+          before="$(psql "$legacy_url" -Atqc "select concat((select count(*) from public.pages),(select count(*) from public.services),(select count(*) from public.case_studies),(select count(*) from public.page_sections),(select count(*) from storage.objects))")"
+          supabase db push --db-url "$legacy_url" --yes
+          after="$(psql "$legacy_url" -Atqc "select concat((select count(*) from public.pages),(select count(*) from public.services),(select count(*) from public.case_studies),(select count(*) from public.page_sections),(select count(*) from storage.objects))")"
+          test "$before" = "$after"
+          legacy_contract_check="$(psql "$legacy_url" -v ON_ERROR_STOP=1 -Atqc "
+            select count(*) = 5 from public.pages;
+            select count(*) = 4 from public.pages where jsonb_typeof(content) = 'object';
+            select count(*) = 2 from public.cms_members;
+            select count(*) = 4 from public.cms_revisions where entity_type = 'page' and status = 'published';
+            select to_regclass('public.insights_articles') is not null;
+            select (select count(*) from public.insights_articles) = 0;
+            select has_table_privilege('authenticated', 'public.pages', 'INSERT') = false;
+            select (select count(*) from storage.objects) = 3;
+          ")"
+          if printf '%s\n' "$legacy_contract_check" | grep -q '^f$'; then
+            echo "Legacy contract verification failed."
+            exit 1
+          fi
+          echo "LEGACY -> CANONICAL: PASS"
+
+          invalid_url="$(create_db m33_invalid)"
+          seed_legacy "$invalid_url"
+          psql "$invalid_url" -v ON_ERROR_STOP=1 -c "alter table public.pages drop constraint if exists legacy_pages_content_array" >/dev/null
+          psql "$invalid_url" -v ON_ERROR_STOP=1 -c "update public.pages set content = '{}'::jsonb where slug = 'home'" >/dev/null
+          repair_1_to_32_applied "$invalid_url"
+          if supabase db push --db-url "$invalid_url" --yes; then
+            echo "Invalid page fixture unexpectedly committed."
+            exit 1
+          fi
+          test "$(psql "$invalid_url" -Atqc "select to_regclass('public.insights_articles') is null")" = "t"
+          repair_all_reverted "$invalid_url"
+          test "$(psql "$invalid_url" -Atqc "select count(*) from supabase_migrations.schema_migrations")" = "0"
+          echo "FAIL-CLOSED ROLLBACK: PASS"
+
+          partial_url="$(create_db m33_partial)"
+          seed_legacy "$partial_url"
+          psql "$partial_url" -v ON_ERROR_STOP=1 -c "create table public.insights_articles (id uuid primary key)" >/dev/null
+          repair_1_to_32_applied "$partial_url"
+          if supabase db push --db-url "$partial_url" --yes; then
+            echo "Partial Insights fixture unexpectedly committed."
+            exit 1
+          fi
+          test "$(psql "$partial_url" -Atqc "select exists(select 1 from pg_attribute where attrelid = 'public.pages'::regclass and attname = 'published_revision_id')")" = "f"
+          echo "PARTIAL-CONTRACT FAIL-CLOSED: PASS"
+
+          canonical_url="$(create_db m33_canonical)"
+          seed_legacy "$canonical_url"
+          repair_1_to_32_applied "$canonical_url"
+          supabase db push --db-url "$canonical_url" --yes
+          supabase migration repair 20260831000000 --status reverted --db-url "$canonical_url"
+          canonical_before="$(psql "$canonical_url" -Atqc "select concat((select count(*) from public.pages),(select count(*) from public.cms_revisions),(select count(*) from public.cms_members),(select count(*) from storage.objects),(select count(*) from public.insights_articles))")"
+          supabase db push --db-url "$canonical_url" --yes
+          canonical_after="$(psql "$canonical_url" -Atqc "select concat((select count(*) from public.pages),(select count(*) from public.cms_revisions),(select count(*) from public.cms_members),(select count(*) from storage.objects),(select count(*) from public.insights_articles))")"
+          test "$canonical_before" = "$canonical_after"
+          test "$(psql "$canonical_url" -Atqc "select count(*) from supabase_migrations.schema_migrations where version = '20260831000000'")" = "1"
+          test "$(psql "$canonical_url" -Atqc "select count(*) from supabase_migrations.schema_migrations")" = "33"
+          echo "CANONICAL NO-OP: PASS"
+          echo "LEDGER ADOPTION: PASS"
+
+      - name: Stop disposable local Supabase stack
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime="$RUNNER_TEMP/crimson-m33-runtime"
+          if [ -f "$runtime/supabase/config.toml" ]; then
+            (cd "$runtime" && supabase stop --no-backup) || true
+          fi

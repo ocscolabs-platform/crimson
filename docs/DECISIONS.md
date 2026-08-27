@@ -386,23 +386,23 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Reason:** A less obvious path reduces casual discovery and avoids presenting the CMS as a generic `/admin` endpoint. The path is not treated as a security boundary.
 - **Consequence:** Vercel/Supabase Auth reset URLs must use `/crimson-admin-control/auth/callback?next=/crimson-admin-control/reset-password`. The callback exchanges the one-time recovery code server-side before the reset form loads. Internal route rewrites continue to use the existing App Router implementation, and no data, role, or credential changes are introduced.
 
-## ADR-056 - Add Blog / Insights after structured page-content editing
+## ADR-056 - Add Insights after structured page-content editing
 
 - **Date:** 2026-08-22
-- **Status:** Accepted for roadmap planning; implementation not started
-- **Decision:** Add a first-party Blog / Insights system as Phase 6, after Phase 5 completes full structured body-content editing for Home, About, Services, and Contact. Use `/insights` and `/insights/[slug]` as the planned public routes unless a later naming decision approves `/blog`.
-- **Reason:** Blog publishing depends on the CMS's content, revision, media, SEO, preview, and public published-only boundaries. Building it before the page-content editor and Phase 4 release stabilization would repeat the current pattern of adding editorial features on top of an unresolved release contract.
+- **Status:** Owner-approved for roadmap planning; implementation not started
+- **Decision:** Add a first-party Insights system as Phase 6, after Phase 5 completes full structured body-content editing for Home, About, Services, and Contact. Use `Insights` as the navigation label, `/insights` and `/insights/[slug]` as the public routes, and `Insights / Articles` as the CMS area.
+- **Reason:** Insights publishing depends on the CMS's content, revision, media, SEO, preview, and public published-only boundaries. Building it before the page-content editor and Phase 4 release stabilization would repeat the current pattern of adding editorial features on top of an unresolved release contract.
 - **Scope:** Articles, categories, tags, article-to-tag relationships, authors, publication status/dates, featured/social media, SEO metadata, article editor, preview, public index, search/filtering, pagination/load-more, empty states, article detail, and related articles.
 - **Constraints:** Reuse the existing Supabase/Auth/RLS/revision/audit/media architecture. Do not add a third-party CMS, freeform page builder, or copied Cairnstack design. Draft and Review content must remain private.
-- **Consequence:** Blog migrations, routes, CMS controls, and nav placement remain intentionally absent until Phase 6. The Master Plan and Content Model now record the scope and dependencies. CRM remains a separate Phase 7 capability.
+- **Consequence:** Insights migrations, routes, CMS controls, and nav placement remain intentionally absent until Phase 6. The Master Plan and Content Model now record the scope and dependencies. CRM remains a separate Phase 7 capability.
 
 ## ADR-057 - Treat the staging-to-main merge as complete and stabilize the Production baseline
 
 - **Date:** 2026-08-22
-- **Status:** Accepted for roadmap reconciliation; post-merge verification in progress
-- **Decision:** Treat the live GitHub remote state as authoritative for the current release position. `origin/main` is `0b58c0351afa8a022c7c633592a829a02039ebc9`; `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`; the merge base is `origin/main`; and `git rev-list --left-right --count origin/main...origin/staging` returns `0 9`. The staging-only history is approved documentation/reconciliation and merge history; the only non-documentation file difference is a comment-only clarification in the existing Production CMS migration, not an unreviewed application divergence. Phase 4C remains post-merge Production release verification and baseline stabilization. The next development phase must not begin until Production and the code branches are verified against the criteria in `MASTER-PLAN.md` and `RELEASE-READINESS.md`.
+- **Status:** Accepted for roadmap reconciliation; Production release gate deferred by ADR-059
+- **Decision:** Treat the prior staging-to-main merge as a repository-history fact and record the latest live remote comparison. `origin/main` is `f098902f04cd25483c24bbc7f467d1023f1b7a79`, `origin/staging` is `b78976c16a1f88c73b32211ada42ae8d58aafb41`, and `git rev-list --left-right --count origin/main...origin/staging` returns `3 1`; the branches are divergent. The remediation branch is based on the latest `origin/main` and must be merged into `staging` through a normal pull request before staging verification. Phase 4C staging baseline and QA are complete; the Production release/promotion verification remains a deferred gate tracked by ADR-059.
 - **Reason:** The previous pre-merge wording no longer describes the repository. Git promotion has happened, but a Git merge does not prove that Production Supabase migrations, runtime variables, Auth callbacks, RLS, Storage, or revision publication are configured correctly.
-- **Consequence:** No new Phase 5 or Blog implementation starts during this gate. Production is verified independently, temporary promotion infrastructure is retired only after the revision path is proven, and `staging` is synchronized to the approved `main` baseline before Phase 5.
+- **Consequence:** Production is verified independently, temporary promotion infrastructure is retired only after the revision path is proven, and `staging` is synchronized to the approved `main` baseline before Production CMS/schema promotion. Phase 5 development and QA may proceed in the isolated staging environment.
 
 ## ADR-058 - Use a dedicated implicit callback for administrator invitations
 
@@ -411,3 +411,91 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Keep the normal CMS browser client PKCE-based for login and password recovery, but use a dedicated implicit-flow client for administrator invitation acceptance at `/crimson-admin-control/invite`. The invite page explicitly consumes the invitation fragment, establishes the session, removes the fragment from browser history, and only then allows account setup and membership activation.
 - **Reason:** Supabase administrator invitations are created in one browser context and accepted in another. The callback therefore returns an implicit session fragment; the previous PKCE client rejected it as an invalid/expired PKCE flow on first click.
 - **Consequence:** Public signup remains disabled and owner invitations remain server-side. If membership assignment fails after Auth invite creation, the server performs compensating Auth-user cleanup and returns a recoverable error. No Production invitation test is permitted until a fresh staging first-click test passes.
+
+## ADR-059 - Close staging Phase 4C QA separately from the Production release gate
+
+- **Date:** 2026-08-23
+- **Status:** Owner-approved
+- **Decision:** Mark the `crimson-staging` Phase 4C baseline and QA complete after the owner-verified clean rebuild, migration parity, architecture checks, CMS workflow matrix, media lifecycle, inquiry persistence, route protection, metadata isolation, and runtime health pass. Track Production schema/configuration/Auth/promotion verification as a deferred release gate rather than blocking Phase 5 development and QA in staging.
+- **Reason:** The staging and Production environments are intentionally separate, and Phase 5 depends on the accepted CMS foundation and staging QA rather than on an already-promoted Production CMS. Production verification remains mandatory before Production CMS/schema promotion, but it is an operational release dependency rather than a prerequisite for continued isolated staging development.
+- **Consequence:** Phase 5 is ready to plan against the accepted staging baseline. The Production release gate preserves the requirements for Production migration dry-run/apply approval, schema/configuration/Auth verification, Production smoke testing, rollback/sign-off, staging synchronization, and the temporary promotion-bridge decision.
+
+## ADR-060 - Make revision RPCs PageDocument-compatible before cutover
+
+- **Date:** 2026-08-23
+- **Status:** Implemented in Phase 5B Slice 2; staging application pending owner review
+- **Decision:** Extend the existing revision RPCs narrowly so complete PageDocuments for Home, Services, About, and Contact are validated at the database/RPC boundary, use `cms_revisions.status` as the only workflow authority, replace PageDocument content atomically, derive legacy SEO projections during future publication, validate published Service references, and restore PageDocument history as Review. Keep legacy array-valued pages, `page_sections`, Services, case studies, Work, public reads, and the current CMS editor behavior unchanged until later cutover slices.
+- **Reason:** Application validation alone cannot protect direct RPC calls. The future PageDocument contract needs an authoritative mutation boundary without forcing legacy historical revisions or current page rows through an unfinished Phase 5 model.
+- **Consequence:** The new migration is forward-only and data-free. It creates no PageDocument rows, does not backfill or convert page content, does not publish `page_sections`, and does not change Production. Owner review and a separate staging migration application remain required before Slice 2 is considered deployed.
+
+## ADR-062 - Establish the Phase 6A Insights foundation as a separate security boundary
+
+- **Date:** 2026-08-26
+- **Status:** Implemented on the Batch 6A feature branch; staging application and merge pending Owner review
+- **Decision:** Extend the existing `cms_members` architecture with `cms_member_access`, keeping Owner, Editor, and Trusted Publisher terminology. Trusted Publisher is an Editor with the narrow `can_publish_insights` capability and an ownership-checked article publish RPC. Add separate Insights article/revision, Category, Tag, audit, and Published-only projection foundations; keep existing `cms_has_role` callers full-CMS-only so Insights-only members cannot inherit legacy administration.
+- **Reason:** The current CMS role is intentionally broad for Phase 5. A separate access scope is required to expose an Insights publishing surface without granting Pages, Global Content, Services, Work, Team, CRM, or other unrelated authority. Article-specific revisions preserve independent workflow and historical recovery boundaries.
+- **Consequence:** Batch 6A adds one forward migration after migration #26, route-level denial for Insights-only members, direct security-contract tests, and a later staging verification script. It does not add media buckets, Tiptap, autosave, public Insights routes, Production changes, or Batch 6B work.
+
+## ADR-061 - Align PageDocument validation with the approved About and Contact contract
+
+- **Date:** 2026-08-23
+- **Status:** Accepted for Phase 5B Slice 3 preparation
+- **Decision:** Persist `about_people` with exactly `eyebrow`, `heading`, and `cta`; it has no `body` field. Persist Contact process items with exactly `title` and `body`. Numbering and prefixes such as `01 /` remain code-controlled presentation and are rejected as unknown PageDocument fields.
+- **Reason:** The approved Phase 5A contract intentionally preserves the existing About placeholder without inventing body copy and keeps Contact numbering in the renderer. The Slice 1 application validator and Slice 2 database helper incorrectly required `about_people.body`; the correction restores one shared strict contract before any PageDocument backfill.
+- **Consequence:** A forward, data-free validator correction is required before Slice 3. Save, publish, restore, authorization, legacy arrays, `page_sections`, Work, and all current page data remain unchanged. No PageDocument backfill is included in this decision.
+
+## ADR-063 - Keep Batch 6B2 authoring reliable without opening media or public Insights
+
+- **Date:** 2026-08-26
+- **Status:** Implemented on the Batch 6B2 feature branch; staging review pending
+- **Decision:** Extend the existing Insights Draft save action with a client-side coordinator that debounces Draft autosave, serializes explicit saves, preserves local state on stale conflicts, and protects navigation while changes are unconfirmed. Add a private, no-store, noindex Preview that loads only the authorized active Draft/Review revision through the shared Insights renderer. Add an Owner Needs Review queue and Review-state workflow controls using the existing Batch 6A RPCs. Do not create a migration, media path, public Insights route, or alternate article renderer.
+- **Reason:** The text-only authoring foundation needs a reliable review loop before media and public publication artifacts are introduced. Keeping all writes on the existing Server Action/RPC boundaries preserves authorization, optimistic concurrency, and the future B6B3 Cover-media publication gate.
+- **Consequence:** B6B2 remains a staging-only editorial reliability slice. Text-only Submit/Publish behavior is explicitly foundation QA behavior; media validation and the final public artifact contract remain deferred to B6B3. No Production or `main` changes are permitted.
+
+## ADR-064 - Keep Insights canonical media private and publish exact revision artifacts
+
+- **Date:** 2026-08-28
+- **Status:** Proposed for staging review in Batch 6B3; not applied to staging or Production
+- **Decision:** Add an Insights-specific media boundary with private canonical WebP objects and a separate private published-artifact bucket. Store opaque media IDs in the v2 body contract; resolve private signed URLs only for authenticated CMS authoring and Preview. On Publish, copy only the active revision's Cover and referenced inline media to deterministic public artifacts, sanitize the public body to artifact paths, and delete those artifacts on Unpublish while retaining canonical objects and revision history. All Storage writes remain server-trusted and all editorial mutations remain authorization-checked RPCs.
+- **Reason:** Editorial media must survive Draft editing, Review, Unpublish, and Restore without exposing source paths or signed URLs. A separate artifact boundary prevents a future public projection from accidentally serving Draft or historical canonical files.
+- **Consequence:** Migration #30 is additive after migrations 1-29. The editor supports JPEG, PNG, WebP, and AVIF source validation, server-side normalization, Cover/inline replacement and removal, meaningful alt text, and exact publication cleanup semantics. Public `/insights` routes remain deferred to Phase 7; staging application and Owner QA are required before this decision is considered deployed.
+
+## ADR-065 - Restore Insights media by cloning revision metadata
+
+- **Date:** 2026-08-27
+- **Status:** Proposed for staging review in Batch 6B3 restore hotfix; not applied to staging or Production
+- **Decision:** Restore a historical Insights revision into a new Draft with fresh media metadata IDs and new revision ownership. Reuse the immutable private canonical object path only after cloning its metadata, copy the source Cover and inline role associations, rewrite body `mediaId` references, and strip any resolved `src` values. Do not mutate historical media/revision rows or copy public artifact fields; validate the complete restored Draft with `insights_revision_is_publishable` before changing the article pointer.
+- **Reason:** The original Restore RPC copied revision links to historical media rows without changing their revision ownership, so required media validation rejected the restored Draft. A metadata clone preserves historical evidence while giving the new Draft an independently editable media boundary. Private canonical objects are lifecycle-safe to share because media removal changes metadata state and public artifact cleanup is separate.
+- **Consequence:** Migration #31 is a forward-only staging change. Restore is transactional and fail-closed for missing, removed, cross-revision, or otherwise invalid media. The source revision remains unchanged, restored media starts without public artifacts, and no Production or `main` change is permitted until the dedicated staging PR and Owner QA gates pass.
+
+## ADR-066 - Automatically apply canonical migrations on protected staging pushes
+
+- **Date:** 2026-08-27
+- **Status:** Proposed for staging review; Production behavior unchanged
+- **Decision:** Make `.github/workflows/supabase-release.yml` apply all pending canonical migrations on a protected push to `staging` after validation and a dry run. Before linking, verify the configured project identity is `crimson-staging`; after applying, compare the ordered repository migration timestamps with the staging `supabase_migrations.schema_migrations` ledger and require exact parity with zero duplicates and zero pending versions. Keep Production dry-run-only on `main` pushes and separately gated behind manual dispatch plus the protected Production environment.
+- **Reason:** The former staging push path stopped after dry-run, while the manual dispatch path was not available from the repository's default `main` branch. That left a protected merge able to introduce a canonical migration without a normal staging application path.
+- **Consequence:** Future migration-bearing merges to `staging` use one repeatable, idempotent, staging-only release path that supports multiple pending migrations in canonical order and fails closed on target mismatch or ledger drift. The workflow correction is included in its own staging trigger so it can recover the current pending migration without a manual SQL workaround. No account-specific project ref, credential, Production connection, or `main` change is added to the repository.
+
+## ADR-067 - Resolve the staging parity connection over IPv4 at runtime
+
+- **Date:** 2026-08-27
+- **Status:** Proposed for staging review; migration application and Production behavior unchanged
+- **Decision:** Keep the existing approved direct `db.<project-ref>.supabase.co` staging connection for the read-only parity query, but resolve an IPv4 address at runtime with `getent ahostsv4` and provide it as `PGHOSTADDR`. Fail closed when no IPv4 address is available. Do not add a pooler URL or new credential until the current project configuration explicitly provides and authorizes one.
+- **Reason:** The merged staging pipeline applied migration #31 successfully through the Supabase CLI, but the GitHub-hosted runner could not route to the direct database hostname’s IPv6 address during the post-apply `psql` parity check. The current authorized GitHub Environment exposes the access token, database password, and project ref, but no current pooler endpoint.
+- **Consequence:** The parity query uses the same staging project and password without changing migration semantics, weakening parity, modifying the ledger, or exposing credentials. Future no-pending staging pushes exercise the same idempotent apply and exact parity gate. Production remains in its separate dry-run/manual-approval path, and `main` is untouched.
+
+## ADR-068 - Traverse the Insights body document during Restore
+
+- **Date:** 2026-08-28
+- **Status:** Proposed for staging review in the migration-32 Restore validity fix; not applied to staging or Production
+- **Decision:** Keep migration #31's revision-owned media cloning and the canonical publishability validator unchanged, but make the additive Restore RPC traverse `source_revision.body->'doc'` when checking and rewriting inline media IDs. Reinsert the rewritten document node into the unchanged body envelope before final validation.
+- **Reason:** Migration #31 passed the full `{schema, version, doc}` body envelope into helpers designed for a document node. Because those helpers recurse through `content`, they did not reach `doc.content`; the new Draft therefore retained the historical inline media ID while its cloned relation pointed at a new media ID. The final validator correctly rejected the incomplete restored Draft.
+- **Consequence:** Migration #32 fixes only the Restore construction path. It preserves fresh media identities and revision ownership, reuses the immutable private canonical object path, preserves alt/caption metadata, strips resolved URLs, leaves historical rows untouched, and validates the fully constructed Draft with the existing fail-closed validator before advancing the article pointer.
+
+## ADR-069 - Adopt an audited Production legacy baseline through one guarded migration
+
+- **Date:** 2026-08-28
+- **Status:** Implemented as migration #33; disposable SQL/CLI proof and Production execution remain blocked
+- **Decision:** Add `20260831000000_reconcile_production_legacy_baseline.sql` as a forward-only, transactionally guarded adoption path. Canonical Phase 6 environments are a no-op. Only the audited legacy signature may enter the reconciliation branch; it validates the five-page baseline and legacy JSON content before running the reviewed Phase 5/6 contract bundle, preserving all existing rows and case-study Storage objects, and normalizing the direct authenticated write boundary. No account-specific values, seed article, seed editor, or staging data copy is allowed.
+- **Reason:** The read-only Production audit found a real legacy public schema with no migration ledger and no Phase 5/6 contracts. Replaying migrations 1–32 is unsafe because several historical migrations are non-idempotent and Production already contains legitimate rows. A single forward adoption migration keeps the historical files immutable, provides an explicit no-op path for canonical staging, and fails closed on drift.
+- **Consequence:** A pinned Supabase CLI absent-ledger adoption proof against a disposable linked database is a hard prerequisite to any Production action. Until that proof exists, the migration may be reviewed in a staging-targeted PR but must not be applied to Production or used to claim Production parity.

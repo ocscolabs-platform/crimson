@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ImageOff } from "lucide-react";
 import { OrderedPageSections } from "@/components/ordered-page-sections";
 import { RouteShell } from "@/components/route-shell";
-import { getPublishedPage, getPublishedWorkProjects } from "@/lib/cms-content";
+import { getPublishedPage, getPublishedSiteChrome, getPublishedWorkProjects } from "@/lib/cms-content";
 import { getPublishedPageSections } from "@/lib/page-sections";
 import { WorkCardMediaPreview } from "./WorkCardMediaPreview";
 
@@ -15,9 +15,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function WorkPage() {
-  const [workProjects, pageSections] = await Promise.all([
-    getPublishedWorkProjects(),
+  const [workProjects, pageSections, chrome, page] = await Promise.all([
+    getPublishedWorkProjects({ includeRelatedCapabilities: false }),
     getPublishedPageSections("work"),
+    getPublishedSiteChrome(),
+    getPublishedPage("work"),
   ]);
   const featuredProject = workProjects.find((project) => project.featured) ?? workProjects[0];
   const supportingProjects = workProjects.filter((project) => project.slug !== featuredProject.slug);
@@ -28,6 +30,8 @@ export default async function WorkPage() {
       eyebrow="Proof of work"
       title="The work deserves the space to speak for itself."
       intro="A preview of live prototypes and upcoming projects. Full case studies will be added as facts, outcomes, media, and publication permissions are approved."
+      chrome={chrome}
+      page={page}
     >
       <OrderedPageSections
         sections={pageSections}

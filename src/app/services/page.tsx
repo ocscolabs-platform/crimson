@@ -1,64 +1,50 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
+import { notFound } from "next/navigation";
 import { RouteShell } from "@/components/route-shell";
-import { OrderedPageSections } from "@/components/ordered-page-sections";
-import { getPublishedPage, getPublishedServices } from "@/lib/cms-content";
-import { getPublishedPageSections } from "@/lib/page-sections";
-
-const serviceIcons = {
-  branding: PenTool,
-  "website-design-development": PanelsTopLeft,
-  "custom-cms": Layers3,
-  "crm-business-tools": Workflow,
-  "custom-web-applications": Blocks,
-};
+import { ServicesPageBody } from "@/components/page-document-public-bodies";
+import { getPublishedSiteChrome } from "@/lib/cms-content";
+import { getPublishedPageDocument, getPublishedPageServices } from "@/lib/page-document-loader";
+import { getPublishedPageMetadata } from "@/lib/page-metadata";
+import { createServicesPageRenderData } from "@/lib/services-page";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getPublishedPage("services");
-  return { title: page?.seoTitle || "Services", description: page?.seoDescription };
+  const result = await getPublishedPageMetadata("services");
+  if (result.kind === "invalid") {
+    console.error(`[services] Invalid published PageDocument metadata: ${result.issues.join("; ")}`);
+  }
+  if (result.kind !== "metadata") notFound();
+  return result.metadata;
 }
 
 export default async function ServicesPage() {
-  const [services, pageSections] = await Promise.all([
-    getPublishedServices(),
-    getPublishedPageSections("services"),
+  const [result, servicesResult, chrome] = await Promise.all([
+    getPublishedPageDocument("services"),
+    getPublishedPageServices(),
+    getPublishedSiteChrome(),
   ]);
 
+  if (result.kind !== "document" || servicesResult.kind !== "resolved") {
+    if (result.kind === "invalid") {
+      console.error(`[services] Invalid published PageDocument: ${result.issues.join("; ")}`);
+    }
+    if (servicesResult.kind === "invalid") {
+      console.error(`[services] Invalid published Service set: ${servicesResult.issues.join("; ")}`);
+    }
+    notFound();
+  }
+
+  const { hero, capabilities, plan } = createServicesPageRenderData(result.document);
+  const services = servicesResult.services;
   return (
     <RouteShell
-      pageSlug="services"
-      eyebrow="Capabilities"
-      title="One connected system for the work that matters."
-      intro="OCSCO brings strategy, design, and technology together so the parts of your digital presence reinforce one another."
+      eyebrow={hero.eyebrow}
+      title={hero.title}
+      intro={hero.intro}
+      chrome={chrome}
     >
-      <OrderedPageSections
-        sections={pageSections}
-        blocks={{
-          services_capabilities: (
-            <section className="section-snow route-section">
-              <div className="shell route-grid">
-                {services.map((service, index) => {
-                  const ServiceIcon = serviceIcons[service.slug as keyof typeof serviceIcons];
-                  return (
-                    <article className="capability-card" key={service.slug}>
-                      <span className="card-number">{String(index + 1).padStart(2, "0")}</span>
-                      <ServiceIcon className="route-capability-icon" aria-hidden="true" size={26} strokeWidth={1.6} />
-                      <h2>{service.cardName}</h2>
-                      <p>{service.summary}</p>
-                      <Link className="card-link" href={`/services/${service.slug}`}>
-                        Explore the capability <span aria-hidden="true">↗</span>
-                      </Link>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-          ),
-        }}
-      />
+      <ServicesPageBody capabilities={capabilities} plan={plan} services={services} />
     </RouteShell>
   );
 }

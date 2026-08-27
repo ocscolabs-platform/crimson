@@ -21,7 +21,17 @@ The database prevents an owner from hiding the last visible section on a page. E
 ## Staging rollout
 
 1. Apply `supabase/migrations/20260820110000_add_staging_page_sections.sql` in `crimson-staging` after the global-content editor migration.
-2. Open `/crimson-admin-control/content` as the staging owner and confirm each page shows its approved section list.
-3. Change one non-sensitive section order or visibility setting and confirm the success toast and the public staging route.
-4. Confirm the public route follows the saved order and that hiding a section removes only that section.
-5. Do not apply this migration in Production or promote it to `main` until the staging workflow is reviewed.
+2. Run `supabase/seeds/20260820030000_seed_staging_global_content.sql` through the staging seed/bootstrap process. It creates the required `pages` rows first, then includes the guarded Phase 5 section seed.
+3. A merge to `staging` that changes the tightly scoped bootstrap workflow or either referenced staging seed triggers `.github/workflows/bootstrap-crimson-staging-page-sections.yml`. The workflow performs the exact staging identity and legacy-array preflight before the seed can write.
+4. Confirm the workflow reports exactly five Home rows, one Services row, two About rows, and two Contact rows. Work is excluded.
+5. Open `/crimson-admin-control/content` as the staging owner and confirm each page shows its approved section list.
+6. Change one non-sensitive section order or visibility setting and confirm the success toast and the public staging route.
+7. Confirm the public route follows the saved order and that hiding a section removes only that section.
+8. Do not apply this migration or the staging bootstrap to another environment or promote staging-only content to `main` until the relevant release boundary is separately reviewed.
+
+The historical migration creates the fixed table and attempts its initial inserts at migration time. Because the clean staging reset intentionally runs with Supabase seeding disabled, the staging bootstrap sequence must execute the global-content seed after schema creation. That seed creates the four Phase 5 pages and includes the guarded section seed only after those rows exist. The repository-backed push-triggered workflow provides the current owner-approved repair path; its path filter is limited to the bootstrap workflow and the two staging seed definitions. The section seed is idempotent, rejects unexpected or conflicting target rows, preserves page content, and never creates a Work row.
+
+## Retired Slice 3 execution bridge
+
+`.github/workflows/apply-phase5b-slice3-staging.yml` was the temporary, staging-only execution bridge for the single `20260823030000_backfill_phase5_page_documents.sql` migration. The migration has now applied successfully to `crimson-staging`, the execution record has been retained, and the one-shot workflow has been removed. Normal migration tooling, the hardened read-only staging verifier, and the reusable page-sections bootstrap remain active.
+

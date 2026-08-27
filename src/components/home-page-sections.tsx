@@ -1,120 +1,120 @@
+import Link from "next/link";
 import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
-import type { PageSectionConfig } from "@/lib/page-sections";
-import { OrderedPageSections } from "@/components/ordered-page-sections";
+import type { SafeCta } from "@/lib/page-document";
+import type { HomePageBodySection } from "@/lib/home-page";
 
 type HomePageSectionsProps = {
-  sections: PageSectionConfig[];
+  sections: HomePageBodySection[];
 };
 
+const serviceIcons = {
+  branding: PenTool,
+  "website-design-development": PanelsTopLeft,
+  "custom-cms": Layers3,
+  "crm-business-tools": Workflow,
+  "custom-web-applications": Blocks,
+};
+
+export function HomeCta({ cta, className }: { cta: SafeCta; className: string }) {
+  const content = <>{cta.label} <span aria-hidden="true">↗</span></>;
+  return cta.kind === "route" ? (
+    <Link className={className} href={cta.href}>{content}</Link>
+  ) : (
+    <a className={className} href={cta.href}>{content}</a>
+  );
+}
+
 export function HomePageSections({ sections }: HomePageSectionsProps) {
-  return (
-    <OrderedPageSections
-      sections={sections}
-      blocks={{
-        home_intro: (
-          <section className="intro-section section-light" aria-labelledby="intro-title">
+  return sections.map((section) => {
+    switch (section.key) {
+      case "home_intro":
+        return (
+          <section className="intro-section section-light" aria-labelledby="intro-title" key={section.key}>
             <div className="shell split-intro">
-              <p className="overline">The work</p>
+              <p className="overline">{section.content.eyebrow}</p>
               <div>
-                <h2 id="intro-title">A sharper digital presence starts with a better system.</h2>
-                <p className="lead-copy">
-                  Your brand, website, and internal tools should reinforce one another. We bring
-                  the thinking and execution together so every part of the experience moves in the
-                  same direction.
-                </p>
+                <h2 id="intro-title">{section.content.heading}</h2>
+                <p className="lead-copy">{section.content.body}</p>
               </div>
             </div>
           </section>
-        ),
-        home_capabilities: (
-          <section className="capabilities section-snow" id="capabilities" aria-labelledby="capabilities-title">
+        );
+      case "home_capabilities":
+        return (
+          <section className="capabilities section-snow" id="capabilities" aria-labelledby="capabilities-title" key={section.key}>
             <div className="shell">
               <div className="section-heading">
                 <div>
-                  <p className="overline">Capabilities</p>
-                  <h2 id="capabilities-title">Built as a system.<br />Delivered with intent.</h2>
+                  <p className="overline">{section.content.eyebrow}</p>
+                  <h2 id="capabilities-title">{section.content.heading}</h2>
                 </div>
-                <p className="section-note">Five connected capabilities. One clear standard: the work has to perform.</p>
+                <p className="section-note">{section.content.note}</p>
               </div>
               <div className="capability-grid">
-                <article className="capability-card">
-                  <span className="card-number">01</span>
-                  <PenTool className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-                  <h3>Brand strategy</h3>
-                  <p>Positioning and identity systems that give the quality of your business a clear, credible expression.</p>
-                  <a className="card-link" href="#contact">Discuss branding <span aria-hidden="true">↗</span></a>
-                </article>
-                <article className="capability-card">
-                  <span className="card-number">02</span>
-                  <PanelsTopLeft className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-                  <h3>Digital experiences</h3>
-                  <p>High-performing digital experiences that turn clarity into trust and trust into momentum.</p>
-                  <a className="card-link" href="#contact">Discuss a website <span aria-hidden="true">↗</span></a>
-                </article>
-                <article className="capability-card">
-                  <span className="card-number">03</span>
-                  <Layers3 className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-                  <h3>Content systems</h3>
-                  <p>Content systems shaped around how your team actually works, publishes, and grows.</p>
-                  <a className="card-link" href="#contact">Discuss a content system <span aria-hidden="true">↗</span></a>
-                </article>
-                <article className="capability-card">
-                  <span className="card-number">04</span>
-                  <Workflow className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-                  <h3>Business workflows</h3>
-                  <p>Purpose-built workflows that reduce friction and help your team operate with more signal.</p>
-                  <a className="card-link" href="#contact">Discuss a business tool <span aria-hidden="true">↗</span></a>
-                </article>
-                <article className="capability-card capability-card-wide">
-                  <span className="card-number">05</span>
-                  <Blocks className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
-                  <h3>Web applications</h3>
-                  <p>When an off-the-shelf answer is not enough, we architect the application your process needs.</p>
-                  <a className="card-link" href="#contact">Discuss an application <span aria-hidden="true">↗</span></a>
-                </article>
+                {section.content.items.map((item, index) => {
+                  const service = section.services[index];
+                  const ServiceIcon = serviceIcons[service.slug as keyof typeof serviceIcons];
+                  if (!ServiceIcon) {
+                    throw new Error(`No approved Home capability icon exists for ${service.slug}`);
+                  }
+                  return (
+                    <article className={`capability-card${index === 4 ? " capability-card-wide" : ""}`} key={service.slug}>
+                      <span className="card-number">{String(index + 1).padStart(2, "0")}</span>
+                      <ServiceIcon className="capability-icon" aria-hidden="true" size={24} strokeWidth={1.6} />
+                      <h3>{service.cardName}</h3>
+                      <p>{service.summary}</p>
+                      <HomeCta cta={{ kind: "anchor", label: item.ctaLabel, href: "#contact" }} className="card-link" />
+                    </article>
+                  );
+                })}
               </div>
             </div>
           </section>
-        ),
-        home_approach: (
-          <section className="approach section-dark" id="approach" aria-labelledby="approach-title">
+        );
+      case "home_approach":
+        return (
+          <section className="approach section-dark" id="approach" aria-labelledby="approach-title" key={section.key}>
             <div className="shell approach-layout">
               <div>
-                <p className="overline overline-green">How we work</p>
-                <h2 id="approach-title">Clarity first.<br />Craft all the way through.</h2>
+                <p className="overline overline-green">{section.content.eyebrow}</p>
+                <h2 id="approach-title">{section.content.heading}</h2>
               </div>
               <div className="approach-list">
-                <div className="approach-item"><span className="card-number card-number-green">01</span><div><h3>Understand the real problem</h3><p>We start with the business context, not a predetermined deliverable.</p></div></div>
-                <div className="approach-item"><span className="card-number card-number-green">02</span><div><h3>Architect the right system</h3><p>Strategy, design, and technology align around the outcome that matters.</p></div></div>
-                <div className="approach-item"><span className="card-number card-number-green">03</span><div><h3>Build with precision</h3><p>Senior-level thinking stays close to the work from first decision to final detail.</p></div></div>
+                {section.content.items.map((item, index) => (
+                  <div className="approach-item" key={item.title}>
+                    <span className="card-number card-number-green">{String(index + 1).padStart(2, "0")}</span>
+                    <div><h3>{item.title}</h3><p>{item.body}</p></div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
-        ),
-        home_proof: (
-          <section className="proof-note section-light" aria-labelledby="proof-title">
+        );
+      case "home_proof":
+        return (
+          <section className="proof-note section-light" aria-labelledby="proof-title" key={section.key}>
             <div className="shell proof-layout">
-              <p className="overline">Proof of work</p>
+              <p className="overline">{section.content.eyebrow}</p>
               <div>
-                <h2 id="proof-title">The work deserves the space to speak for itself.</h2>
-                <p className="lead-copy">Selected case studies will be added here as projects, outcomes, and publication permissions are approved.</p>
+                <h2 id="proof-title">{section.content.heading}</h2>
+                <p className="lead-copy">{section.content.body}</p>
               </div>
             </div>
           </section>
-        ),
-        home_contact: (
-          <section className="contact-cta section-green" id="contact" aria-labelledby="contact-title">
+        );
+      case "home_contact":
+        return (
+          <section className="contact-cta section-green" id="contact" aria-labelledby="contact-title" key={section.key}>
             <div className="shell contact-layout">
-              <p className="overline overline-dark">The next step</p>
+              <p className="overline overline-dark">{section.content.eyebrow}</p>
               <div>
-                <h2 id="contact-title">Bring us the thing that needs to work better.</h2>
-                <p className="contact-copy">Start with a conversation. We will bring clarity to the opportunity, the path, and what it will take to build well.</p>
-                <a className="button button-dark" href="/contact">Start a conversation <span aria-hidden="true">↗</span></a>
+                <h2 id="contact-title">{section.content.heading}</h2>
+                <p className="contact-copy">{section.content.body}</p>
+                <HomeCta cta={section.content.cta} className="button button-dark" />
               </div>
             </div>
           </section>
-        ),
-      }}
-    />
-  );
+        );
+    }
+  });
 }

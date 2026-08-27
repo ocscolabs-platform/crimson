@@ -1,0 +1,68 @@
+{
+  "fixture": "migration33-legacy-baseline",
+  "synthetic": true,
+  "tables": [
+    "inquiries",
+    "pages",
+    "page_sections",
+    "services",
+    "case_studies",
+    "case_study_services",
+    "navigation_items",
+    "site_settings",
+    "cms_members",
+    "cms_revisions",
+    "cms_audit_log",
+    "cms_global_audit_log"
+  ],
+  "pageColumns": [
+    "id",
+    "slug",
+    "title",
+    "page_purpose",
+    "audience",
+    "seo_title",
+    "seo_description",
+    "og_image_path",
+    "content",
+    "cta_label",
+    "cta_href",
+    "status",
+    "published_at"
+  ],
+  "pages": [
+    { "id": "00000000-0000-0000-0000-000000000001", "slug": "home", "content": [{ "type": "text", "value": "Home fixture" }], "sectionKeys": ["home_intro", "home_contact"] },
+    { "id": "00000000-0000-0000-0000-000000000002", "slug": "services", "content": [{ "type": "text", "value": "Services fixture" }], "sectionKeys": ["services_capabilities"] },
+    { "id": "00000000-0000-0000-0000-000000000003", "slug": "about", "content": [{ "type": "text", "value": "About fixture" }], "sectionKeys": ["about_principles", "about_people"] },
+    { "id": "00000000-0000-0000-0000-000000000004", "slug": "contact", "content": [{ "type": "text", "value": "Contact fixture" }], "sectionKeys": ["contact_process", "contact_form"] },
+    { "id": "00000000-0000-0000-0000-000000000005", "slug": "work", "content": [{ "type": "text", "value": "Work fixture" }], "sectionKeys": ["work_library"] }
+  ],
+  "counts": {
+    "inquiries": 3,
+    "services": 5,
+    "caseStudies": 5,
+    "caseStudyServices": 1,
+    "navigationItems": 4,
+    "cmsMembers": 4,
+    "cmsRevisions": 0,
+    "cmsAuditLog": 0,
+    "cmsGlobalAuditLog": 0
+  },
+  "storage": {
+    "buckets": [{ "id": "case-study-media", "public": false }],
+    "objects": 3
+  },
+  "absent": [
+    "pages.published_revision_id",
+    "cms_workflow_audit_log",
+    "cms_validate_phase5_page_document",
+    "insights_articles",
+    "insights_article_revisions",
+    "insights_public_articles",
+    "insights_media_assets",
+    "insights_revision_media",
+    "insights-private-media",
+    "insights-published-media",
+    "migration-ledger"
+  ]
+}

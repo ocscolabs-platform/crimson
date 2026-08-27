@@ -1,6 +1,6 @@
 # Phase 1 — Information Architecture
 
-**Status:** Phase 1 baseline; Blog / Insights approved for Phase 6 in [`MASTER-PLAN.md`](./MASTER-PLAN.md)
+**Status:** Phase 1 baseline; Insights approved for Phase 6 in [`MASTER-PLAN.md`](./MASTER-PLAN.md)
 **Scope:** Public website structure and content relationships only  
 **Out of scope:** Visual design, page implementation, CMS implementation, CRM implementation, authentication, and production data connections
 
@@ -50,7 +50,7 @@ Primary conversion action: **Start a conversation** → `/contact`.
 
 ### Planned but not yet implemented
 
-- Blog / Insights routes and navigation entry — approved for Phase 6, not yet implemented
+- Insights routes and navigation entry — approved for Phase 6, not yet implemented
 - Client portal or protected admin routes
 - Public CMS or CRM product dashboards
 - Account creation, authentication, or self-service workflows
@@ -82,7 +82,7 @@ Home
 - Insights should expose only published articles, with stable SEO-friendly slugs and a clear route back to `/contact` where appropriate.
 - Deferred routes must not appear in navigation until they have approved content and an implementation plan.
 
-## Blog / Insights structural requirements
+## Insights structural requirements
 
 The Phase 6 public experience must support article listing, optional featured content, categories, tags, search, filtering, pagination or load-more, responsive behavior, no-results/error states, SEO-friendly URLs, and individual article pages with metadata, media, content, and related articles. The Cairnstack routes are structural references only. OCSCO's visual direction, components, typography, and implementation remain governed by the OCSCO design system.
 

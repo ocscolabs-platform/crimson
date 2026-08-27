@@ -1,56 +1,45 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { OrderedPageSections } from "@/components/ordered-page-sections";
+import { notFound } from "next/navigation";
 import { RouteShell } from "@/components/route-shell";
-import { getPublishedPage } from "@/lib/cms-content";
-import { getPublishedPageSections } from "@/lib/page-sections";
+import { AboutPageBody } from "@/components/page-document-public-bodies";
+import { getPublishedSiteChrome } from "@/lib/cms-content";
+import { createAboutPageRenderData } from "@/lib/about-page";
+import { getPublishedPageDocument } from "@/lib/page-document-loader";
+import { getPublishedPageMetadata } from "@/lib/page-metadata";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getPublishedPage("about");
-  return { title: page?.seoTitle || "About", description: page?.seoDescription };
+  const result = await getPublishedPageMetadata("about");
+  if (result.kind === "invalid") {
+    console.error(`[about] Invalid published PageDocument metadata: ${result.issues.join("; ")}`);
+  }
+  if (result.kind !== "metadata") notFound();
+  return result.metadata;
 }
 
 export default async function AboutPage() {
-  const pageSections = await getPublishedPageSections("about");
+  const [result, chrome] = await Promise.all([
+    getPublishedPageDocument("about"),
+    getPublishedSiteChrome(),
+  ]);
+  if (result.kind !== "document") {
+    if (result.kind === "invalid") {
+      console.error(`[about] Invalid published PageDocument: ${result.issues.join("; ")}`);
+    }
+    notFound();
+  }
+
+  const { hero, body } = createAboutPageRenderData(result.document);
 
   return (
     <RouteShell
-      pageSlug="about"
-      eyebrow="The thinking"
-      title="Clarity is not a presentation layer. It is how the work gets built."
-      intro="OCSCO brings strategy, design, and technology into one connected practice for organizations that need their digital presence to work harder."
+      eyebrow={hero.eyebrow}
+      title={hero.title}
+      intro={hero.intro}
+      chrome={chrome}
     >
-      <OrderedPageSections
-        sections={pageSections}
-        blocks={{
-          about_principles: (
-            <section className="section-light route-section">
-              <div className="shell route-detail-grid">
-                <div>
-                  <p className="overline">Working principles</p>
-                  <h2>Precision over volume. Substance before style. Partnership, not vendorship.</h2>
-                </div>
-                <div className="route-list">
-                  <p><strong>Clarity as a discipline.</strong> Remove ambiguity from strategy, design, and communication.</p>
-                  <p><strong>Intelligent innovation.</strong> Use technology when it creates a genuine advantage.</p>
-                  <p><strong>Quiet confidence.</strong> Let the quality of the thinking and the work carry the weight.</p>
-                </div>
-              </div>
-            </section>
-          ),
-          about_people: (
-            <section className="section-snow route-section">
-              <div className="shell route-placeholder">
-                <p className="overline">The people</p>
-                <h2>Team and origin details will be added after owner review.</h2>
-                <Link className="button button-dark" href="/contact">Start a conversation <span aria-hidden="true">↗</span></Link>
-              </div>
-            </section>
-          ),
-        }}
-      />
+      <AboutPageBody body={body} />
     </RouteShell>
   );
 }

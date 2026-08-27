@@ -1,0 +1,261 @@
+name: Apply versioned Supabase migrations
+
+on:
+  push:
+    branches: [main, staging]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/supabase-release.yml"
+      - "scripts/validate-migrations.mjs"
+      - "scripts/test-staging-supabase-migration-auto-apply.mjs"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Environment to inspect or migrate"
+        required: true
+        type: choice
+        options: [staging, production]
+        default: staging
+      apply:
+        description: "Apply pending migrations (Production still requires environment approval)"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Validate migration history
+        run: npm run validate:migrations
+
+      - name: Production build
+        run: npm run build
+
+  staging:
+    needs: validate
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/staging') ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'staging')
+    runs-on: ubuntu-latest
+    environment: staging-supabase
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      EXPECTED_STAGING_NAME: crimson-staging
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Verify staging credential presence
+        env:
+          HAS_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+          HAS_SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD != '' }}
+          HAS_SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF != '' }}
+        run: |
+          set -eu
+          missing=0
+          if [ "$HAS_SUPABASE_ACCESS_TOKEN" = "true" ]; then
+            echo "SUPABASE_ACCESS_TOKEN=PRESENT"
+          else
+            echo "SUPABASE_ACCESS_TOKEN=MISSING"
+            missing=1
+          fi
+          if [ "$HAS_SUPABASE_DB_PASSWORD" = "true" ]; then
+            echo "SUPABASE_DB_PASSWORD=PRESENT"
+          else
+            echo "SUPABASE_DB_PASSWORD=MISSING"
+            missing=1
+          fi
+          if [ "$HAS_SUPABASE_PROJECT_REF" = "true" ]; then
+            echo "SUPABASE_PROJECT_REF=PRESENT"
+          else
+            echo "SUPABASE_PROJECT_REF=MISSING"
+            missing=1
+          fi
+          if [ "$missing" -ne 0 ]; then
+            echo "Required staging Supabase configuration is missing."
+            exit 1
+          fi
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.111.0
+
+      - name: Verify exact staging project identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_json="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF")"
+          project_ref="$(jq -r '.id // .ref // empty' <<< "$project_json")"
+          project_name="$(jq -r '.name // empty' <<< "$project_json")"
+          if [[ "$project_ref" != "$SUPABASE_PROJECT_REF" || "$project_name" != "$EXPECTED_STAGING_NAME" ]]; then
+            echo "Refusing migration: the configured target is not the approved crimson-staging project."
+            exit 1
+          fi
+          echo "Confirmed target project identity: crimson-staging."
+
+      - name: Link staging project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Show staging migration status
+        run: supabase migration list --linked
+
+      - name: Validate staging migration plan
+        run: supabase db push --linked --dry-run
+
+      - name: Enforce staging-only apply boundary
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging' && inputs.target == 'staging' && inputs.apply == true) }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF:-}" != "refs/heads/staging" ]]; then
+            echo "Refusing migration outside refs/heads/staging."
+            exit 1
+          fi
+          if [[ -z "${SUPABASE_PROJECT_REF:-}" || "${EXPECTED_STAGING_NAME:-}" != "crimson-staging" ]]; then
+            echo "Refusing migration: staging target configuration is incomplete."
+            exit 1
+          fi
+          echo "Apply boundary confirmed: staging branch and crimson-staging target."
+
+      - name: Apply staging migrations
+        # A protected merge to staging is the normal staging release event. A
+        # manual staging dispatch remains available as an explicitly applied
+        # recovery path, while Production stays in its separate job/gate.
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging' && inputs.target == 'staging' && inputs.apply == true) }}
+        run: supabase db push --linked --yes
+
+      - name: Install PostgreSQL client
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging' && inputs.target == 'staging' && inputs.apply == true) }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Verify staging migration parity
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging' && inputs.target == 'staging' && inputs.apply == true) }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          local_versions_file="$RUNNER_TEMP/canonical-migration-versions.txt"
+          remote_versions_file="$RUNNER_TEMP/staging-migration-versions.txt"
+          find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' \
+            | sed -E 's/^([0-9]{14})_.+\.sql$/\1/' \
+            | sort > "$local_versions_file"
+
+          if [[ ! -s "$local_versions_file" ]]; then
+            echo "Canonical migration version extraction returned no versions."
+            exit 1
+          fi
+          if [[ -n "$(uniq -d "$local_versions_file")" ]]; then
+            echo "Canonical Git migrations contain duplicate version identifiers."
+            exit 1
+          fi
+
+          export PGHOST="db.${SUPABASE_PROJECT_REF}.supabase.co"
+          export PGHOSTADDR="$(getent ahostsv4 "$PGHOST" | awk 'NR == 1 { print $1; exit }')"
+          if [[ -z "$PGHOSTADDR" ]]; then
+            echo "No IPv4 address is available for the approved staging database host."
+            exit 1
+          fi
+          export PGPORT=5432
+          export PGDATABASE=postgres
+          export PGUSER=postgres
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD"
+          export PGSSLMODE=require
+          psql -Atqc "select version from supabase_migrations.schema_migrations order by version" > "$remote_versions_file"
+
+          if [[ ! -s "$remote_versions_file" ]]; then
+            echo "Staging migration ledger returned no versions."
+            exit 1
+          fi
+          if [[ -n "$(uniq -d "$remote_versions_file")" ]]; then
+            echo "Staging migration ledger contains duplicate version identifiers."
+            exit 1
+          fi
+          if ! diff -u "$local_versions_file" "$remote_versions_file"; then
+            echo "Staging migration ledger does not exactly match canonical Git migrations."
+            echo "Pending versions (repository minus staging):"
+            comm -13 "$remote_versions_file" "$local_versions_file" || true
+            echo "Unexpected remote versions (staging minus repository):"
+            comm -23 "$remote_versions_file" "$local_versions_file" || true
+            exit 1
+          fi
+
+          local_count="$(wc -l < "$local_versions_file" | tr -d '[:space:]')"
+          remote_count="$(wc -l < "$remote_versions_file" | tr -d '[:space:]')"
+          duplicate_count="$(psql -Atqc "select count(*) from (select version from supabase_migrations.schema_migrations group by version having count(*) <> 1) duplicates")"
+          latest_version="$(tail -n 1 "$remote_versions_file")"
+          if [[ "$duplicate_count" != "0" ]]; then
+            echo "Staging migration ledger contains duplicate rows."
+            exit 1
+          fi
+          echo "Staging migration parity verified: ${remote_count}/${local_count}; latest=${latest_version}; duplicates=0; pending=0."
+
+  production:
+    needs: validate
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'production')
+    runs-on: ubuntu-latest
+    # Configure required reviewers on this environment. No Production
+    # migration can pass this gate without explicit owner approval.
+    environment: production-supabase
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.111.0
+
+      - name: Link Production project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Show Production migration status
+        run: supabase migration list --linked
+
+      - name: Validate Production migration plan
+        run: supabase db push --linked --dry-run
+
+      - name: Apply Production migrations
+        # Production is never changed by a push or by merging main. The owner
+        # must explicitly dispatch this workflow with apply=true, then approve
+        # the production-supabase environment gate.
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'production' && inputs.apply == true }}
+        run: supabase db push --linked --yes

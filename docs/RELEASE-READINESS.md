@@ -1,10 +1,20 @@
 # Release Readiness Baseline
 
-This document is the operational baseline for the current CMS release model. Older Phase 4 documents remain useful as implementation history, but this file governs post-merge Production verification and the next staging baseline.
+This document is the operational baseline for the current CMS release model. Older Phase 4 documents remain useful as implementation history. Phase 5 staging acceptance is complete; this file governs the separate Production verification and promotion gate.
 
 ## Current verdict
 
-The previous staging-to-main code merge has completed. The release is not baseline-stable until the Production database boundary, authentication recovery, production configuration, and release protections have passed the acceptance criteria below.
+Phase 5 Work Packages A and B are complete and staging-verified. The Production database boundary, authentication recovery, production configuration, and release protections remain a separate deferred release gate before any Production CMS/schema promotion.
+
+## Phase 5 staging sign-off
+
+- Status: **PHASE 5 COMPLETE / STAGING VERIFIED**.
+- Final staging HEAD: `1434210079b2c0bed94b0776a49d490f4fc98341`.
+- Work Package A: complete.
+- Work Package B: acceptance pass / complete.
+- Migration baseline: 26/26; latest `20260824000000`; migration #26 exactly once; zero pending, duplicate, or targeted-drift findings.
+- Final responsive acceptance: 1440×900, 768×1024, and 390×844 all PASS.
+- Production release/promotion is not included in this sign-off and remains owner-controlled.
 
 ## Release contract
 
@@ -19,7 +29,16 @@ The previous staging-to-main code merge has completed. The release is not baseli
 - Staging and Production use separate runtime configuration and Supabase projects.
 - The staging-to-Production row-copy workflow is temporary migration infrastructure. It is not the steady-state content release mechanism and must be retired after revision publishing is proven in Production.
 
-## Required post-merge verification order
+## Database release pipeline
+
+- `supabase/migrations` is the canonical, ordered, environment-neutral database history. Existing migration filenames are historical records and must not be renamed, deleted, or rewritten merely for cleanup.
+- CI runs `npm run validate:migrations`, lint, typecheck, and the production build before a database workflow can proceed.
+- A `staging` push runs a linked Supabase dry run and applies pending canonical migrations to `crimson-staging`.
+- A `main` push runs a linked Production dry run only. It does not apply Production migrations.
+- Production application is an explicit, owner-approved GitHub workflow dispatch using the protected `production-supabase` environment. The same commit and migration files that passed in staging are applied; Production schema/data are never recreated manually from memory.
+- `supabase/verification/release-contract.sql` is a read-only parity check for tables, RLS policies, functions, triggers, grants, Storage, and Storage policies. It does not mutate either project.
+
+## Deferred Production release gate
 
 1. Confirm the exact migration state, grants, RLS policies, functions, triggers, and Storage policies in Production; compare them with the approved staging baseline.
 2. Verify the main deployment uses the expected commit and the correct Production Vercel variables, Supabase URL/key pair, Resend configuration, and no staging values.
@@ -28,7 +47,13 @@ The previous staging-to-main code merge has completed. The release is not baseli
 5. Verify public routes read published content only and that `/crimson-admin-control` remains protected while `/admin` and `/admin/*` return `404`.
 6. Confirm branch protection, required checks, required reviewers, and the `production-cms` environment are documented and working.
 7. Retire the temporary row-copy bridge only after the Production revision workflow is accepted and its rollback path is recorded.
-8. Update `staging` to the approved `main` baseline and record owner signoff before beginning Phase 5.
+8. Update `staging` to the approved `main` baseline and record owner signoff before Production CMS/schema promotion. This remains a separate Production gate and is not implied by Phase 5 staging acceptance.
+
+## Post-Phase-4C owner configuration cleanup
+
+- Keep `NEXT_PUBLIC_SITE_URL` configured separately for Preview/staging and Production; it is a permanent environment-specific contract.
+- After the completed staging inquiry QA, remove or set the Preview/staging `INQUIRY_SUBMISSIONS_ENABLED` override to `false` unless another owner-approved staging inquiry test is active. Production configuration is independent.
+- `SUPABASE_DB_POOLER_URL` was used only by the one-time reset workflow and should be removed from the GitHub `staging-supabase` Environment after the cleanup PR is reviewed. The repository no longer requires it.
 
 ## Password recovery contract
 
