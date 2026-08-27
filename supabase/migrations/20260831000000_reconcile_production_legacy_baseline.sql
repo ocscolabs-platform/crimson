@@ -119,7 +119,28 @@ begin
 -- PageDocument objects. Existing rows are intentionally not changed here.
 
 do $$
+declare
+  legacy_content_constraint text;
 begin
+  -- Legacy baselines may carry the original array-only page check under the
+  -- historical column-constraint name or an equivalent table-constraint name.
+  -- The audited legacy validation above has already proved every row is an
+  -- array, so remove only array-only content checks before canonicalization.
+  for legacy_content_constraint in
+    select conname
+    from pg_constraint
+    where conrelid = 'public.pages'::regclass
+      and contype = 'c'
+      and pg_get_constraintdef(oid) like '%jsonb_typeof(content)%'
+      and pg_get_constraintdef(oid) like '%array%'
+      and pg_get_constraintdef(oid) not like '%object%'
+  loop
+    execute format(
+      'alter table public.pages drop constraint %I',
+      legacy_content_constraint
+    );
+  end loop;
+
   if exists (
     select 1
     from pg_constraint
