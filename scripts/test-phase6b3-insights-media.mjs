@@ -9,11 +9,12 @@ const migrationName = "20260828000000_add_phase6b3_insights_media_workflow.sql";
 const migration = () => readFile(path.join(root, "supabase", "migrations", migrationName), "utf8");
 const read = (file) => readFile(path.join(root, file), "utf8");
 
-test("B6B3 is additive after the 29-migration staging baseline", async () => {
+test("B6B3 media restore hotfix is additive after the 30-migration staging baseline", async () => {
   const files = (await readdir(path.join(root, "supabase", "migrations"))).filter((file) => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 30);
-  assert.equal(files.at(-2), "20260827000000_add_phase6_insights_public_projection_security.sql");
-  assert.equal(files.at(-1), migrationName);
+  assert.equal(files.length, 31);
+  assert.equal(files.at(-3), "20260827000000_add_phase6_insights_public_projection_security.sql");
+  assert.equal(files.at(-2), migrationName);
+  assert.equal(files.at(-1), "20260829000000_add_phase6b3_restore_media_association.sql");
 });
 
 test("Canonical media is private, dedicated, normalized, and server-registered", async () => {

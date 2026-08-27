@@ -31,6 +31,7 @@
     "test:phase6b2:workflow": "node --test scripts/test-phase6b2-workflow.mjs",
     "test:phase6b3:media": "node --test scripts/test-phase6b3-insights-media.mjs",
     "test:phase6b3:cover-alt": "node --test scripts/test-phase6b3-cover-alt-hotfix.mjs",
+    "test:phase6b3:restore-media": "node --test scripts/test-phase6b3-restore-media-hotfix.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
   },
   "dependencies": {
