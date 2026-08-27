@@ -133,9 +133,9 @@ jobs:
           set -e
           echo "ABSENT-LEDGER LIST STATUS: $absent_list_status"
           repair_1_to_32_applied "$legacy_url"
-          before="$(psql "$legacy_url" -Atqc "select (select count(*) from public.pages)||(select count(*) from public.services)||(select count(*) from public.case_studies)||(select count(*) from public.page_sections)||(select count(*) from storage.objects)")"
+          before="$(psql "$legacy_url" -Atqc "select concat((select count(*) from public.pages),(select count(*) from public.services),(select count(*) from public.case_studies),(select count(*) from public.page_sections),(select count(*) from storage.objects))")"
           supabase db push --db-url "$legacy_url" --yes
-          after="$(psql "$legacy_url" -Atqc "select (select count(*) from public.pages)||(select count(*) from public.services)||(select count(*) from public.case_studies)||(select count(*) from public.page_sections)||(select count(*) from storage.objects)")"
+          after="$(psql "$legacy_url" -Atqc "select concat((select count(*) from public.pages),(select count(*) from public.services),(select count(*) from public.case_studies),(select count(*) from public.page_sections),(select count(*) from storage.objects))")"
           test "$before" = "$after"
           legacy_contract_check="$(psql "$legacy_url" -v ON_ERROR_STOP=1 -Atqc "
             select count(*) = 5 from public.pages;
@@ -182,9 +182,9 @@ jobs:
           repair_1_to_32_applied "$canonical_url"
           supabase db push --db-url "$canonical_url" --yes
           supabase migration repair 20260831000000 --status reverted --db-url "$canonical_url"
-          canonical_before="$(psql "$canonical_url" -Atqc "select (select count(*) from public.pages)||(select count(*) from public.cms_revisions)||(select count(*) from public.cms_members)||(select count(*) from storage.objects)||(select count(*) from public.insights_articles)")"
+          canonical_before="$(psql "$canonical_url" -Atqc "select concat((select count(*) from public.pages),(select count(*) from public.cms_revisions),(select count(*) from public.cms_members),(select count(*) from storage.objects),(select count(*) from public.insights_articles))")"
           supabase db push --db-url "$canonical_url" --yes
-          canonical_after="$(psql "$canonical_url" -Atqc "select (select count(*) from public.pages)||(select count(*) from public.cms_revisions)||(select count(*) from public.cms_members)||(select count(*) from storage.objects)||(select count(*) from public.insights_articles)")"
+          canonical_after="$(psql "$canonical_url" -Atqc "select concat((select count(*) from public.pages),(select count(*) from public.cms_revisions),(select count(*) from public.cms_members),(select count(*) from storage.objects),(select count(*) from public.insights_articles))")"
           test "$canonical_before" = "$canonical_after"
           test "$(psql "$canonical_url" -Atqc "select count(*) from supabase_migrations.schema_migrations where version = '20260831000000'")" = "1"
           test "$(psql "$canonical_url" -Atqc "select count(*) from supabase_migrations.schema_migrations")" = "33"
