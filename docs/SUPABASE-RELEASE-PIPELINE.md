@@ -27,7 +27,7 @@ The Supabase projects remain separate. A Git merge moves application code and mi
 3. Keep migrations environment-neutral. Project URLs, keys, passwords, users, memberships, SMTP settings, and Auth callback values do not belong in SQL migrations.
 4. Run `npm run validate:migrations` in CI and before release work.
 5. Use `supabase migration list --linked` and `supabase db push --linked --dry-run` to inspect the release plan before applying it.
-6. After a staging apply, compare the ordered canonical timestamp set with `supabase_migrations.schema_migrations`; parity, zero duplicates, and zero pending versions are required for success.
+6. After a staging apply, compare the ordered canonical timestamp set with `supabase_migrations.schema_migrations`; parity, zero duplicates, and zero pending versions are required for success. The read-only PostgreSQL check uses the approved direct staging host with an IPv4 address resolved at runtime so a runner without IPv6 routing cannot fail the transport gate.
 
 ## Staging
 
