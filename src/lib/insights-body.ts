@@ -224,6 +224,7 @@ export function stripResolvedInsightsMedia(value: unknown): unknown {
     delete attrs.src;
     result.attrs = attrs;
   }
+  if (isRecord(result.doc)) result.doc = stripResolvedInsightsMedia(result.doc);
   if (Array.isArray(result.content)) result.content = result.content.map(stripResolvedInsightsMedia);
   return result;
 }

@@ -51,6 +51,7 @@ test("The v2 body keeps opaque media IDs and never persists resolved URLs", asyn
   assert.match(body, /image/);
   assert.match(body, /mediaId/);
   assert.match(body, /stripResolvedInsightsMedia/);
+  assert.match(body, /if \(isRecord\(result\.doc\)\) result\.doc = stripResolvedInsightsMedia\(result\.doc\)/);
   assert.match(actions, /stripResolvedInsightsMedia\(body\.value\)/);
   assert.match(composer, /version: 2/);
   assert.match(composer, /Insert inline image/);
