@@ -36,6 +36,7 @@
     "test:phase6b3:restore-media-validity": "node --test scripts/test-phase6b3-restore-media-validity-fix.mjs",
     "test:phase6:owner-published-edit": "node scripts/test-phase6-owner-published-edit.mjs",
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
+    "test:phase6:migration33": "node --test scripts/test-phase6-migration33.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
   },
   "dependencies": {

@@ -14,9 +14,10 @@ test("Migration 32 is the single additive Restore-validity correction", async ()
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 32);
-  assert.equal(files.at(-2), baselineName);
-  assert.equal(files.at(-1), fixName);
+  assert.equal(files.length, 33);
+  assert.equal(files.at(-3), baselineName);
+  assert.equal(files.at(-2), fixName);
+  assert.equal(files.at(-1), "20260831000000_reconcile_production_legacy_baseline.sql");
 });
 
 test("Regression: migration 31 passed the body envelope instead of body.doc", async () => {
