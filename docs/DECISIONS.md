@@ -476,13 +476,13 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Reason:** The former staging push path stopped after dry-run, while the manual dispatch path was not available from the repository's default `main` branch. That left a protected merge able to introduce a canonical migration without a normal staging application path.
 - **Consequence:** Future migration-bearing merges to `staging` use one repeatable, idempotent, staging-only release path that supports multiple pending migrations in canonical order and fails closed on target mismatch or ledger drift. The workflow correction is included in its own staging trigger so it can recover the current pending migration without a manual SQL workaround. No account-specific project ref, credential, Production connection, or `main` change is added to the repository.
 
-## ADR-067 - Resolve the staging parity connection over IPv4 at runtime
+## ADR-067 - Resolve the staging parity connection over the approved IPv4 pooler
 
 - **Date:** 2026-08-27
-- **Status:** Proposed for staging review; migration application and Production behavior unchanged
-- **Decision:** Keep the existing approved direct `db.<project-ref>.supabase.co` staging connection for the read-only parity query, but resolve an IPv4 address at runtime with `getent ahostsv4` and provide it as `PGHOSTADDR`. Fail closed when no IPv4 address is available. Do not add a pooler URL or new credential until the current project configuration explicitly provides and authorizes one.
-- **Reason:** The merged staging pipeline applied migration #31 successfully through the Supabase CLI, but the GitHub-hosted runner could not route to the direct database hostname’s IPv6 address during the post-apply `psql` parity check. The current authorized GitHub Environment exposes the access token, database password, and project ref, but no current pooler endpoint.
-- **Consequence:** The parity query uses the same staging project and password without changing migration semantics, weakening parity, modifying the ledger, or exposing credentials. Future no-pending staging pushes exercise the same idempotent apply and exact parity gate. Production remains in its separate dry-run/manual-approval path, and `main` is untouched.
+- **Status:** Implemented in the staging parity workflow; migration application and Production behavior unchanged
+- **Decision:** Use the existing approved regional Supabase pooler for the read-only staging parity query. Keep the database password in the protected GitHub Environment and do not add a new credential or change migration semantics.
+- **Reason:** The merged staging pipeline reached the approved pooler over IPv4, but the pooler rejected the generic database user because it requires the project-qualified tenant identifier. Existing staging verification workflows use `postgres.<project-ref>`.
+- **Consequence:** The parity query continues to target the configured staging project with the protected password and the required tenant-qualified user, without weakening parity or modifying the migration ledger. Production remains in its separate dry-run/manual-approval path, and `main` is untouched.
 
 ## ADR-068 - Traverse the Insights body document during Restore
 
