@@ -183,6 +183,11 @@ jobs:
           fi
 
           export PGHOST="db.${SUPABASE_PROJECT_REF}.supabase.co"
+          export PGHOSTADDR="$(getent ahostsv4 "$PGHOST" | awk 'NR == 1 { print $1; exit }')"
+          if [[ -z "$PGHOSTADDR" ]]; then
+            echo "No IPv4 address is available for the approved staging database host."
+            exit 1
+          fi
           export PGPORT=5432
           export PGDATABASE=postgres
           export PGUSER=postgres
