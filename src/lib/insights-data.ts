@@ -88,6 +88,10 @@ type PublicInsightsRow = {
 const PUBLIC_INSIGHTS_MEDIA_BUCKET = "insights-published-media";
 const PUBLIC_INSIGHTS_MEDIA_PATH = /^articles\/[0-9a-f-]+\/revisions\/[0-9a-f-]+\/[0-9a-f-]+\.webp$/i;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 function getPublicInsightsClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -118,10 +122,26 @@ function parsePublicInsightsTags(value: unknown): PublicInsightsTag[] {
   ));
 }
 
+function normalizePublicInsightsMediaPaths(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(normalizePublicInsightsMediaPaths);
+  if (!isRecord(value)) return value;
+  const normalized = { ...value };
+  if (normalized.type === "image" && isRecord(normalized.attrs) && typeof normalized.attrs.src === "string") {
+    const publicUrl = getPublicInsightsMediaUrl(normalized.attrs.src);
+    if (publicUrl) normalized.attrs = { ...normalized.attrs, src: publicUrl };
+  }
+  if (Array.isArray(normalized.content)) normalized.content = normalized.content.map(normalizePublicInsightsMediaPaths);
+  if (isRecord(normalized.doc)) normalized.doc = normalizePublicInsightsMediaPaths(normalized.doc);
+  return normalized;
+}
+
 function withPublicInsightsMediaUrls(body: InsightsBody): InsightsBody {
   function walk(node: InsightsBody["doc"]): InsightsBody["doc"] {
-    const attrs = node.type === "image" && node.attrs
-      ? { ...node.attrs, src: getPublicInsightsMediaUrl(typeof node.attrs.src === "string" ? node.attrs.src : null) }
+    const publicUrl = node.type === "image" && node.attrs
+      ? getPublicInsightsMediaUrl(typeof node.attrs.src === "string" ? node.attrs.src : null)
+      : null;
+    const attrs = node.type === "image" && node.attrs && publicUrl
+      ? { ...node.attrs, src: publicUrl }
       : node.attrs;
     return { ...node, ...(attrs ? { attrs } : {}), ...(node.content ? { content: node.content.map(walk) } : {}) };
   }
@@ -130,7 +150,7 @@ function withPublicInsightsMediaUrls(body: InsightsBody): InsightsBody {
 
 function mapPublicInsightsRow(row: PublicInsightsRow): PublicInsightsArticle | null {
   const coverImageUrl = getPublicInsightsMediaUrl(row.cover_image_path);
-  const bodyValidation = validateInsightsBody(row.body);
+  const bodyValidation = validateInsightsBody(normalizePublicInsightsMediaPaths(row.body));
   if (!coverImageUrl || !bodyValidation.success || !row.cover_image_alt?.trim() || !row.published_at) {
     console.error(`[insights-public] Skipping malformed Published article: ${row.slug}`);
     return null;
