@@ -8,16 +8,16 @@ const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const migrationPath = "supabase/migrations/20260827000000_add_phase6_insights_public_projection_security.sql";
 const read = (file) => readFile(path.join(root, file), "utf8");
 
-test("Security hardening remains migration #29 and B6B3 is the additive latest migration", async () => {
+test("Security hardening remains migration #29 and current staging migrations remain additive", async () => {
   const { readdir } = await import("node:fs/promises");
   const files = (await readdir(path.join(root, "supabase", "migrations")))
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 30);
-  assert.equal(files.at(-3), "20260826010000_add_phase6b1_insights_slug_update_contract.sql");
-  assert.equal(files.at(-2), "20260827000000_add_phase6_insights_public_projection_security.sql");
-  assert.equal(files.at(-1), "20260828000000_add_phase6b3_insights_media_workflow.sql");
+  assert.equal(files.length, 32);
+  assert.equal(files.at(-3), "20260828000000_add_phase6b3_insights_media_workflow.sql");
+  assert.equal(files.at(-2), "20260829000000_add_phase6b3_restore_media_association.sql");
+  assert.equal(files.at(-1), "20260830000000_fix_phase6b3_restore_media_validity.sql");
 });
 
 test("The public projection is sanitized, RLS-protected, and SELECT-only", async () => {
