@@ -74,8 +74,21 @@ jobs:
             printf 'postgresql://postgres:postgres@127.0.0.1:54322/%s\n' "$db"
           }
 
+          bootstrap_supabase_schemas() {
+            local db_url="$1"
+            pg_dump "$root_db_url" \
+              --schema-only \
+              --no-owner \
+              --no-privileges \
+              --schema=auth \
+              --schema=extensions \
+              --schema=storage \
+              | psql "$db_url" -v ON_ERROR_STOP=1 >/dev/null
+          }
+
           seed_legacy() {
             local db_url="$1"
+            bootstrap_supabase_schemas "$db_url"
             psql "$db_url" -v ON_ERROR_STOP=1 -f "$fixture_schema" >/dev/null
             psql "$db_url" -v ON_ERROR_STOP=1 -f "$fixture_data" >/dev/null
           }
