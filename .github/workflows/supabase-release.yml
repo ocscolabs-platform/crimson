@@ -254,7 +254,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SUPABASE_DB_URL="$(node -e 'const u = new URL("postgresql://postgres@db." + process.env.SUPABASE_PROJECT_REF + ".supabase.co:5432/postgres?sslmode=require"); u.password = process.env.SUPABASE_DB_PASSWORD; process.stdout.write(u.toString())')"
+          SUPABASE_DB_URL="$(node -e 'const u = new URL("postgresql://postgres." + process.env.SUPABASE_PROJECT_REF + "@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require"); u.password = process.env.SUPABASE_DB_PASSWORD; process.stdout.write(u.toString())')"
           printf 'SUPABASE_DB_URL=%s\n' "$SUPABASE_DB_URL" >> "$GITHUB_ENV"
 
       - name: Adopt the absent Production migration ledger
@@ -274,14 +274,14 @@ jobs:
           done
 
       - name: Show Production migration status
-        run: supabase migration list --linked
+        run: supabase migration list --db-url "$SUPABASE_DB_URL"
 
       - name: Validate Production migration plan
-        run: supabase db push --linked --dry-run
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
 
       - name: Apply Production migrations
         # Production is never changed by a push or by merging main. The owner
         # must explicitly dispatch this workflow with apply=true, then approve
         # the production-supabase environment gate.
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'production' && inputs.apply == true }}
-        run: supabase db push --linked --yes
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --yes
