@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { emptyInsightsBody, validateInsightsBody, type InsightsBody } from "@/lib/insights-body";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -54,6 +55,140 @@ export type InsightsRevisionHistory = {
   publishedAt: string | null;
 };
 
+export type PublicInsightsTag = { name: string; slug: string };
+
+export type PublicInsightsArticle = {
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: InsightsBody;
+  authorLabel: string;
+  categoryName: string;
+  categorySlug: string | null;
+  tags: PublicInsightsTag[];
+  publishedAt: string;
+  coverImageUrl: string;
+  coverImageAlt: string;
+};
+
+type PublicInsightsRow = {
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: unknown;
+  author_display_name: string | null;
+  category_name: string | null;
+  category_slug: string | null;
+  tags: unknown;
+  published_at: string;
+  cover_image_path: string | null;
+  cover_image_alt: string | null;
+};
+
+const PUBLIC_INSIGHTS_MEDIA_BUCKET = "insights-published-media";
+const PUBLIC_INSIGHTS_MEDIA_PATH = /^articles\/[0-9a-f-]+\/revisions\/[0-9a-f-]+\/[0-9a-f-]+\.webp$/i;
+
+function getPublicInsightsClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !publishableKey) return null;
+  return createSupabaseClient(url, publishableKey, { auth: { autoRefreshToken: false, persistSession: false } });
+}
+
+export function getPublicInsightsMediaUrl(path: string | null): string | null {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!supabaseUrl || !path || !PUBLIC_INSIGHTS_MEDIA_PATH.test(path)) return null;
+  try {
+    const origin = new URL(supabaseUrl).origin;
+    const encodedPath = path.split("/").map((segment) => encodeURIComponent(segment)).join("/");
+    return `${origin}/storage/v1/object/public/${PUBLIC_INSIGHTS_MEDIA_BUCKET}/${encodedPath}`;
+  } catch {
+    return null;
+  }
+}
+
+function parsePublicInsightsTags(value: unknown): PublicInsightsTag[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((tag): tag is PublicInsightsTag => Boolean(
+    tag
+      && typeof tag === "object"
+      && !Array.isArray(tag)
+      && typeof (tag as Record<string, unknown>).name === "string"
+      && typeof (tag as Record<string, unknown>).slug === "string",
+  ));
+}
+
+function withPublicInsightsMediaUrls(body: InsightsBody): InsightsBody {
+  function walk(node: InsightsBody["doc"]): InsightsBody["doc"] {
+    const attrs = node.type === "image" && node.attrs
+      ? { ...node.attrs, src: getPublicInsightsMediaUrl(typeof node.attrs.src === "string" ? node.attrs.src : null) }
+      : node.attrs;
+    return { ...node, ...(attrs ? { attrs } : {}), ...(node.content ? { content: node.content.map(walk) } : {}) };
+  }
+  return { ...body, doc: walk(body.doc) };
+}
+
+function mapPublicInsightsRow(row: PublicInsightsRow): PublicInsightsArticle | null {
+  const coverImageUrl = getPublicInsightsMediaUrl(row.cover_image_path);
+  const bodyValidation = validateInsightsBody(row.body);
+  if (!coverImageUrl || !bodyValidation.success || !row.cover_image_alt?.trim() || !row.published_at) {
+    console.error(`[insights-public] Skipping malformed Published article: ${row.slug}`);
+    return null;
+  }
+
+  const body = withPublicInsightsMediaUrls(bodyValidation.value);
+  const renderedBodyValidation = validateInsightsBody(body);
+  if (!renderedBodyValidation.success) {
+    console.error(`[insights-public] Skipping Published article with invalid media: ${row.slug}`);
+    return null;
+  }
+
+  return {
+    slug: row.slug,
+    title: row.title?.trim() || "Untitled Insight",
+    excerpt: row.excerpt?.trim() || null,
+    body: renderedBodyValidation.value,
+    authorLabel: row.author_display_name?.trim() || "OCSCO Team",
+    categoryName: row.category_name?.trim() || "Insights",
+    categorySlug: row.category_slug,
+    tags: parsePublicInsightsTags(row.tags),
+    publishedAt: row.published_at,
+    coverImageUrl,
+    coverImageAlt: row.cover_image_alt.trim(),
+  };
+}
+
+export async function getPublishedInsightsArticles(): Promise<PublicInsightsArticle[]> {
+  const client = getPublicInsightsClient();
+  if (!client) return [];
+
+  const { data, error } = await client
+    .from("insights_published_articles")
+    .select("slug, title, excerpt, body, author_display_name, category_name, category_slug, tags, published_at, cover_image_path, cover_image_alt")
+    .order("published_at", { ascending: false });
+  if (error) {
+    console.error(`[insights-public] Published article list failed: ${error.message}`);
+    return [];
+  }
+  return (data as PublicInsightsRow[]).map(mapPublicInsightsRow).filter((article): article is PublicInsightsArticle => Boolean(article));
+}
+
+export async function getPublishedInsightsArticle(slug: string): Promise<PublicInsightsArticle | null> {
+  const client = getPublicInsightsClient();
+  if (!client) return null;
+
+  const { data, error } = await client
+    .from("insights_published_articles")
+    .select("slug, title, excerpt, body, author_display_name, category_name, category_slug, tags, published_at, cover_image_path, cover_image_alt")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) {
+    console.error(`[insights-public] Published article lookup failed: ${error.message}`);
+    return null;
+  }
+  return data ? mapPublicInsightsRow(data as PublicInsightsRow) : null;
+}
+
 function withMediaPreviewUrls(body: InsightsBody, media: { inlineMedia: InsightsMedia[] }): InsightsBody {
   const urls = new Map(media.inlineMedia.map((item) => [item.id, item.previewUrl]));
   function walk(node: InsightsBody["doc"]): InsightsBody["doc"] {
@@ -65,7 +200,7 @@ function withMediaPreviewUrls(body: InsightsBody, media: { inlineMedia: Insights
   return { ...body, doc: walk(body.doc) };
 }
 
-async function getRevisionMedia(supabase: Awaited<ReturnType<typeof createClient>>, articleId: string, revisionId: string | null) {
+async function getRevisionMedia(supabase: Awaited<ReturnType<typeof createServerClient>>, articleId: string, revisionId: string | null) {
   if (!revisionId) return { coverMedia: null, inlineMedia: [] as InsightsMedia[] };
   const { data: relations, error: relationError } = await supabase.from("insights_revision_media").select("media_id, role").eq("revision_id", revisionId);
   if (relationError || !relations?.length) return { coverMedia: null, inlineMedia: [] as InsightsMedia[] };
@@ -96,7 +231,7 @@ async function getRevisionMedia(supabase: Awaited<ReturnType<typeof createClient
 }
 
 export async function getInsightsRevisionHistory(articleId: string): Promise<InsightsRevisionHistory[]> {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("insights_article_revisions")
     .select("id, revision_number, status, published_at")
@@ -113,7 +248,7 @@ export async function getInsightsRevisionHistory(articleId: string): Promise<Ins
 }
 
 export async function getInsightsTaxonomy() {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const [categories, tags] = await Promise.all([
     supabase.from("insights_categories").select("id, name, slug, is_active").eq("is_active", true).order("name"),
     supabase.from("insights_tags").select("id, name, slug").order("name"),
@@ -126,7 +261,7 @@ export async function getInsightsTaxonomy() {
 }
 
 export async function getInsightsDashboard(view: string | undefined) {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const query = supabase
     .from("insights_articles")
     .select("id, slug, status, author_id, active_revision_id, submitted_at, updated_at")
@@ -184,7 +319,7 @@ export async function getInsightsDashboard(view: string | undefined) {
 }
 
 export async function getInsightsArticleEditorData(articleId: string): Promise<InsightsArticleEditorData | null> {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const { data: article, error: articleError } = await supabase
     .from("insights_articles")
     .select("id, slug, status, author_id, submitted_at, updated_at, active_revision_id")
@@ -228,7 +363,7 @@ export async function getInsightsArticleEditorData(articleId: string): Promise<I
 }
 
 export async function getInsightsArticlePreviewData(articleId: string): Promise<InsightsArticleEditorData | null> {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
   const membership = await getCmsMembership(user.id);

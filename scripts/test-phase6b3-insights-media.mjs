@@ -88,10 +88,9 @@ test("Publication uses exact revision artifacts and Unpublish preserves canonica
   assert.match(sql, /Published Insights media artifacts are public/);
 });
 
-test("No public Insights routes are introduced by B6B3", async () => {
+test("B6B3 authoring stays separate from the 6C1 public reading routes", async () => {
   const routes = await read("src/app/admin/insights/page.tsx");
   assert.doesNotMatch(routes, /href=\"\/insights/);
-  const routeFiles = (await import("node:fs/promises")).readdir;
-  const publicRoot = path.join(root, "src", "app", "insights");
-  await assert.rejects(routeFiles(publicRoot));
+  const publicLanding = await read("src/app/insights/page.tsx");
+  assert.match(publicLanding, /getPublishedInsightsArticles/);
 });

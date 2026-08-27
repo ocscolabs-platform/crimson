@@ -205,7 +205,14 @@ export async function getPublishedNavigation(group: "primary" | "footer"): Promi
     return fallback;
   }
 
-  return data as NavigationItem[];
+  const navigation = data as NavigationItem[];
+  if (group !== "primary" || navigation.some((item) => item.href === "/insights" || item.label === "Insights")) {
+    return navigation;
+  }
+
+  const workIndex = navigation.findIndex((item) => item.href === "/work");
+  const insertAt = workIndex >= 0 ? workIndex + 1 : navigation.length;
+  return [...navigation.slice(0, insertAt), { href: "/insights", label: "Insights" }, ...navigation.slice(insertAt)];
 }
 
 export async function getPublishedSiteChrome() {

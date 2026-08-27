@@ -30,6 +30,7 @@
     "test:phase6b1:authoring": "node --experimental-strip-types --test scripts/test-phase6b1-draft-authoring.mjs",
     "test:phase6b2:workflow": "node --test scripts/test-phase6b2-workflow.mjs",
     "test:phase6b3:media": "node --test scripts/test-phase6b3-insights-media.mjs",
+    "test:phase6c1:public": "node --test scripts/test-phase6c1-public-insights.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
   },
   "dependencies": {
