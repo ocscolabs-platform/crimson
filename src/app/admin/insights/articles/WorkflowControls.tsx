@@ -45,7 +45,7 @@ export default function WorkflowControls(props: WorkflowControlsProps) {
     if (publishState.status === "saved" || returnState.status === "saved" || withdrawState.status === "saved" || unpublishState.status === "saved" || restoreState.status === "saved") router.refresh();
   }, [publishState.status, returnState.status, restoreState.status, router, unpublishState.status, withdrawState.status]);
 
-  if (!canPublish && !canReturn && !canWithdraw && !canUnpublish && props.status !== "review") return null;
+  if (!canPublish && !canReturn && !canWithdraw && !canUnpublish && !canRestore && props.status !== "review") return null;
   return (
     <section className="insights-workflow-controls" aria-label="Workflow actions">
       <div className="insights-workflow-links">{props.status === "review" ? <Link className="button button-light" href={`/crimson-admin-control/insights/articles/${props.articleId}/preview`}>Preview ↗</Link> : null}</div>
