@@ -25,7 +25,7 @@ export default async function InsightsArticlePage({ params }: { params: Promise<
   const article = await getInsightsArticleEditorData(id);
   if (!article) notFound();
   const taxonomy = await getInsightsTaxonomy();
-  const revisionHistory = article.status === "unpublished" ? await getInsightsRevisionHistory(article.id) : [];
+  const revisionHistory = article.status === "unpublished" || article.status === "published" ? await getInsightsRevisionHistory(article.id) : [];
   const editorialRole = membership.role === "owner" ? "owner" : "editor";
   const isDraft = article.status === "draft";
   return (
