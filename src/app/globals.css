@@ -750,6 +750,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .insights-status { display: inline-flex; width: fit-content; border: 1px solid rgb(255 255 255 / 20%); border-radius: 999px; color: #aaa; font-size: .63rem; font-weight: 800; letter-spacing: .08em; padding: 5px 8px; text-transform: uppercase; }
 .insights-status-review { border-color: rgb(255 190 92 / 48%); color: #e0bd8a; }
 .insights-status-published { border-color: rgb(0 200 83 / 45%); color: var(--green); }
+.insights-status-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.insights-live-status-note { color: #8bd5a9; font-size: .68rem; font-weight: 700; }
 .insights-empty { display: grid; justify-items: start; gap: 14px; border: 1px dashed rgb(255 255 255 / 18%); border-radius: 12px; color: #999; padding: 34px 28px; }
 .insights-empty h3, .insights-empty p { margin: 0; }
 .insights-empty h3 { color: var(--white); font-size: 1.1rem; }
@@ -813,6 +815,11 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .insights-category-action-icon { width: 15px; height: 15px; flex: 0 0 auto; }
 .insights-category-delete-button .insights-category-action-icon { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.25; }
 .insights-category-feedback { margin: 2px 0 0; padding: 9px 11px; }
+.insights-tag-management { display: grid; gap: 10px; }
+.insights-delete-control { display: grid; justify-items: start; gap: 10px; border-top: 1px solid rgb(255 255 255 / 12%); padding-top: 18px; }
+.insights-delete-button { border-color: rgb(255 120 120 / 36%); background: transparent; color: #e49a9a; font-size: .74rem; gap: 7px; }
+.insights-delete-button:hover:not(:disabled), .insights-delete-button:focus-visible:not(:disabled) { border-color: #ff8e8e; color: #ffb2b2; }
+.insights-delete-blocked { margin: 0; border-top: 1px solid rgb(255 190 92 / 24%); padding-top: 18px; color: #e0bd8a; font-size: .76rem; }
 .insights-tags-field { margin-top: 4px; }
 .insights-panel-heading { display: grid; gap: 8px; border-bottom: 1px solid rgb(255 255 255 / 12%); padding-bottom: 18px; }
 .insights-panel-heading h2 { margin: 9px 0 0; font-size: 1.55rem; letter-spacing: -.05em; }
