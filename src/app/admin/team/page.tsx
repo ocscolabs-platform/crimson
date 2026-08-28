@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
-import { CMS_ROLES, getAdminMembers, inviteCmsMember, isCmsRole, updateCmsMemberRole, type AdminMember } from "@/lib/admin-members";
+import { CMS_ROLES, getAdminMembers, inviteCmsMember, isCmsRole, setCmsMemberTemporaryPassword, updateCmsMemberRole, type AdminMember } from "@/lib/admin-members";
 import { createClient } from "@/lib/supabase/server";
 import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import AdminSelect from "@/app/admin/AdminSelect";
@@ -79,6 +79,34 @@ async function updateMemberRole(formData: FormData) {
   redirect("/crimson-admin-control/team?saved=role");
 }
 
+async function setTemporaryPassword(formData: FormData) {
+  "use server";
+
+  await requireOwner();
+  const userId = String(formData.get("user_id") || "");
+  const password = String(formData.get("password") || "");
+  const confirmation = String(formData.get("password_confirmation") || "");
+
+  if (!userId || password.length < 8) {
+    redirect("/crimson-admin-control/team?error=Use at least 8 characters for the temporary password.");
+  }
+
+  if (password !== confirmation) {
+    redirect("/crimson-admin-control/team?error=The temporary passwords do not match.");
+  }
+
+  try {
+    await setCmsMemberTemporaryPassword(userId, password);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "The temporary password could not be set. Try again.";
+    redirect(`/crimson-admin-control/team?error=${encodeURIComponent(message)}`);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/team");
+  redirect("/crimson-admin-control/team?saved=password");
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
@@ -118,6 +146,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
 
         {saved === "invited" ? <AdminToast tone="success" message="Invitation created and CMS role assigned." /> : null}
         {saved === "role" ? <AdminToast tone="success" message="CMS role updated successfully." /> : null}
+        {saved === "password" ? <AdminToast tone="success" message="✓ Temporary password set. Share this password securely with the user." /> : null}
         {error ? <AdminToast tone="error" message={error} /> : null}
 
         {loadError ? (
@@ -161,13 +190,32 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
                       <strong>{member.email}</strong>
                       <small>Added {formatDate(member.createdAt)}</small>
                     </div>
-                    <form className="admin-member-role-form" action={updateMemberRole}>
-                      <input type="hidden" name="user_id" value={member.userId} />
-                      <AdminSelect name="role" defaultValue={member.role} aria-label={`Role for ${member.email}`}>
-                        {CMS_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
-                      </AdminSelect>
-                      <AdminSubmitButton label="Update" pendingLabel="Updating…" variant="secondary" />
-                    </form>
+                    <div className="admin-member-actions">
+                      <form className="admin-member-role-form" action={updateMemberRole}>
+                        <input type="hidden" name="user_id" value={member.userId} />
+                        <AdminSelect name="role" defaultValue={member.role} aria-label={`Role for ${member.email}`}>
+                          {CMS_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
+                        </AdminSelect>
+                        <AdminSubmitButton label="Update" pendingLabel="Updating…" variant="secondary" />
+                      </form>
+                      {member.role !== "owner" ? (
+                        <details className="admin-member-password">
+                          <summary className="admin-button-secondary">Set temporary password</summary>
+                          <form className="admin-member-password-form" action={setTemporaryPassword}>
+                            <input type="hidden" name="user_id" value={member.userId} />
+                            <label>
+                              New temporary password
+                              <input className="admin-input" name="password" type="password" autoComplete="new-password" minLength={8} required />
+                            </label>
+                            <label>
+                              Confirm temporary password
+                              <input className="admin-input" name="password_confirmation" type="password" autoComplete="new-password" minLength={8} required />
+                            </label>
+                            <AdminSubmitButton label="Set password" pendingLabel="Setting password…" variant="secondary" />
+                          </form>
+                        </details>
+                      ) : null}
+                    </div>
                   </li>
                 ))}
               </ul>
