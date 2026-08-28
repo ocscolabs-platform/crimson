@@ -398,6 +398,15 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-member-role-form { display: flex; align-items: center; gap: 10px; }
 .admin-member-role-form .admin-select-wrap { min-width: 128px; }
 .admin-member-role-form .admin-submit { width: auto; min-width: 82px; margin-top: 0; }
+.admin-member-actions { display: grid; justify-items: end; gap: 10px; }
+.admin-member-password { width: min(100%, 280px); }
+.admin-member-password > summary { width: fit-content; cursor: pointer; list-style: none; }
+.admin-member-password > summary::-webkit-details-marker { display: none; }
+.admin-member-password > summary::after { content: " +"; color: var(--green); }
+.admin-member-password[open] > summary::after { content: " −"; }
+.admin-member-password-form { display: grid; gap: 12px; margin-top: 12px; padding: 14px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 10px; background: #171717; }
+.admin-member-password-form label { display: grid; gap: 7px; color: #bdbdbd; font-size: .72rem; }
+.admin-member-password-form .admin-submit { width: 100%; margin-top: 0; }
 .admin-footer { border-top: 1px solid rgb(255 255 255 / 16%); color: #777; font-size: .72rem; letter-spacing: .08em; padding-top: 20px; text-transform: uppercase; }
 .admin-editor-shell > .admin-footer, .admin-team-layout + .admin-footer { margin-top: 28px; }
 .admin-review-section { padding-bottom: 48px; }
@@ -686,8 +695,10 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-media-list { grid-template-columns: 1fr 1fr; }
   .admin-team-layout { grid-template-columns: 1fr; }
   .admin-member-row { align-items: start; grid-template-columns: 1fr; gap: 12px; }
+  .admin-member-actions { justify-items: stretch; }
   .admin-member-role-form { align-items: stretch; }
   .admin-member-role-form .admin-select-wrap { flex: 1; }
+  .admin-member-password { width: 100%; }
   .admin-content-form { grid-template-columns: 1fr; }
   .admin-content-form .admin-field-wide, .admin-content-form button { grid-column: auto; }
   .admin-content-row { grid-template-columns: 1fr; }
