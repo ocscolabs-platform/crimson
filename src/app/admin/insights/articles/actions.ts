@@ -27,6 +27,12 @@ export type InsightsMediaActionState = {
   previewUrl?: string;
 };
 
+export type InsightsCategoryActionState = {
+  status: "idle" | "saved" | "error";
+  message: string;
+  category?: { id: string; name: string };
+};
+
 type WorkflowRpc = "insights_submit_for_review" | "insights_withdraw_review" | "insights_return_to_draft" | "insights_publish_article" | "insights_unpublish_article";
 
 const MAX_TITLE_LENGTH = 160;
@@ -211,6 +217,29 @@ export async function saveInsightsDraft(_previousState: InsightsActionState, for
     console.error("[insights] unexpected Draft save failure", { articleId: persistedArticleId || null, error });
     return { ...errorState("Save failed. Your local changes are still here."), articleId: persistedArticleId || undefined, slug: persistedSlug || undefined };
   }
+}
+
+export async function createInsightsCategory(_previousState: InsightsCategoryActionState, formData: FormData): Promise<InsightsCategoryActionState> {
+  const name = getText(formData, "category_name").trim();
+  if (!name) return { status: "error", message: "Enter a Category name." };
+  if (name.length > 80) return { status: "error", message: "Category names must be 80 characters or fewer." };
+
+  const authorized = await getAuthorizedAction();
+  if (authorized.error) return { status: "error", message: authorized.error.message };
+  if (authorized.membership.role !== "owner") return { status: "error", message: "Only Owners can create Categories." };
+
+  const base = slugifyInsightsTitle(name);
+  for (let attempt = 1; attempt <= 100; attempt += 1) {
+    const slug = getUniqueInsightsSlugCandidate(base, attempt);
+    const { data, error } = await authorized.supabase.from("insights_categories").insert({ name, slug }).select("id, name").single();
+    if (!error && data) {
+      revalidatePath("/crimson-admin-control/insights");
+      revalidatePath("/crimson-admin-control/insights/articles/new");
+      return { status: "saved", message: "Category created.", category: { id: data.id as string, name: data.name as string } };
+    }
+    if (!isDuplicateError(error?.message, error?.code)) return { status: "error", message: "The Category could not be created. Try again." };
+  }
+  return { status: "error", message: "A unique Category slug could not be generated." };
 }
 
 export async function uploadInsightsMedia(_previousState: InsightsMediaActionState, formData: FormData): Promise<InsightsMediaActionState> {
