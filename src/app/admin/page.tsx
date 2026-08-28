@@ -41,13 +41,13 @@ export default async function AdminDashboardPage() {
         </header>
 
         <nav className="admin-nav" aria-label="CMS sections">
-          <Link href="#overview">Overview</Link>
-          {membership.role ? <Link href="/crimson-admin-control/content">Global content</Link> : null}
+          <AdminPendingLink href="#overview" pendingLabel="Opening Overview…">Overview</AdminPendingLink>
+          {membership.role ? <AdminPendingLink href="/crimson-admin-control/content" pendingLabel="Opening Global content…">Global content</AdminPendingLink> : null}
           {membership.role ? <AdminPendingLink href="/crimson-admin-control/content/pages" pendingLabel="Opening Pages…">Pages</AdminPendingLink> : null}
-          {membership.role && (membership.role === "owner" || membership.accessScope === "full_cms" || membership.insightsAccess) ? <Link href="/crimson-admin-control/insights">Insights</Link> : null}
-          <Link href="#services-records">Services</Link>
-          <Link href="#work-records">Work library</Link>
-          {membership.role === "owner" ? <Link href="/crimson-admin-control/team">Team &amp; access</Link> : null}
+          {membership.role && (membership.role === "owner" || membership.accessScope === "full_cms" || membership.insightsAccess) ? <AdminPendingLink href="/crimson-admin-control/insights" pendingLabel="Opening Insights…">Insights</AdminPendingLink> : null}
+          <AdminPendingLink href="#services-records" pendingLabel="Opening Services…">Services</AdminPendingLink>
+          <AdminPendingLink href="#work-records" pendingLabel="Opening Work library…">Work library</AdminPendingLink>
+          {membership.role === "owner" ? <AdminPendingLink href="/crimson-admin-control/team" pendingLabel="Opening Team & access…">Team &amp; access</AdminPendingLink> : null}
         </nav>
 
         <section className="admin-hero" id="overview">
