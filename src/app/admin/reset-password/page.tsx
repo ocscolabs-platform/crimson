@@ -2,18 +2,17 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AdminToast from "@/app/admin/AdminToast";
 
 export default function AdminResetPasswordPage() {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [hasRecoverySession, setHasRecoverySession] = useState(false);
+  const [isUpdated, setIsUpdated] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -30,7 +29,7 @@ export default function AdminResetPasswordPage() {
     });
 
     async function establishRecoverySession() {
-      const { data, error: sessionError } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
       if (!isMounted) return;
 
       setHasRecoverySession(Boolean(data.session));
@@ -38,7 +37,6 @@ export default function AdminResetPasswordPage() {
       if (!data.session) {
         setError(
           queryError ||
-            sessionError?.message ||
             "Auth session missing. Request a new password reset link and open it in this browser.",
         );
       }
@@ -71,14 +69,14 @@ export default function AdminResetPasswordPage() {
       const supabase = createClient();
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) {
-        setError(updateError.message);
+        setError("We could not update your password. Request a new reset link and try again.");
         return;
       }
 
-      router.replace("/crimson-admin-control");
-      router.refresh();
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Unable to update the password.");
+      setHasRecoverySession(false);
+      setIsUpdated(true);
+    } catch {
+      setError("We could not update your password. Request a new reset link and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -90,7 +88,12 @@ export default function AdminResetPasswordPage() {
         <p className="admin-kicker">OCSCO / CMS</p>
         <h1>Create a new password.</h1>
         <p className="admin-intro">Choose a new password for your CMS account.</p>
-        <form className="admin-form" onSubmit={handleSubmit}>
+        {isUpdated ? (
+          <>
+            <AdminToast tone="success" message="Password updated. You can now sign in." />
+            <Link className="button button-primary admin-submit" href="/crimson-admin-control/login">Continue to sign in <span aria-hidden="true">↗</span></Link>
+          </>
+        ) : <form className="admin-form" onSubmit={handleSubmit}>
           <label>
             New password
             <input className="admin-input" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
@@ -105,7 +108,7 @@ export default function AdminResetPasswordPage() {
           <button className="button button-primary admin-submit" type="submit" disabled={isSubmitting || isCheckingSession || !hasRecoverySession}>
             {isSubmitting ? <><span className="admin-button-spinner" aria-hidden="true" /> Updating…</> : <>Update password <span aria-hidden="true">↗</span></>}
           </button>
-        </form>
+        </form>}
         <Link className="admin-back-link" href="/crimson-admin-control/login">Back to sign in</Link>
       </div>
     </main>
