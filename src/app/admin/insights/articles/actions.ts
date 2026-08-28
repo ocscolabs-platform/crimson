@@ -33,6 +33,17 @@ export type InsightsCategoryActionState = {
   category?: { id: string; name: string };
 };
 
+export type InsightsTagActionState = {
+  status: "idle" | "saved" | "error";
+  message: string;
+  tag?: { id: string; name: string };
+};
+
+export type InsightsDeleteActionState = {
+  status: "idle" | "saved" | "error";
+  message: string;
+};
+
 type WorkflowRpc = "insights_submit_for_review" | "insights_withdraw_review" | "insights_return_to_draft" | "insights_publish_article" | "insights_unpublish_article";
 
 const MAX_TITLE_LENGTH = 160;
@@ -263,6 +274,90 @@ export async function deleteInsightsCategory(_previousState: InsightsCategoryAct
   revalidatePath("/crimson-admin-control/insights");
   revalidatePath("/crimson-admin-control/insights/articles/new");
   return { status: "saved", message: "Category deleted." };
+}
+
+export async function createInsightsTag(_previousState: InsightsTagActionState, formData: FormData): Promise<InsightsTagActionState> {
+  const name = getText(formData, "tag_name").trim();
+  if (!name) return { status: "error", message: "Enter a Tag name." };
+  if (name.length > 80) return { status: "error", message: "Tag names must be 80 characters or fewer." };
+
+  const authorized = await getAuthorizedAction();
+  if (authorized.error) return { status: "error", message: authorized.error.message };
+  if (authorized.membership.role !== "owner") return { status: "error", message: "Only Owners can create Tags." };
+
+  const base = slugifyInsightsTitle(name);
+  for (let attempt = 1; attempt <= 100; attempt += 1) {
+    const slug = getUniqueInsightsSlugCandidate(base, attempt);
+    const { data, error } = await authorized.supabase.from("insights_tags").insert({ name, slug }).select("id, name").single();
+    if (!error && data) {
+      revalidatePath("/crimson-admin-control/insights");
+      revalidatePath("/crimson-admin-control/insights/articles/new");
+      return { status: "saved", message: "Tag created.", tag: { id: data.id as string, name: data.name as string } };
+    }
+    if (!isDuplicateError(error?.message, error?.code)) return { status: "error", message: "The Tag could not be created. Try again." };
+  }
+  return { status: "error", message: "A unique Tag slug could not be generated." };
+}
+
+export async function deleteInsightsTag(_previousState: InsightsTagActionState, formData: FormData): Promise<InsightsTagActionState> {
+  const tagId = getText(formData, "tag_id").trim();
+  if (!tagId) return { status: "error", message: "Choose a Tag to delete." };
+
+  const authorized = await getAuthorizedAction();
+  if (authorized.error) return { status: "error", message: authorized.error.message };
+  if (authorized.membership.role !== "owner") return { status: "error", message: "Only Owners can delete Tags." };
+
+  const { data: usage, error: usageError } = await authorized.supabase
+    .from("insights_article_revision_tags")
+    .select("revision_id")
+    .eq("tag_id", tagId)
+    .limit(1);
+  if (usageError) return { status: "error", message: "The Tag could not be checked. Try again." };
+  if (usage?.length) return { status: "error", message: "This Tag is being used by an article. Remove it from the article first." };
+
+  const { error: deleteError } = await authorized.supabase.from("insights_tags").delete().eq("id", tagId);
+  if (deleteError) return { status: "error", message: "The Tag could not be deleted. Remove it from any article first." };
+  revalidatePath("/crimson-admin-control/insights");
+  revalidatePath("/crimson-admin-control/insights/articles/new");
+  return { status: "saved", message: "Tag deleted." };
+}
+
+export async function deleteInsightsArticle(_previousState: InsightsDeleteActionState, formData: FormData): Promise<InsightsDeleteActionState> {
+  const articleId = getText(formData, "article_id").trim();
+  const expectedUpdatedAt = getText(formData, "expected_updated_at").trim() || null;
+  if (!articleId) return { status: "error", message: "The article identity is missing. Reload and try again." };
+
+  try {
+    const authorized = await getAuthorizedAction();
+    if (authorized.error) return { status: "error", message: authorized.error.message };
+    if (authorized.membership.role !== "owner") return { status: "error", message: "Only the Owner can delete Insights articles." };
+
+    const { data, error } = await authorized.supabase.rpc("insights_delete_article", {
+      p_article_id: articleId,
+      p_expected_updated_at: expectedUpdatedAt,
+    });
+    if (error) {
+      if (/unpublish/i.test(error.message)) return { status: "error", message: "Unpublish this article before deleting it." };
+      if (/changed|reload/i.test(error.message)) return { status: "error", message: "The article changed. Reload before deleting it." };
+      return { status: "error", message: "The article could not be deleted. Try again." };
+    }
+
+    const cleanup = data as { private_paths?: unknown; public_paths?: unknown } | null;
+    const privatePaths = Array.isArray(cleanup?.private_paths) ? cleanup.private_paths.filter((path): path is string => typeof path === "string" && path.length > 0) : [];
+    const publicPaths = Array.isArray(cleanup?.public_paths) ? cleanup.public_paths.filter((path): path is string => typeof path === "string" && path.length > 0) : [];
+    const admin = createAdminClient();
+    const privateCleanup = privatePaths.length ? await admin.storage.from(MEDIA_BUCKET).remove(privatePaths) : { error: null };
+    const publicCleanup = publicPaths.length ? await admin.storage.from(PUBLISHED_MEDIA_BUCKET).remove(publicPaths) : { error: null };
+    revalidatePath("/crimson-admin-control/insights");
+    if (privateCleanup.error || publicCleanup.error) {
+      console.error("[insights] article-owned media cleanup failure", { articleId, privateCleanup: privateCleanup.error, publicCleanup: publicCleanup.error });
+      return { status: "saved", message: "✓ Article deleted. Article-owned media cleanup needs another attempt." };
+    }
+    return { status: "saved", message: "✓ Article deleted" };
+  } catch (error) {
+    console.error("[insights] article deletion failure", { articleId, error });
+    return { status: "error", message: "The article could not be deleted. Try again." };
+  }
 }
 
 export async function uploadInsightsMedia(_previousState: InsightsMediaActionState, formData: FormData): Promise<InsightsMediaActionState> {

@@ -15,6 +15,7 @@ export type InsightsArticleListItem = {
   excerpt: string | null;
   authorLabel: string;
   categoryName: string;
+  hasLivePublishedVersion: boolean;
   submittedAt: string | null;
   updatedAt: string;
 };
@@ -23,6 +24,7 @@ export type InsightsArticleEditorData = {
   id: string;
   slug: string;
   status: "draft" | "review" | "published" | "unpublished";
+  publishedRevisionId: string | null;
   authorId: string;
   authorLabel: string;
   updatedAt: string;
@@ -284,7 +286,7 @@ export async function getInsightsDashboard(view: string | undefined) {
   const supabase = await createServerClient();
   const query = supabase
     .from("insights_articles")
-    .select("id, slug, status, author_id, active_revision_id, submitted_at, updated_at")
+    .select("id, slug, status, author_id, active_revision_id, published_revision_id, submitted_at, updated_at")
     .order("updated_at", { ascending: false });
 
   const [{ data: articles, error: articlesError }, { count: reviewCount, error: reviewError }, { data: { user } }] = await Promise.all([
@@ -294,7 +296,7 @@ export async function getInsightsDashboard(view: string | undefined) {
   ]);
   if (articlesError || reviewError || !user) throw new Error("Insights articles could not be loaded.");
 
-  const loadedRows = (articles ?? []) as Array<{ id: string; slug: string; status: InsightsArticleListItem["status"]; author_id: string; active_revision_id: string | null; submitted_at: string | null; updated_at: string }>;
+  const loadedRows = (articles ?? []) as Array<{ id: string; slug: string; status: InsightsArticleListItem["status"]; author_id: string; active_revision_id: string | null; published_revision_id: string | null; submitted_at: string | null; updated_at: string }>;
   const rows = view === "my-drafts"
     ? loadedRows.filter((article) => article.status === "draft" && article.author_id === user.id)
     : view === "review"
@@ -326,6 +328,7 @@ export async function getInsightsDashboard(view: string | undefined) {
       excerpt: revision?.excerpt ?? null,
       authorLabel: memberMap.get(article.author_id) || (article.author_id === user.id ? "You" : "CMS member"),
       categoryName: categoryMap.get(revision?.primary_category_id ?? "") || "No category",
+      hasLivePublishedVersion: Boolean(article.published_revision_id),
       submittedAt: article.submitted_at,
       updatedAt: article.updated_at,
     };
@@ -342,7 +345,7 @@ export async function getInsightsArticleEditorData(articleId: string): Promise<I
   const supabase = await createServerClient();
   const { data: article, error: articleError } = await supabase
     .from("insights_articles")
-    .select("id, slug, status, author_id, submitted_at, updated_at, active_revision_id")
+    .select("id, slug, status, author_id, submitted_at, updated_at, active_revision_id, published_revision_id")
     .eq("id", articleId)
     .maybeSingle();
   if (articleError || !article) return null;
@@ -367,6 +370,7 @@ export async function getInsightsArticleEditorData(articleId: string): Promise<I
     id: article.id,
     slug: article.slug,
     status: article.status,
+    publishedRevisionId: article.published_revision_id,
     authorId: article.author_id,
     authorLabel: author?.public_display_name || "CMS member",
     updatedAt: article.updated_at,
@@ -392,7 +396,7 @@ export async function getInsightsArticlePreviewData(articleId: string): Promise<
 
   const { data: article, error: articleError } = await supabase
     .from("insights_articles")
-    .select("id, slug, status, author_id, submitted_at, updated_at, active_revision_id")
+    .select("id, slug, status, author_id, submitted_at, updated_at, active_revision_id, published_revision_id")
     .eq("id", articleId)
     .maybeSingle();
   if (articleError || !article || (membership.role !== "owner" && article.author_id !== user.id) || !["draft", "review"].includes(article.status)) return null;
@@ -415,6 +419,7 @@ export async function getInsightsArticlePreviewData(articleId: string): Promise<
     id: article.id,
     slug: article.slug,
     status: article.status,
+    publishedRevisionId: article.published_revision_id,
     authorId: article.author_id,
     authorLabel: author?.public_display_name || "CMS member",
     updatedAt: article.updated_at,
