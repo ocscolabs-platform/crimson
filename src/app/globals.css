@@ -791,6 +791,17 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .insights-inline-media-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 7px; padding: 8px 10px; color: #bbb; font-size: .74rem; }
 .insights-media-edit-row .insights-field { flex: 1 1 260px; }
 .insights-metadata-panel { border: 1px solid rgb(255 255 255 / 14%); border-radius: 12px; background: #141414; padding: 24px; }
+.insights-category-create { display: grid; gap: 10px; }
+.insights-category-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.insights-category-actions .button { min-height: 38px; border-radius: 8px; padding: 8px 12px; font-size: .72rem; gap: 7px; }
+.insights-category-create-button { border-color: rgb(255 255 255 / 28%); background: transparent; color: #d5d5d5; }
+.insights-category-create-button:hover, .insights-category-create-button:focus-visible { border-color: var(--green); color: var(--green); }
+.insights-category-delete-button { border-color: rgb(255 255 255 / 16%); background: transparent; color: #a7a7a7; }
+.insights-category-delete-button:hover:not(:disabled), .insights-category-delete-button:focus-visible:not(:disabled) { border-color: rgb(255 130 130 / 62%); color: #ffabab; }
+.insights-category-action-icon { width: 15px; height: 15px; flex: 0 0 auto; }
+.insights-category-delete-button .insights-category-action-icon { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.25; }
+.insights-category-feedback { margin: 2px 0 0; padding: 9px 11px; }
+.insights-tags-field { margin-top: 4px; }
 .insights-panel-heading { display: grid; gap: 8px; border-bottom: 1px solid rgb(255 255 255 / 12%); padding-bottom: 18px; }
 .insights-panel-heading h2 { margin: 9px 0 0; font-size: 1.55rem; letter-spacing: -.05em; }
 .insights-panel-heading > span { color: #777; font-size: .7rem; }
