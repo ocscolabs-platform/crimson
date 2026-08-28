@@ -1,17 +1,19 @@
 "use client";
 
 import Link, { type LinkProps } from "next/link";
-import { type MouseEvent, type ReactNode, useState } from "react";
+import { type MouseEvent, type ReactNode, useRef, useState } from "react";
 import { useEffect } from "react";
 
 type AdminPendingLinkProps = LinkProps & {
   children: ReactNode;
   pendingLabel: ReactNode;
+  highlightTargetId?: string;
   className?: string;
 };
 
-export default function AdminPendingLink({ children, pendingLabel, className, onClick, ...props }: AdminPendingLinkProps) {
+export default function AdminPendingLink({ children, pendingLabel, highlightTargetId, className, onClick, ...props }: AdminPendingLinkProps) {
   const [pending, setPending] = useState(false);
+  const highlightTimeout = useRef<number | null>(null);
   const samePageNavigation = typeof props.href === "string" && props.href.startsWith("#");
 
   useEffect(() => {
@@ -27,6 +29,19 @@ export default function AdminPendingLink({ children, pendingLabel, className, on
     }
 
     setPending(true);
+    if (highlightTargetId) {
+      const target = document.getElementById(highlightTargetId);
+      if (target) {
+        if (highlightTimeout.current) window.clearTimeout(highlightTimeout.current);
+        target.classList.remove("admin-anchor-highlight");
+        void target.offsetWidth;
+        target.classList.add("admin-anchor-highlight");
+        highlightTimeout.current = window.setTimeout(() => {
+          target.classList.remove("admin-anchor-highlight");
+          highlightTimeout.current = null;
+        }, 1800);
+      }
+    }
     onClick?.(event);
   }
 
