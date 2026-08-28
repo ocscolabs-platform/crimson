@@ -146,7 +146,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
 
         {saved === "invited" ? <AdminToast tone="success" message="Invitation created and CMS role assigned." /> : null}
         {saved === "role" ? <AdminToast tone="success" message="CMS role updated successfully." /> : null}
-        {saved === "password" ? <AdminToast tone="success" message="✓ Temporary password set. Share this password securely with the user." /> : null}
+        {saved === "password" ? <AdminToast tone="success" message="✓ Temporary password updated." /> : null}
         {error ? <AdminToast tone="error" message={error} /> : null}
 
         {loadError ? (
