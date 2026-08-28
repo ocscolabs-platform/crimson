@@ -242,6 +242,29 @@ export async function createInsightsCategory(_previousState: InsightsCategoryAct
   return { status: "error", message: "A unique Category slug could not be generated." };
 }
 
+export async function deleteInsightsCategory(_previousState: InsightsCategoryActionState, formData: FormData): Promise<InsightsCategoryActionState> {
+  const categoryId = getText(formData, "category_id").trim();
+  if (!categoryId) return { status: "error", message: "Choose a Category to delete." };
+
+  const authorized = await getAuthorizedAction();
+  if (authorized.error) return { status: "error", message: authorized.error.message };
+  if (authorized.membership.role !== "owner") return { status: "error", message: "Only Owners can delete Categories." };
+
+  const { data: usage, error: usageError } = await authorized.supabase
+    .from("insights_article_revisions")
+    .select("id")
+    .eq("primary_category_id", categoryId)
+    .limit(1);
+  if (usageError) return { status: "error", message: "The Category could not be checked. Try again." };
+  if (usage?.length) return { status: "error", message: "This category is being used by an article. Reassign or remove it first." };
+
+  const { error: deleteError } = await authorized.supabase.from("insights_categories").delete().eq("id", categoryId);
+  if (deleteError) return { status: "error", message: "The Category could not be deleted. Try again." };
+  revalidatePath("/crimson-admin-control/insights");
+  revalidatePath("/crimson-admin-control/insights/articles/new");
+  return { status: "saved", message: "Category deleted." };
+}
+
 export async function uploadInsightsMedia(_previousState: InsightsMediaActionState, formData: FormData): Promise<InsightsMediaActionState> {
   const articleId = getText(formData, "article_id").trim();
   const expectedUpdatedAt = getText(formData, "expected_updated_at").trim() || null;
