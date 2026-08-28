@@ -286,7 +286,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-stat-card h3 { margin: 26px 0 8px; font-size: .92rem; }
 .admin-stat-card p { margin: 0; color: #8f8f8f; font-size: .78rem; line-height: 1.55; }
 .admin-record-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.admin-record-panel { border: 1px solid rgb(255 255 255 / 14%); border-radius: 12px; background: #141414; padding: 28px; }
+.admin-record-panel { border: 1px solid rgb(255 255 255 / 14%); border-radius: 12px; background: #141414; padding: 28px; transition: border-color 220ms ease, box-shadow 220ms ease; }
+.admin-record-panel.admin-anchor-highlight { border-color: var(--green); box-shadow: 0 0 0 2px rgb(0 200 83 / 22%), 0 0 26px rgb(0 200 83 / 18%); }
 .admin-panel-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; border-bottom: 1px solid rgb(255 255 255 / 14%); padding-bottom: 22px; }
 .admin-panel-heading > span { color: var(--green); font-size: .72rem; font-weight: 700; white-space: nowrap; }
 .admin-panel-heading-actions { display: grid; justify-items: end; gap: 10px; }
