@@ -4,6 +4,7 @@ import { getAdminContent } from "@/lib/admin-content";
 import { getCmsMembership, getCmsRoleLabel } from "@/lib/cms-auth";
 import { createClient } from "@/lib/supabase/server";
 import AdminAccountActions from "@/app/admin/AdminAccountActions";
+import AdminPendingLink from "@/app/admin/AdminPendingLink";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ export default async function AdminDashboardPage() {
         <nav className="admin-nav" aria-label="CMS sections">
           <Link href="#overview">Overview</Link>
           {membership.role ? <Link href="/crimson-admin-control/content">Global content</Link> : null}
-          {membership.role ? <Link href="/crimson-admin-control/content/pages">Pages</Link> : null}
+          {membership.role ? <AdminPendingLink href="/crimson-admin-control/content/pages" pendingLabel="Opening Pages…">Pages</AdminPendingLink> : null}
           {membership.role && (membership.role === "owner" || membership.accessScope === "full_cms" || membership.insightsAccess) ? <Link href="/crimson-admin-control/insights">Insights</Link> : null}
           <Link href="#services-records">Services</Link>
           <Link href="#work-records">Work library</Link>
