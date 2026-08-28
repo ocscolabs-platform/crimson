@@ -84,3 +84,18 @@ export async function updateCmsMemberRole(userId: string, role: CmsRole) {
   const { error } = await supabase.from("cms_members").update({ role }).eq("user_id", userId);
   if (error) throw new Error(error.message);
 }
+
+export async function setCmsMemberTemporaryPassword(userId: string, password: string) {
+  const supabase = createAdminClient();
+  const { data: member, error: memberError } = await supabase
+    .from("cms_members")
+    .select("user_id, role")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (memberError || !member) throw new Error("That user is not assigned to the CMS.");
+  if (member.role === "owner") throw new Error("Owner passwords are not managed from this control.");
+
+  const { error: passwordError } = await supabase.auth.admin.updateUserById(userId, { password });
+  if (passwordError) throw new Error("The temporary password could not be set. Try again.");
+}
