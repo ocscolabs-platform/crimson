@@ -5,13 +5,33 @@ import { OrderedPageSections } from "@/components/ordered-page-sections";
 import { RouteShell } from "@/components/route-shell";
 import { getPublishedPage, getPublishedSiteChrome, getPublishedWorkProjects } from "@/lib/cms-content";
 import { getPublishedPageSections } from "@/lib/page-sections";
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/og-assets";
 import { WorkCardMediaPreview } from "./WorkCardMediaPreview";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPublishedPage("work");
-  return { title: page?.seoTitle || "Work", description: page?.seoDescription };
+  const title = page?.seoTitle || "Work";
+  const description = page?.seoDescription || "Selected prototypes and projects in motion from OCSCO.";
+  return {
+    title,
+    description,
+    alternates: { canonical: "/work" },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: "/work",
+      images: [{ url: "/og/ocsco-work.png", width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og/ocsco-work.png"],
+    },
+  };
 }
 
 export default async function WorkPage() {

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { DEFAULT_OG_IMAGE_PATH, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/og-assets";
 import { getSiteOrigin } from "@/lib/site-origin";
 import "./globals.css";
 
@@ -25,9 +26,9 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
+        url: DEFAULT_OG_IMAGE_PATH,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
         alt: "OCSCO — Strategy, design, and technology",
       },
     ],
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "OCSCO — Strategy, design, and technology",
     description: "Strategy, design, and technology for brands ready to move with precision.",
-    images: ["/opengraph-image"],
+    images: [DEFAULT_OG_IMAGE_PATH],
   },
 };
 

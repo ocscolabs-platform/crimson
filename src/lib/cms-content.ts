@@ -5,6 +5,7 @@ import { isPageKey } from "@/lib/page-registry";
 import { defaultPrimaryNavigation, type NavigationItem } from "@/lib/site-navigation";
 import { services as localServices, type Service } from "@/lib/site-content";
 import { workProjects as localWorkProjects, type WorkProject } from "@/lib/work-content";
+import { DEFAULT_OG_IMAGE_PATH } from "@/lib/og-assets";
 
 export type SiteSettings = {
   siteName: string;
@@ -20,7 +21,7 @@ const localSiteSettings: SiteSettings = {
   positioningStatement: "Strategy, design, and technology for brands ready to move with precision.",
   defaultSeoTitle: "OCSCO — Strategy, design, and technology",
   defaultSeoDescription: "Strategy, design, and technology for brands ready to move with precision.",
-  defaultOgImagePath: "/opengraph-image",
+  defaultOgImagePath: DEFAULT_OG_IMAGE_PATH,
   primaryContactPath: "/contact",
 };
 
