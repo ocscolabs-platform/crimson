@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { PageDocument, PageKey } from "@/lib/page-document";
 import { getPublishedPageDocument } from "@/lib/page-document-loader";
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH, PAGE_OG_IMAGE_PATHS } from "@/lib/og-assets";
 
 const PAGE_PATHS: Record<PageKey, "/" | "/services" | "/about" | "/contact"> = {
   home: "/",
@@ -14,12 +15,12 @@ export type PublishedPageMetadataResult =
   | { kind: "unavailable"; reason: "cms-not-configured" | "cms-read-failed" | "missing-or-unpublished"; message: string }
   | { kind: "invalid"; issues: string[] };
 
-function getApprovedOgImagePath(document: PageDocument) {
+function getApprovedOgImagePath(document: PageDocument, pageKey: PageKey) {
   const imageRef = document.seo.ogImageRef;
   if (imageRef && (imageRef.kind !== "generated" || imageRef.key !== "default")) {
     throw new Error("PageDocument SEO must use the approved generated default Open Graph image.");
   }
-  return "/opengraph-image";
+  return PAGE_OG_IMAGE_PATHS[pageKey];
 }
 
 /**
@@ -35,7 +36,7 @@ export function buildPageDocumentMetadata(document: PageDocument, pageKey: PageK
   const routePath = PAGE_PATHS[pageKey];
   const title = document.seo.ogTitle || document.seo.title;
   const description = document.seo.ogDescription || document.seo.description;
-  const ogImagePath = getApprovedOgImagePath(document);
+  const ogImagePath = getApprovedOgImagePath(document, pageKey);
 
   return {
     title: document.seo.title,
@@ -46,7 +47,13 @@ export function buildPageDocumentMetadata(document: PageDocument, pageKey: PageK
       description,
       type: "website",
       url: routePath,
-      images: [{ url: ogImagePath, width: 1200, height: 630, alt: title }],
+      images: [{ url: ogImagePath, width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImagePath],
     },
   };
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { RouteShell } from "@/components/route-shell";
 import { getPublishedSiteChrome } from "@/lib/cms-content";
 import { getPublishedInsightsArticles } from "@/lib/insights-data";
+import { INSIGHTS_OG_IMAGE_PATH, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/og-assets";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: insightsDescription,
       type: "website",
       url: "/insights",
+      images: [{ url: INSIGHTS_OG_IMAGE_PATH, width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT, alt: "OCSCO Insights" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Insights",
+      description: insightsDescription,
+      images: [INSIGHTS_OG_IMAGE_PATH],
     },
   };
 }
