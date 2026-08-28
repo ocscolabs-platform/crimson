@@ -23,14 +23,14 @@ export default function AdminLoginPage() {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
       if (signInError) {
-        setError(signInError.message);
+        setError("The email or password is incorrect. Try again.");
         return;
       }
 
       router.replace("/crimson-admin-control");
       router.refresh();
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Unable to sign in.");
+    } catch {
+      setError("Unable to sign in. Try again.");
     } finally {
       setIsSubmitting(false);
     }

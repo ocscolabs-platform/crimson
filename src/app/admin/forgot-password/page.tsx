@@ -24,13 +24,13 @@ export default function AdminForgotPasswordPage() {
       });
 
       if (resetError) {
-        setError(resetError.message);
+        setError("We could not send a reset link. Try again.");
         return;
       }
 
       setSent(true);
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Unable to send the reset email.");
+    } catch {
+      setError("We could not send a reset link. Try again.");
     } finally {
       setIsSubmitting(false);
     }
