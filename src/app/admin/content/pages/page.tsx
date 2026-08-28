@@ -3,6 +3,7 @@ import AdminAccountActions from "@/app/admin/AdminAccountActions";
 import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import { requireCmsViewer } from "@/app/admin/content/pages/_lib";
 import { getAdminPageDocumentReadModel } from "@/lib/admin-page-documents";
+import AdminPendingLink from "@/app/admin/AdminPendingLink";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,7 @@ export default async function AdminPagesIndex() {
                     <div><dt>Last updated</dt><dd>{formatDate(page.lastUpdatedAt)}</dd></div>
                   </dl>
                   <div className="admin-page-document-card-actions">
-                    <Link className="admin-panel-link" href={`/crimson-admin-control/content/pages/${page.adapter.pageKey}`}>Open structured editor ↗</Link>
+                    <AdminPendingLink className="admin-panel-link" href={`/crimson-admin-control/content/pages/${page.adapter.pageKey}`} pendingLabel="Opening editor…">Open structured editor ↗</AdminPendingLink>
                   </div>
                 </article>
               ))}
