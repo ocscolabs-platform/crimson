@@ -14,7 +14,6 @@ export type CmsMembership = {
 
 export function getCmsRoleLabel(membership: CmsMembership): string {
   if (membership.role === "owner") return "Owner";
-  if (membership.role === "editor" && membership.canPublishInsights) return "Trusted Publisher";
   if (membership.role === "editor") return "Editor";
   if (membership.role === "reviewer") return "Reviewer";
   return "Role pending";
