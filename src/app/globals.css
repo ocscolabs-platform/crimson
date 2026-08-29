@@ -231,6 +231,12 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .work-detail-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(48px, 8vw, 128px); align-items: start; }
 .work-detail-grid h2 { max-width: 640px; margin: 18px 0 0; font-size: clamp(2.2rem, 4.5vw, 4.5rem); letter-spacing: -.055em; line-height: 1.02; }
 .work-detail-copy { padding-top: 2px; }
+.work-detail-story-sections { display: grid; gap: 32px; }
+.work-detail-story-block { border-top: 1px solid var(--border); padding-top: 20px; }
+.work-detail-story-block .overline { margin-bottom: 12px; }
+.work-detail-story-block .route-copy { margin: 0; }
+.work-detail-story-list { display: grid; gap: 10px; margin: 0; padding-left: 24px; color: var(--copy); font-size: 1.02rem; line-height: 1.65; }
+.work-detail-story-list li::marker { color: var(--green); }
 .work-detail-actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 36px; }
 .contact-form-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(48px, 8vw, 128px); align-items: start; }
 .contact-form-intro h2 { max-width: 620px; margin: 0; font-size: clamp(2.2rem, 4.5vw, 4.5rem); letter-spacing: -.055em; line-height: 1.02; }

@@ -45,6 +45,10 @@ type PublishedCaseStudy = {
   is_featured: boolean;
   sort_order: number;
   summary: string | null;
+  challenge: string | null;
+  approach: string | null;
+  deliverables: unknown;
+  outcomes: unknown;
   featured_image_path: string | null;
   featured_image_alt: string | null;
   supporting_media: unknown;
@@ -80,6 +84,12 @@ function isCaseStudyMediaItem(value: unknown): value is CaseStudyMediaItem {
       && typeof (value as Record<string, unknown>).path === "string"
       && typeof (value as Record<string, unknown>).alt === "string",
   );
+}
+
+function listItems(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : [];
 }
 
 type PublicCmsClient = NonNullable<ReturnType<typeof getPublicCmsClient>>;
@@ -320,6 +330,8 @@ async function mapPublishedCaseStudy(
       return url ? [{ url, alt: item.alt }] : [];
     })
     : [];
+  const deliverables = listItems(caseStudy.deliverables);
+  const outcomes = listItems(caseStudy.outcomes);
 
   return {
     slug: caseStudy.slug,
@@ -340,6 +352,10 @@ async function mapPublishedCaseStudy(
     featuredImageAlt: caseStudy.featured_image_alt || undefined,
     supportingMedia: supportingMedia.filter((item): item is { url: string; alt: string } => Boolean(item)),
     relatedCapabilities,
+    challenge: caseStudy.challenge || undefined,
+    approach: caseStudy.approach || undefined,
+    deliverables: deliverables.length ? deliverables : undefined,
+    outcomes: outcomes.length ? outcomes : undefined,
   };
 }
 
@@ -353,7 +369,7 @@ export async function getPublishedWorkProjects(options: { includeRelatedCapabili
 
   const { data, error } = await client
     .from("case_studies")
-    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, featured_image_path, featured_image_alt, supporting_media, media_status")
+    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status")
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });

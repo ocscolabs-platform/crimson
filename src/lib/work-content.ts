@@ -11,6 +11,10 @@ export type WorkProject = {
   featuredImageAlt?: string;
   supportingMedia?: Array<{ url: string; alt: string }>;
   relatedCapabilities?: Array<{ slug: string; name: string; cardName: string }>;
+  challenge?: string;
+  approach?: string;
+  deliverables?: string[];
+  outcomes?: string[];
 };
 
 export const workProjects: WorkProject[] = [
