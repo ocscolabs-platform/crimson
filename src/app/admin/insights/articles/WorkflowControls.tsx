@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cancelScheduledInsightsArticle, publishInsightsArticle, rescheduleInsightsArticle, restoreInsightsRevision, returnInsightsToDraft, scheduleInsightsArticle, unpublishInsightsArticle, withdrawInsightsReview, type InsightsActionState } from "./actions";
 import LocalScheduleTime from "../LocalScheduleTime";
@@ -66,6 +66,8 @@ function ScheduleFields({ articleId, expectedUpdatedAt, value, minimum, onChange
   </>;
 }
 
+type ScheduleModalMode = "schedule" | "reschedule";
+
 export default function WorkflowControls(props: WorkflowControlsProps) {
   const router = useRouter();
   const [publishState, publishAction, publishPending] = useActionState(publishInsightsArticle, initialState);
@@ -79,6 +81,8 @@ export default function WorkflowControls(props: WorkflowControlsProps) {
   const [scheduleValue, setScheduleValue] = useState("");
   const [minimumLocalTime, setMinimumLocalTime] = useState("");
   const [timeZoneLabel, setTimeZoneLabel] = useState("Local time");
+  const [scheduleModalMode, setScheduleModalMode] = useState<ScheduleModalMode | null>(null);
+  const scheduleDialogCloseRef = useRef<HTMLButtonElement>(null);
   const canSchedule = props.status === "review" && props.role === "owner";
   const isScheduled = props.status === "scheduled" && props.role === "owner";
   const canWithdraw = props.status === "review" && props.role === "editor" && props.authorId === props.viewerId;
@@ -87,6 +91,17 @@ export default function WorkflowControls(props: WorkflowControlsProps) {
   const canUnpublish = props.status === "published" && props.role === "owner";
   const canEditPublished = props.status === "published" && props.role === "owner" && props.revisionHistory.length > 0;
   const canRestore = props.status === "unpublished" && props.role === "owner" && props.revisionHistory.length > 0;
+  const schedulePendingState = schedulePending || reschedulePending;
+
+  function openScheduleModal(mode: ScheduleModalMode) {
+    setMinimumLocalTime(toLocalInput(new Date().toISOString()));
+    setScheduleValue(mode === "reschedule" ? toLocalInput(props.scheduledPublishAt) : "");
+    setScheduleModalMode(mode);
+  }
+
+  function closeScheduleModal() {
+    if (!schedulePendingState) setScheduleModalMode(null);
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -101,14 +116,35 @@ export default function WorkflowControls(props: WorkflowControlsProps) {
     if (publishState.status === "saved" || scheduleState.status === "saved" || rescheduleState.status === "saved" || cancelState.status === "saved" || returnState.status === "saved" || withdrawState.status === "saved" || unpublishState.status === "saved" || restoreState.status === "saved") router.refresh();
   }, [cancelState.status, publishState.status, rescheduleState.status, restoreState.status, returnState.status, router, scheduleState.status, unpublishState.status, withdrawState.status]);
 
+  useEffect(() => {
+    if (!scheduleModalMode) return;
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const timer = window.setTimeout(() => scheduleDialogCloseRef.current?.focus(), 0);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !schedulePendingState) {
+        event.preventDefault();
+        setScheduleModalMode(null);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus();
+    };
+  }, [scheduleModalMode, schedulePendingState]);
+
   if (!canPublish && !canReturn && !canWithdraw && !canUnpublish && !canEditPublished && !canRestore && !canSchedule && !isScheduled && props.status !== "review") return null;
   return (
     <section className="insights-workflow-controls" aria-label="Workflow actions">
       <div className="insights-workflow-links">{props.status === "review" ? <Link className="button button-light" href={`/crimson-admin-control/insights/articles/${props.articleId}/preview`}>Preview ↗</Link> : null}</div>
-      {canSchedule ? <form action={scheduleAction}><details><summary className="button button-primary">Schedule</summary><div className="insights-confirmation"><p>Choose when this reviewed article should become public. The time is entered in your browser’s local timezone.</p><ScheduleFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} value={scheduleValue} minimum={minimumLocalTime} onChange={setScheduleValue} /><span className="insights-timezone-note">Detected local time: {timeZoneLabel}</span><button className="button button-primary" type="submit" disabled={schedulePending}>{schedulePending ? "Scheduling…" : "Confirm Schedule"}</button></div></details><Feedback state={scheduleState} /></form> : null}
+      {canSchedule ? <button className="button button-primary" type="button" onClick={() => openScheduleModal("schedule")}>Schedule</button> : null}
       {isScheduled ? <>
         <div className="insights-scheduled-summary"><strong>Scheduled for <LocalScheduleTime value={props.scheduledPublishAt ?? ""} /></strong><span className="insights-timezone-note">Displayed in your browser’s local timezone: {timeZoneLabel}</span></div>
-        <form action={rescheduleAction}><details><summary className="button button-light">Reschedule</summary><div className="insights-confirmation"><p>Update the publication time for this reviewed article.</p><ScheduleFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} value={scheduleValue} minimum={minimumLocalTime} onChange={setScheduleValue} /><span className="insights-timezone-note">Detected local time: {timeZoneLabel}</span><button className="button button-light" type="submit" disabled={reschedulePending}>{reschedulePending ? "Rescheduling…" : "Confirm Reschedule"}</button></div></details><Feedback state={rescheduleState} /></form>
+        <button className="button button-light" type="button" onClick={() => openScheduleModal("reschedule")}>Reschedule</button>
         <form action={cancelAction}><ActionFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} /><details><summary className="button button-light">Cancel schedule</summary><div className="insights-confirmation"><p>Cancel the scheduled publication and return this article to Review?</p><button className="button button-light" type="submit" disabled={cancelPending}>{cancelPending ? "Cancelling…" : "Confirm Cancel"}</button></div></details><Feedback state={cancelState} /></form>
       </> : null}
       {canPublish ? <form action={publishAction}><ActionFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} /><details><summary className="button button-primary">{props.status === "scheduled" ? "Publish now" : "Publish"}</summary><div className="insights-confirmation"><p>{props.status === "scheduled" ? "Publish this scheduled article now with its validated Cover, inline media, and stable public artifacts?" : "Publish this reviewed article with its validated Cover, inline media, and stable public artifacts?"}</p><button className="button button-primary" type="submit" disabled={publishPending}>{publishPending ? "Publishing…" : props.status === "scheduled" ? "Confirm Publish now" : "Confirm Publish"}</button></div></details><Feedback state={publishState} /></form> : null}
@@ -117,6 +153,9 @@ export default function WorkflowControls(props: WorkflowControlsProps) {
       {canEditPublished ? <form action={restoreAction}><input type="hidden" name="article_id" value={props.articleId} /><input type="hidden" name="source_revision_id" value={props.revisionHistory[0]?.id ?? ""} /><details><summary className="button button-light">Edit Article</summary><div className="insights-confirmation"><p>Create a new private Draft from this Published article? The Published revision will remain immutable and public until the Draft is published.</p><button className="button button-light" type="submit" disabled={restorePending}>{restorePending ? "Creating Draft…" : "Create Draft to Edit"}</button></div></details><Feedback state={restoreState} /></form> : null}
       {canUnpublish ? <form action={unpublishAction}><ActionFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} /><details><summary className="button button-light">Unpublish</summary><div className="insights-confirmation"><p>Remove this article from the staging publication boundary while preserving its history?</p><button className="button button-light" type="submit" disabled={unpublishPending}>{unpublishPending ? "Unpublishing…" : "Confirm Unpublish"}</button></div></details><Feedback state={unpublishState} /></form> : null}
       {canRestore ? <form action={restoreAction}><input type="hidden" name="article_id" value={props.articleId} /><details><summary className="button button-light">Restore</summary><div className="insights-confirmation"><label>Historical Published revision<select name="source_revision_id" defaultValue={props.revisionHistory[0]?.id ?? ""}>{props.revisionHistory.map((revision) => <option key={revision.id} value={revision.id}>Revision {revision.revisionNumber} · {revision.status}</option>)}</select></label><p>Restore the selected historical revision as a new private Draft?</p><button className="button button-light" type="submit" disabled={restorePending}>{restorePending ? "Restoring…" : "Confirm Restore"}</button></div></details><Feedback state={restoreState} /></form> : null}
+      {scheduleModalMode === null && scheduleState.status !== "idle" ? <Feedback state={scheduleState} /> : null}
+      {scheduleModalMode === null && rescheduleState.status !== "idle" ? <Feedback state={rescheduleState} /> : null}
+      {scheduleModalMode ? <div className="insights-schedule-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeScheduleModal(); }}><div className="insights-schedule-dialog" role="dialog" aria-modal="true" aria-labelledby="schedule-dialog-title" aria-describedby="schedule-dialog-description" onMouseDown={(event) => event.stopPropagation()}><div className="insights-schedule-dialog-heading"><div><p className="admin-kicker admin-kicker-green">Insights workflow</p><h2 id="schedule-dialog-title">{scheduleModalMode === "reschedule" ? "Reschedule publication" : "Schedule publication"}</h2></div><button ref={scheduleDialogCloseRef} className="insights-dialog-close" type="button" aria-label="Close schedule dialog" onClick={closeScheduleModal} disabled={schedulePendingState}>×</button></div><form action={scheduleModalMode === "reschedule" ? rescheduleAction : scheduleAction} className="insights-schedule-dialog-form"><p id="schedule-dialog-description">{scheduleModalMode === "reschedule" ? "Update the publication time for this reviewed article." : "Choose when this reviewed article should become public. The time is entered in your browser’s local timezone."}</p><ScheduleFields articleId={props.articleId} expectedUpdatedAt={props.expectedUpdatedAt} value={scheduleValue} minimum={minimumLocalTime} onChange={setScheduleValue} /><span className="insights-timezone-note">Detected local time: {timeZoneLabel}</span><div className="insights-dialog-actions"><button className="button button-light" type="button" onClick={closeScheduleModal} disabled={schedulePendingState}>Cancel</button><button className={`button ${scheduleModalMode === "reschedule" ? "button-light" : "button-primary"}`} type="submit" disabled={schedulePendingState}>{scheduleModalMode === "reschedule" ? (reschedulePending ? "Rescheduling…" : "Reschedule") : (schedulePending ? "Scheduling…" : "Schedule")}</button></div><Feedback state={scheduleModalMode === "reschedule" ? rescheduleState : scheduleState} /></form></div></div> : null}
     </section>
   );
 }

@@ -912,6 +912,16 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .insights-confirmation p { margin: 0; color: #cfcfcf; font-size: .78rem; line-height: 1.55; }
 .insights-timezone-note { color: #9b9b9b; font-size: .72rem; }
 .insights-scheduled-summary { display: grid; gap: 5px; color: #bcd4ff; font-size: .78rem; }
+.insights-schedule-dialog-backdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; overflow-y: auto; background: rgb(0 0 0 / 72%); padding: 20px; }
+.insights-schedule-dialog { display: grid; gap: 22px; width: min(520px, 100%); max-height: min(720px, calc(100dvh - 40px)); overflow-y: auto; border: 1px solid rgb(255 255 255 / 20%); border-radius: 14px; background: #171717; box-shadow: 0 24px 80px rgb(0 0 0 / 55%); padding: 24px; }
+.insights-schedule-dialog-heading { display: flex; align-items: start; justify-content: space-between; gap: 18px; }
+.insights-schedule-dialog-heading h2 { margin: 5px 0 0; color: #f0f0f0; font-size: clamp(1.35rem, 3vw, 1.75rem); letter-spacing: -.04em; }
+.insights-dialog-close { display: grid; flex: 0 0 auto; place-items: center; width: 34px; height: 34px; border: 1px solid rgb(255 255 255 / 18%); border-radius: 999px; background: transparent; color: #cfcfcf; cursor: pointer; font-size: 1.35rem; line-height: 1; }
+.insights-dialog-close:hover { border-color: rgb(255 255 255 / 35%); color: #fff; }
+.insights-dialog-close:disabled { cursor: not-allowed; opacity: .5; }
+.insights-schedule-dialog-form { display: grid; gap: 14px; }
+.insights-schedule-dialog-form > p { margin: 0; color: #cfcfcf; font-size: .8rem; line-height: 1.6; }
+.insights-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
 .insights-preview-banner { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 14px; border: 1px solid rgb(0 200 83 / 35%); border-radius: 10px; background: rgb(0 200 83 / 7%); color: #bde8cc; margin-top: 34px; padding: 14px 16px; }
 .insights-preview-banner span { color: #8fcaa4; font-size: .75rem; }
 .insights-preview-banner a { color: var(--green); font-size: .75rem; font-weight: 800; }
@@ -947,6 +957,10 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .insights-composer-actions .insights-muted { width: 100%; }
   .insights-workflow-controls, .insights-workflow-controls form, .insights-workflow-controls .button { width: 100%; }
   .insights-confirmation { min-width: 0; }
+  .insights-schedule-dialog-backdrop { padding: 12px; }
+  .insights-schedule-dialog { max-height: calc(100dvh - 24px); padding: 20px; }
+  .insights-dialog-actions { flex-direction: column-reverse; }
+  .insights-dialog-actions .button { width: 100%; }
   .insights-save-row { grid-template-columns: 1fr; }
   .insights-save-button { width: 100%; }
 }

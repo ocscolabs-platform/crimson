@@ -30,6 +30,15 @@ test("the UI converts browser-local datetime input and exposes Scheduled control
   assert.match(controls, /Reschedule/);
   assert.match(controls, /Cancel schedule/);
   assert.match(controls, /Publish now/);
+  assert.match(controls, /type ScheduleModalMode = "schedule" \| "reschedule"/);
+  assert.match(controls, /role="dialog"/);
+  assert.match(controls, /aria-modal="true"/);
+  assert.match(controls, /Schedule publication/);
+  assert.match(controls, /Reschedule publication/);
+  assert.match(controls, /event\.key === "Escape"/);
+  assert.match(controls, /scheduleModalMode === "reschedule" \? rescheduleAction : scheduleAction/);
+  assert.doesNotMatch(controls, /canSchedule \? <form action=\{scheduleAction\}/);
+  assert.doesNotMatch(controls, /<form action=\{rescheduleAction\}><details>/);
   assert.match(localTime, /Intl\.DateTimeFormat/);
   assert.doesNotMatch(`${controls}\n${localTime}`, /Asia\/Shanghai/);
 });
