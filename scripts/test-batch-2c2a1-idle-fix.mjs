@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
-const [migration, route] = await Promise.all([
+const [migration, correction, route] = await Promise.all([
   read("supabase/migrations/20260831080000_add_scheduled_execution_claims.sql"),
+  read("supabase/migrations/20260831090000_fix_scheduled_claim_idle_ambiguity.sql"),
   read("src/app/api/scheduled-publishing/execute/route.ts"),
 ]);
 
@@ -14,6 +15,10 @@ assert.match(migration, /article\.status = 'scheduled'/);
 assert.match(migration, /article\.scheduled_publish_at <= now\(\)/);
 assert.match(migration, /article\.scheduler_claim_expires_at is null or article\.scheduler_claim_expires_at <= now\(\)/);
 assert.match(migration, /order by article\.scheduled_publish_at, article\.updated_at, article\.id/);
+assert.match(correction, /create or replace function public\.insights_claim_due_scheduled_article/);
+assert.match(correction, /from public\.insights_articles as article/);
+assert.match(correction, /article\.scheduled_publish_at <= now\(\)/);
+assert.match(correction, /order by article\.scheduled_publish_at, article\.updated_at, article\.id/);
 
 // The route must preserve the distinction between a valid empty claim and an
 // actual RPC failure.

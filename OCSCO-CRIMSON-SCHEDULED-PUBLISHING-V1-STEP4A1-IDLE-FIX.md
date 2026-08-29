@@ -9,7 +9,7 @@ The staging runtime log identified SQLSTATE `42702`: `column reference "schedule
 
 ## Layer changed
 
-Only the existing claim RPC SQL was changed. The due-row selector now aliases `public.insights_articles` as `article` and qualifies its selected, filtered, and ordering columns. Claim/lease, authorization, publication/media, Cron, Vault, UI, roles, and scheduling behavior were not redesigned or changed.
+Only the existing claim RPC SQL was changed. The due-row selector now aliases `public.insights_articles` as `article` and qualifies its selected, filtered, and ordering columns. Because the original execution-foundation migration was already recorded as applied in staging, the correction is delivered as the forward-only migration `20260831090000_fix_scheduled_claim_idle_ambiguity.sql`. Claim/lease, authorization, publication/media, Cron, Vault, UI, roles, and scheduling behavior were not redesigned or changed.
 
 The existing 2C1 focused test assertion was updated to match the corrected qualified SQL. A new focused Batch 2C2A-1 test covers valid idle results, future schedules, no claim/projection mutation, genuine claim errors, and due-article claim behavior.
 
@@ -24,10 +24,10 @@ Local focused checks passed:
 - `npm run test:batch2c2a1:idle`
 - `npm run test:batch2c1:execution` — 39/39
 - `npm run typecheck`
-- `npm run validate:migrations` — 41 canonical migration files
+- `npm run validate:migrations` — 42 canonical migration files
 - `npm run lint` — zero errors; three pre-existing warnings
 
-Staging protected PR and post-merge idle-cycle verification are pending. The existing staging Cron configuration is to remain unchanged unless the post-merge deployment URL changes; in that case only the staging Vault URL entry will be updated.
+The first protected PR merged the application-side qualification, but the already-applied historical migration could not update the live function. A second protected staging PR is therefore required for the forward-only correction. The existing staging Cron configuration is to remain unchanged unless the post-merge deployment URL changes; in that case only the staging Vault URL entry will be updated.
 
 ## Stop boundary
 
