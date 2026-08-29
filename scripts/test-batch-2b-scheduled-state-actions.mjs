@@ -34,7 +34,7 @@ assert.match(migration, /grant execute on function public\.insights_schedule_art
 assert.match(migration, /grant execute on function public\.insights_reschedule_article.*to authenticated/s);
 assert.match(migration, /grant execute on function public\.insights_cancel_scheduled_article.*to authenticated/s);
 assert.equal((data.match(/status: "draft" \| "review" \| "scheduled" \| "published" \| "unpublished";/g) ?? []).length, 2);
-assert.doesNotMatch(controls, /Schedule|Reschedule|Cancel schedule|scheduled_publish_at/);
+assert.match(controls, /Schedule|Reschedule|Cancel schedule|scheduled_publish_at/);
 assert.match(packageJson, /test:batch2b:scheduled-state/);
 
 console.log("Batch 2B Scheduled Publishing Step 1 contract: 26/26 passed");

@@ -37,6 +37,7 @@
     "test:reviewer-role-retirement": "node --test scripts/test-reviewer-role-retirement.mjs",
     "test:batch2a:publisher-auth": "node scripts/test-batch-2a-publisher-auth-alignment.mjs",
     "test:batch2b:scheduled-state": "node --test scripts/test-batch-2b-scheduled-state-actions.mjs",
+    "test:batch2b2:manual-ui": "node --test scripts/test-batch-2b2-manual-scheduling-ui.mjs",
     "test:phase6:owner-published-edit": "node scripts/test-phase6-owner-published-edit.mjs",
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
     "test:phase6:migration33": "node --test scripts/test-phase6-migration33.mjs",

@@ -44,7 +44,7 @@ export type InsightsDeleteActionState = {
   message: string;
 };
 
-type WorkflowRpc = "insights_submit_for_review" | "insights_withdraw_review" | "insights_return_to_draft" | "insights_publish_article" | "insights_unpublish_article";
+type WorkflowRpc = "insights_submit_for_review" | "insights_withdraw_review" | "insights_return_to_draft" | "insights_publish_article" | "insights_unpublish_article" | "insights_cancel_scheduled_article";
 
 const MAX_TITLE_LENGTH = 160;
 const MAX_EXCERPT_LENGTH = 300;
@@ -141,6 +141,50 @@ async function runWorkflowAction(
   } catch (error) {
     console.error(`[insights] ${rpc} failure`, { articleId, error });
     return { ...errorState("The workflow action could not be completed. Try again."), articleId };
+  }
+}
+
+async function runScheduleAction(
+  formData: FormData,
+  rpc: "insights_schedule_article" | "insights_reschedule_article",
+  successMessage: string,
+): Promise<InsightsActionState> {
+  const articleId = getText(formData, "article_id").trim();
+  const expectedUpdatedAt = getText(formData, "expected_updated_at").trim() || null;
+  const scheduledPublishAt = getText(formData, "scheduled_publish_at").trim();
+  if (!articleId) return errorState("The article identity is missing. Reload and try again.");
+  if (!/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(scheduledPublishAt)) return errorState("Choose a valid publication time.");
+  const parsedPublishAt = new Date(scheduledPublishAt);
+  if (Number.isNaN(parsedPublishAt.getTime()) || parsedPublishAt.getTime() <= Date.now()) return errorState("Choose a future publication time.");
+
+  try {
+    const authorized = await getAuthorizedAction();
+    if (authorized.error) return authorized.error;
+    if (authorized.membership.role !== "owner") return errorState("Only the Owner can schedule Insights articles.");
+    const { error } = await authorized.supabase.rpc(rpc, {
+      p_article_id: articleId,
+      p_scheduled_publish_at: parsedPublishAt.toISOString(),
+      p_expected_updated_at: expectedUpdatedAt,
+    });
+    if (error) {
+      const conflict = /changed|reload/i.test(error.message);
+      return { ...errorState(conflict ? "Conflict — reload required." : error.message || "The scheduling action could not be completed."), status: conflict ? "conflict" : "error", articleId };
+    }
+
+    const { data: article, error: articleError } = await authorized.supabase
+      .from("insights_articles")
+      .select("updated_at")
+      .eq("id", articleId)
+      .maybeSingle();
+    if (articleError || !article) return errorState("The scheduling action completed, but the current article state could not be read.");
+
+    revalidatePath("/crimson-admin-control/insights");
+    revalidatePath(`/crimson-admin-control/insights/articles/${articleId}`);
+    revalidatePath(`/crimson-admin-control/insights/articles/${articleId}/preview`);
+    return { status: "saved", message: successMessage, issues: [], articleId, updatedAt: article.updated_at, savedAt: new Date().toISOString() };
+  } catch (error) {
+    console.error(`[insights] ${rpc} failure`, { articleId, error });
+    return { ...errorState("The scheduling action could not be completed. Try again."), articleId };
   }
 }
 
@@ -555,6 +599,18 @@ export async function submitInsightsForReview(_previousState: InsightsActionStat
 
 export async function withdrawInsightsReview(_previousState: InsightsActionState, formData: FormData) {
   return runWorkflowAction(formData, "insights_withdraw_review", "Returned to Draft.");
+}
+
+export async function scheduleInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
+  return runScheduleAction(formData, "insights_schedule_article", "Scheduled for publication.");
+}
+
+export async function rescheduleInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
+  return runScheduleAction(formData, "insights_reschedule_article", "Schedule updated.");
+}
+
+export async function cancelScheduledInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
+  return runWorkflowAction(formData, "insights_cancel_scheduled_article", "Schedule cancelled; returned to Review.");
 }
 
 export async function returnInsightsToDraft(_previousState: InsightsActionState, formData: FormData) {

@@ -757,9 +757,11 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .insights-article-meta time { color: #b6b6b6; }
 .insights-status { display: inline-flex; width: fit-content; border: 1px solid rgb(255 255 255 / 20%); border-radius: 999px; color: #aaa; font-size: .63rem; font-weight: 800; letter-spacing: .08em; padding: 5px 8px; text-transform: uppercase; }
 .insights-status-review { border-color: rgb(255 190 92 / 48%); color: #e0bd8a; }
+.insights-status-scheduled { border-color: rgb(138 185 255 / 50%); color: #9fc3ff; }
 .insights-status-published { border-color: rgb(0 200 83 / 45%); color: var(--green); }
 .insights-status-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .insights-live-status-note { color: #8bd5a9; font-size: .68rem; font-weight: 700; }
+.insights-scheduled-time { color: #9fc3ff; font-size: .74rem; }
 .insights-empty { display: grid; justify-items: start; gap: 14px; border: 1px dashed rgb(255 255 255 / 18%); border-radius: 12px; color: #999; padding: 34px 28px; }
 .insights-empty h3, .insights-empty p { margin: 0; }
 .insights-empty h3 { color: var(--white); font-size: 1.1rem; }
@@ -908,6 +910,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .insights-workflow-controls summary::-webkit-details-marker { display: none; }
 .insights-confirmation { display: grid; gap: 12px; min-width: min(300px, calc(100vw - 64px)); border: 1px solid rgb(255 255 255 / 18%); border-radius: 10px; background: #171717; margin-top: 10px; padding: 16px; }
 .insights-confirmation p { margin: 0; color: #cfcfcf; font-size: .78rem; line-height: 1.55; }
+.insights-timezone-note { color: #9b9b9b; font-size: .72rem; }
+.insights-scheduled-summary { display: grid; gap: 5px; color: #bcd4ff; font-size: .78rem; }
 .insights-preview-banner { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 14px; border: 1px solid rgb(0 200 83 / 35%); border-radius: 10px; background: rgb(0 200 83 / 7%); color: #bde8cc; margin-top: 34px; padding: 14px 16px; }
 .insights-preview-banner span { color: #8fcaa4; font-size: .75rem; }
 .insights-preview-banner a { color: var(--green); font-size: .75rem; font-weight: 800; }
