@@ -10,7 +10,7 @@ export type InsightsTag = { id: string; name: string; slug: string };
 export type InsightsArticleListItem = {
   id: string;
   slug: string;
-  status: "draft" | "review" | "published" | "unpublished";
+  status: "draft" | "review" | "scheduled" | "published" | "unpublished";
   title: string;
   excerpt: string | null;
   authorLabel: string;
@@ -23,7 +23,7 @@ export type InsightsArticleListItem = {
 export type InsightsArticleEditorData = {
   id: string;
   slug: string;
-  status: "draft" | "review" | "published" | "unpublished";
+  status: "draft" | "review" | "scheduled" | "published" | "unpublished";
   publishedRevisionId: string | null;
   authorId: string;
   authorLabel: string;
