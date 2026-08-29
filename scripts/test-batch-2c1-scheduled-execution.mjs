@@ -15,7 +15,7 @@ assert.match(migration, /add column if not exists scheduler_claim_token uuid/);
 assert.match(migration, /add column if not exists scheduler_claim_expires_at timestamptz/);
 assert.match(migration, /status = 'scheduled'/);
 assert.match(migration, /scheduled_publish_at <= now\(\)/);
-assert.match(migration, /scheduler_claim_expires_at is null or scheduler_claim_expires_at <= now\(\)/);
+assert.match(migration, /article\.scheduler_claim_expires_at is null or article\.scheduler_claim_expires_at <= now\(\)/);
 assert.match(migration, /for update skip locked/);
 assert.match(migration, /greatest\(30, least\(coalesce\(p_lease_seconds, 120\), 300\)\)/);
 assert.match(migration, /insights_clear_scheduler_claim_on_manual_change/);
