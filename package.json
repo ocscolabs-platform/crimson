@@ -34,6 +34,7 @@
     "test:phase6c1:public": "node --test scripts/test-phase6c1-public-insights.mjs",
     "test:phase6b3:restore-media": "node --test scripts/test-phase6b3-restore-media-hotfix.mjs",
     "test:phase6b3:restore-media-validity": "node --test scripts/test-phase6b3-restore-media-validity-fix.mjs",
+    "test:reviewer-role-retirement": "node --test scripts/test-reviewer-role-retirement.mjs",
     "test:phase6:owner-published-edit": "node scripts/test-phase6-owner-published-edit.mjs",
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
     "test:phase6:migration33": "node --test scripts/test-phase6-migration33.mjs",

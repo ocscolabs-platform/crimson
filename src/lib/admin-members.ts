@@ -1,7 +1,15 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const CMS_ROLES = ["owner", "editor", "reviewer"] as const;
-export type CmsRole = (typeof CMS_ROLES)[number];
+export const CMS_ROLES = ["owner", "editor"] as const;
+export type CmsAssignableRole = (typeof CMS_ROLES)[number];
+
+export const CMS_PERSISTED_ROLES = ["owner", "editor", "reviewer"] as const;
+export type CmsRole = (typeof CMS_PERSISTED_ROLES)[number];
+
+export const CMS_ROLE_LABELS: Record<CmsAssignableRole, string> = {
+  owner: "Owner",
+  editor: "Editor",
+};
 
 export type AdminMember = {
   userId: string;
@@ -12,7 +20,11 @@ export type AdminMember = {
 };
 
 export function isCmsRole(value: string): value is CmsRole {
-  return CMS_ROLES.includes(value as CmsRole);
+  return CMS_PERSISTED_ROLES.includes(value as CmsRole);
+}
+
+export function isAssignableCmsRole(value: string): value is CmsAssignableRole {
+  return CMS_ROLES.includes(value as CmsAssignableRole);
 }
 
 export async function getAdminMembers(): Promise<AdminMember[]> {
@@ -41,7 +53,7 @@ export async function getAdminMembers(): Promise<AdminMember[]> {
     }));
 }
 
-export async function inviteCmsMember(email: string, role: CmsRole, redirectTo: string) {
+export async function inviteCmsMember(email: string, role: CmsAssignableRole, redirectTo: string) {
   const supabase = createAdminClient();
   const { data, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, { redirectTo });
 
@@ -65,7 +77,7 @@ export async function inviteCmsMember(email: string, role: CmsRole, redirectTo: 
   throw new Error("The CMS role could not be assigned, so the invitation was rolled back. Request a new invitation.");
 }
 
-export async function updateCmsMemberRole(userId: string, role: CmsRole) {
+export async function updateCmsMemberRole(userId: string, role: CmsAssignableRole) {
   const supabase = createAdminClient();
   const { data: members, error: membersError } = await supabase
     .from("cms_members")
