@@ -507,3 +507,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Limit normal CMS invitations and existing-member role changes to `owner` and `editor`. Keep `reviewer` in the persisted role validation and authorization compatibility set so existing memberships remain readable and retain their current permissions. Render an existing Reviewer membership as legacy state and require an explicit Owner or Editor choice before changing it.
 - **Reason:** The approved role model is Owner and Editor, but removing the stored role or silently converting current users would create unnecessary data and access risk. The smallest safe deprecation is to stop new assignment while preserving backward compatibility.
 - **Consequence:** No database enum/check surgery, membership conversion, publishing-capability merge, or changes to Owner/Editor authorization are introduced. `can_publish_insights` remains an independent Editor capability.
+
+## ADR-071 - Align Insights publish affordances with the existing capability contract
+
+- **Date:** 2026-08-29
+- **Status:** Implemented in the staging-targeted Batch 2A fix
+- **Decision:** Keep the existing publication contract authoritative: Owners may publish a valid Review, while an Editor with `can_publish_insights = true` may publish their own valid Draft through the existing Composer action. Remove the contradictory Editor Review publish affordance from `WorkflowControls`; do not change the publish RPC, role model, capability flag, media boundary, public projection, or audit behavior.
+- **Reason:** The staging UI exposed Review publication for capable Editors, but the final authoritative `insights_publish_article` RPC deliberately restricts non-owner publication to the author's Draft. The existing Batch 6A/6B documentation and Composer already describe and implement the narrower Editor self-publish workflow. Aligning the UI to that backend contract is the smallest safe correction and avoids broadening permissions.
+- **Consequence:** `can_publish_insights` remains the independent Editor publishing gate. An Editor without the flag receives no own-Draft publish action and the backend still rejects the RPC. Owner Review publication remains unchanged. Scheduled Publishing is not implemented by this decision.

@@ -36,7 +36,7 @@ export default function WorkflowControls(props: WorkflowControlsProps) {
   const [unpublishState, unpublishAction, unpublishPending] = useActionState(unpublishInsightsArticle, initialState);
   const [restoreState, restoreAction, restorePending] = useActionState(restoreInsightsRevision, initialState);
   const canWithdraw = props.status === "review" && props.role === "editor" && props.authorId === props.viewerId;
-  const canPublish = props.status === "review" && (props.role === "owner" || (props.role === "editor" && props.canPublishInsights && props.authorId === props.viewerId));
+  const canPublish = props.status === "review" && props.role === "owner";
   const canReturn = props.status === "review" && props.role === "owner";
   const canUnpublish = props.status === "published" && props.role === "owner";
   const canEditPublished = props.status === "published" && props.role === "owner" && props.revisionHistory.length > 0;
