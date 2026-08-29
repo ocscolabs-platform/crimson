@@ -56,13 +56,13 @@ begin
   end if;
 
   with due_article as (
-    select id, active_revision_id, scheduled_publish_at
-    from public.insights_articles
-    where status = 'scheduled'
-      and scheduled_publish_at is not null
-      and scheduled_publish_at <= now()
-      and (scheduler_claim_expires_at is null or scheduler_claim_expires_at <= now())
-    order by scheduled_publish_at, updated_at, id
+    select article.id, article.active_revision_id, article.scheduled_publish_at
+    from public.insights_articles as article
+    where article.status = 'scheduled'
+      and article.scheduled_publish_at is not null
+      and article.scheduled_publish_at <= now()
+      and (article.scheduler_claim_expires_at is null or article.scheduler_claim_expires_at <= now())
+    order by article.scheduled_publish_at, article.updated_at, article.id
     for update skip locked
     limit 1
   )
