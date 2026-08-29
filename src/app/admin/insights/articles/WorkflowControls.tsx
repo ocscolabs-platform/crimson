@@ -60,7 +60,7 @@ function ScheduleFields({ articleId, expectedUpdatedAt, value, minimum, onChange
   return <>
     <ActionFields articleId={articleId} expectedUpdatedAt={expectedUpdatedAt} />
     <label className="insights-field">Publication time (your local time)
-      <input type="datetime-local" name="scheduled_local_time" value={value} min={minimum} onChange={(event) => onChange(event.target.value)} required />
+      <input type="datetime-local" name="scheduled_local_time" value={value} min={minimum} onInput={(event) => onChange(event.currentTarget.value)} onChange={(event) => onChange(event.currentTarget.value)} required />
     </label>
     <input type="hidden" name="scheduled_publish_at" value={localInputToIso(value)} />
   </>;
