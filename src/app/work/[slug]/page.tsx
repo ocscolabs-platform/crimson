@@ -32,6 +32,12 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
   }
 
   const isPrototype = project.status === "Prototype";
+  const hasStructuredStory = Boolean(
+    project.challenge
+      || project.approach
+      || project.deliverables?.length
+      || project.outcomes?.length,
+  );
 
   return (
     <RouteShell eyebrow={project.status} title={project.name} intro={project.description}>
@@ -71,6 +77,44 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
               </div>
             </section>
           ) : null}
+          {hasStructuredStory ? (
+            <section className="work-detail-grid work-detail-story" aria-labelledby="project-story-title">
+              <div>
+                <p className="overline">Project story</p>
+                <h2 id="project-story-title">{isPrototype ? "A prototype in the OCSCO work library." : "The story behind the work."}</h2>
+              </div>
+              <div className="work-detail-story-sections">
+                {project.challenge ? (
+                  <article className="work-detail-story-block">
+                    <p className="overline">Challenge</p>
+                    <p className="route-copy">{project.challenge}</p>
+                  </article>
+                ) : null}
+                {project.approach ? (
+                  <article className="work-detail-story-block">
+                    <p className="overline">Approach</p>
+                    <p className="route-copy">{project.approach}</p>
+                  </article>
+                ) : null}
+                {project.deliverables?.length ? (
+                  <article className="work-detail-story-block">
+                    <p className="overline">Deliverables</p>
+                    <ul className="work-detail-story-list">
+                      {project.deliverables.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </article>
+                ) : null}
+                {project.outcomes?.length ? (
+                  <article className="work-detail-story-block">
+                    <p className="overline">Outcomes</p>
+                    <ul className="work-detail-story-list">
+                      {project.outcomes.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </article>
+                ) : null}
+              </div>
+            </section>
+          ) : (
           <div className="work-detail-grid">
             <div>
               <p className="overline">Project story</p>
@@ -86,6 +130,7 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
               </div>
             </div>
           </div>
+          )}
         </div>
       </section>
     </RouteShell>
