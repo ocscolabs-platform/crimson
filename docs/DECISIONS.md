@@ -523,3 +523,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Add `insights_articles.scheduled_publish_at` as a nullable absolute instant, add `scheduled` to the article lifecycle, and provide authenticated Owner schedule/reschedule/cancel RPCs with row locks, optimistic concurrency, publishability checks, and existing audit events. Keep the active revision in `review`, keep scheduled articles out of the Review queue, and allow the existing Owner publication RPC to publish a Scheduled reviewed revision now. Do not add UI controls, a scheduler, a queue, notifications, or claims/leases in this step.
 - **Reason:** The first safe increment is a durable state contract that freezes the reviewed revision and makes future execution explicit. Adding a worker or lease before the media-preparation boundary is designed would create a second state machine and an incomplete retry surface.
 - **Consequence:** Draft, Review, Owner Schedule, Scheduled, Reschedule, Cancel-to-Review, and Owner Publish-now semantics are available to the next implementation step without changing Reviewer compatibility, Owner/Editor roles, or `can_publish_insights`. Step 2 must add an atomic claim/lease boundary before any automatic media preparation; until then no automatic execution is possible or enabled.
+
+## ADR-073 - Expose manual scheduling in browser-local time
+
+- **Date:** 2026-08-29
+- **Status:** Implemented in Batch 2B2; staging verification pending
+- **Decision:** Add the smallest Owner-only manual scheduling UI around the existing Batch 2B RPCs. Use a native `datetime-local` input, convert the browser-local value to an offset-aware ISO instant before submission, and display scheduled times using the browser's detected timezone and UTC offset. Scheduled articles expose only Publish now, Reschedule, and Cancel schedule controls; no automatic execution or new workflow system is introduced.
+- **Reason:** The existing backend contract already protects scheduling, so the UI should preserve that boundary while making local-time entry explicit and avoiding a server-timezone assumption.
+- **Consequence:** Review, Scheduled, and publication behavior remain separate. Editor permissions and `can_publish_insights` remain unchanged, and a future step is still required for any automatic scheduler or claim/lease boundary.
