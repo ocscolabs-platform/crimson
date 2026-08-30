@@ -106,7 +106,7 @@ export default function AdminResetPasswordPage() {
           {error ? <p className="admin-error" role="alert">{error}</p> : null}
           {error ? <AdminToast tone="error" message={`Password update failed: ${error}`} /> : null}
           <button className="button button-primary admin-submit" type="submit" disabled={isSubmitting || isCheckingSession || !hasRecoverySession}>
-            {isSubmitting ? <><span className="admin-button-spinner" aria-hidden="true" /> Updating…</> : <>Update password <span aria-hidden="true">↗</span></>}
+            {isSubmitting ? <><span className="admin-button-spinner" aria-hidden="true" /> Updating…</> : <>Update password</>}
           </button>
         </form>}
         <Link className="admin-back-link" href="/crimson-admin-control/login">Back to sign in</Link>

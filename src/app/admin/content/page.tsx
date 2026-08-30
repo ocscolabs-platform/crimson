@@ -377,7 +377,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                       <label>Default SEO title<input className="admin-input" name="default_seo_title" defaultValue={content.settings.default_seo_title ?? ""} disabled={!canEdit} /></label>
                       <label>Default OG image path<input className="admin-input" name="default_og_image_path" defaultValue={content.settings.default_og_image_path ?? ""} disabled={!canEdit} placeholder="/og-image.png" /></label>
                       <label className="admin-field-wide">Default SEO description<textarea className="admin-input admin-textarea" name="default_seo_description" defaultValue={content.settings.default_seo_description ?? ""} disabled={!canEdit} rows={3} /></label>
-                      {canEdit ? <AdminSubmitButton label="Save as review" pendingLabel="Saving settings…" /> : null}
+                      {canEdit ? <AdminSubmitButton label="Save as review" pendingLabel="Saving settings…" standalone /> : null}
                     </form>
                     {isOwner && content.settings.revision_status === "review" ? <form className="admin-content-form admin-publish-form" action={publishRevision.bind(null, "site_settings", content.settings.id)}><AdminSubmitButton label="Publish site settings" pendingLabel="Publishing…" /></form> : null}
                     </>
@@ -404,7 +404,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                     <div className="admin-design-settings-actions">
                       <form className="admin-content-form admin-design-settings-form" action={saveDesignSettings}>
                         <DesignSettingsFields values={designSettings.colors} eyebrow={designSettings.typography!.eyebrow} homeHeroTitle={designSettings.typography!.home_hero_title} pageRouteTitle={designSettings.typography!.page_route_title} disabled={!canEdit} />
-                        {canEdit ? <AdminSubmitButton label="Save Design Settings as review" pendingLabel="Saving Design Settings…" /> : null}
+                        {canEdit ? <AdminSubmitButton label="Save Design Settings as review" pendingLabel="Saving Design Settings…" standalone /> : null}
                       </form>
                       {canEdit ? <DesignSettingsResetControl action={resetDesignSettings} /> : null}
                     </div>
