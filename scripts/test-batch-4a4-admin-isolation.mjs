@@ -12,7 +12,7 @@ async function source(path) {
 }
 
 function adminIsolationBlock(css) {
-  const match = css.match(/\/\* Stable CMS palette: public Design Settings do not cascade into admin\. \*\/\s*\.admin-page:not\(:has\(\.insights-preview-banner\)\)\s*\{([\s\S]*?)\}/);
+  const match = css.match(/\/\* Stable CMS theme: public Design Settings do not cascade into normal admin UI\. \*\/\s*\.admin-page:not\(:has\(\.insights-preview-banner\)\)\s*\{([\s\S]*?)\}/);
   assert.ok(match, "the stable admin isolation block exists");
   return match[1];
 }
@@ -25,11 +25,21 @@ test("the admin root overrides all approved variables with the immutable default
   }
 });
 
-test("the admin boundary has no extra runtime theme variables", async () => {
+test("the admin boundary resets public colors and eyebrow typography only", async () => {
   const css = await source("src/app/globals.css");
   const block = adminIsolationBlock(css);
   const variables = [...block.matchAll(/--([a-z-]+)\s*:/g)].map((match) => match[1]);
-  assert.deepEqual(variables, [...DESIGN_SETTINGS_V1_COLOR_KEYS]);
+  assert.deepEqual(variables, [
+    ...DESIGN_SETTINGS_V1_COLOR_KEYS,
+    "type-eyebrow-size",
+    "type-eyebrow-weight",
+    "type-eyebrow-line-height",
+    "type-eyebrow-letter-spacing",
+  ]);
+  assert.match(block, /--type-eyebrow-size:\s*\.72rem;/);
+  assert.match(block, /--type-eyebrow-weight:\s*800;/);
+  assert.match(block, /--type-eyebrow-line-height:\s*1\.4;/);
+  assert.match(block, /--type-eyebrow-letter-spacing:\s*\.16em;/);
 });
 
 test("the existing login surface is already inside the same admin boundary", async () => {
