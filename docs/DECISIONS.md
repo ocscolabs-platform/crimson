@@ -627,3 +627,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Give `RouteShell` an explicit semantic title context. Standard public routes and standard PageDocument Previews use a dedicated `--type-h1-page-route-size` variable derived from the normalized published `typography.page_route_title.scale` and the existing `clamp(3rem, 7vw, 6.4rem)` formula. Service Detail and Work Detail, including Case Study Preview, continue using the fixed `--type-h1-route-size` formula.
 - **Reason:** Page / Route Title scaling must affect only standard Page / Route contexts. An explicit boundary prevents a future setting from recoloring or resizing service and work detail titles while reusing the existing responsive formulas and shared RouteShell presentation.
 - **Consequence:** Scale values remain bounded, responsive, and code-owned; `1.00` is exact visual parity. Authenticated standard PageDocument Previews inherit the published public scale, while Case Study Preview remains Work Detail. No CMS control, generic H1 mapping, inline style, migration, or change to Home Hero, Colors, or Eyebrow is introduced.
+
+## ADR-086 - Expose Page / Route Title as one bounded Design Settings selector
+
+- **Date:** 2026-08-31
+- **Status:** Proposed for staging review in Page / Route Title P3
+- **Decision:** Add one separated `Page / Route Title` `AdminSelect` to the existing Design Settings Typography surface. Expose only `80%`, `85%`, `90%`, `95%`, `100% — Default`, `105%`, and `110%`, mapping to the existing numeric `typography.page_route_title.scale` values from `0.80` through `1.10`.
+- **Reason:** The Owner needs a practical control for standard Page / Route titles without introducing raw CSS, a second workflow, or controls for detail and article contexts. Reusing the existing private Review and Owner publication path keeps the established authorization and preservation boundaries authoritative.
+- **Consequence:** Page / Route changes remain private until Owner publication and preserve Colors, Eyebrow, Home Hero `0.90`, and unrelated site settings. Home Hero, Service Detail, Work Detail, Case Study Preview, Insights Article titles, and Crimson admin typography remain outside this control. No new schema or capability is introduced.

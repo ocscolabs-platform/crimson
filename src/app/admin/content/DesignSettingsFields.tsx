@@ -7,6 +7,7 @@ import {
   type DesignSettingsColorKey,
   type DesignSettingsEyebrow,
   type DesignSettingsHomeHeroTitle,
+  type DesignSettingsPageRouteTitle,
 } from "@/lib/design-settings";
 
 const COLOR_LABELS: Record<DesignSettingsColorKey, string> = {
@@ -24,6 +25,7 @@ type DesignSettingsFieldsProps = {
   values: Record<DesignSettingsColorKey, string>;
   eyebrow: DesignSettingsEyebrow;
   homeHeroTitle: DesignSettingsHomeHeroTitle;
+  pageRouteTitle: DesignSettingsPageRouteTitle;
   disabled?: boolean;
 };
 
@@ -41,11 +43,21 @@ const HOME_HERO_TITLE_SCALES = [
   { label: "105%", value: "1.05" },
   { label: "110%", value: "1.1" },
 ] as const;
+const PAGE_ROUTE_TITLE_SCALES = [
+  { label: "80%", value: "0.8" },
+  { label: "85%", value: "0.85" },
+  { label: "90%", value: "0.9" },
+  { label: "95%", value: "0.95" },
+  { label: "100% — Default", value: "1" },
+  { label: "105%", value: "1.05" },
+  { label: "110%", value: "1.1" },
+] as const;
 
-export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, homeHeroTitle: homeHeroTitleValues, disabled = false }: DesignSettingsFieldsProps) {
+export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, homeHeroTitle: homeHeroTitleValues, pageRouteTitle: pageRouteTitleValues, disabled = false }: DesignSettingsFieldsProps) {
   const [colors, setColors] = useState(values);
   const [eyebrow, setEyebrow] = useState(eyebrowValues);
   const [homeHeroTitle, setHomeHeroTitle] = useState(homeHeroTitleValues);
+  const [pageRouteTitle, setPageRouteTitle] = useState(pageRouteTitleValues);
 
   function updateColor(key: DesignSettingsColorKey, value: string) {
     setColors((current) => ({ ...current, [key]: value }));
@@ -57,6 +69,10 @@ export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, h
 
   function updateHomeHeroTitle(value: string) {
     setHomeHeroTitle({ scale: Number(value) });
+  }
+
+  function updatePageRouteTitle(value: string) {
+    setPageRouteTitle({ scale: Number(value) });
   }
 
   return (
@@ -180,6 +196,25 @@ export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, h
           </label>
         </div>
         <p className="admin-section-note">Adjusts the Home hero title size while preserving its responsive behavior.</p>
+      </fieldset>
+      <fieldset className="admin-typography-fieldset">
+        <legend>Typography <small>Page / Route Title</small></legend>
+        <div className="admin-typography-grid">
+          <label>
+            <span>Title Size</span>
+            <AdminSelect
+              name="design_page_route_title_scale"
+              value={String(pageRouteTitle.scale)}
+              onChange={(event) => updatePageRouteTitle(event.target.value)}
+              aria-label="Page / Route Title size"
+              disabled={disabled}
+              required
+            >
+              {PAGE_ROUTE_TITLE_SCALES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </AdminSelect>
+          </label>
+        </div>
+        <p className="admin-section-note">Adjusts standard page and section-route titles while preserving responsive behavior.</p>
       </fieldset>
     </>
   );

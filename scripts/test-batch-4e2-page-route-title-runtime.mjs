@@ -99,12 +99,8 @@ test("Home Hero remains independently scaled at the accepted 0.90 value", () => 
   assert.equal(variables["--type-h1-hero-mobile-size"], "clamp(2.61rem, 13.5vw, 4.05rem)");
 });
 
-test("no Page / Route CMS control or arbitrary per-component scaling is introduced", async () => {
-  const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
-  const page = await source("src/app/admin/content/page.tsx");
+test("the runtime remains semantic and avoids arbitrary per-component scaling", async () => {
   const css = await source("src/app/globals.css");
-  assert.doesNotMatch(fields, /page_route_title|Page \/ Route/i);
-  assert.doesNotMatch(page, /page_route_title|Page \/ Route/i);
   const routeRules = css.match(/\.route-hero-content h1[^}]*\}/g) ?? [];
   assert.equal(routeRules.length, 2);
   assert.ok(routeRules.every((rule) => !rule.includes("clamp(")));

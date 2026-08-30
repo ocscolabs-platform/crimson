@@ -14,16 +14,16 @@ async function source(path) {
 
 test("Design Settings exposes one Home Hero Title size control with the approved percentage allowlist", async () => {
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
-  const labels = [...fields.matchAll(/<option key=\{option\.value\} value=\{option\.value\}>\{option\.label\}<\/option>/g)];
-  assert.equal(labels.length, 1);
-  assert.match(fields, /<legend>Typography <small>Home Hero Title<\/small><\/legend>/);
-  assert.match(fields, /name="design_home_hero_title_scale"/);
-  assert.match(fields, /<span>Title Size<\/span>/);
-  assert.match(fields, /<AdminSelect/);
+  const homeHeroControl = fields.slice(fields.indexOf("<legend>Typography <small>Home Hero Title"), fields.indexOf("<legend>Typography <small>Page / Route Title"));
+  const options = fields.slice(fields.indexOf("const HOME_HERO_TITLE_SCALES"), fields.indexOf("const PAGE_ROUTE_TITLE_SCALES"));
+  assert.match(homeHeroControl, /<legend>Typography <small>Home Hero Title<\/small><\/legend>/);
+  assert.match(homeHeroControl, /name="design_home_hero_title_scale"/);
+  assert.match(homeHeroControl, /<span>Title Size<\/span>/);
+  assert.match(homeHeroControl, /<AdminSelect/);
   for (const option of ["80%", "85%", "90%", "95%", "100% — Default", "105%", "110%"]) {
-    assert.match(fields, new RegExp(`label: "${option.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`));
+    assert.match(options, new RegExp(`label: "${option.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`));
   }
-  assert.doesNotMatch(fields, /Home Hero.*(?:weight|line-height|letter-spacing|font|breakpoint|mobile)/i);
+  assert.doesNotMatch(homeHeroControl, /weight|line-height|letter-spacing|font|breakpoint|mobile/i);
 });
 
 test("the Home Hero control stores only T1 numeric mappings and the backend remains authoritative", async () => {
@@ -71,8 +71,7 @@ test("the published 90% runtime formulas remain the T2 semantic output", () => {
 test("no unrelated typography context or raw CSS control is introduced", async () => {
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
   const page = await source("src/app/admin/content/page.tsx");
-  assert.doesNotMatch(fields, /Route Title|Article Title|Section Heading|Lead|font-family|breakpoint|clamp|vw/i);
-  assert.doesNotMatch(page, /Route Title|Article Title|Section Heading|Lead|font-family|breakpoint|clamp|vw/i);
-  const homeHeroControl = fields.slice(fields.indexOf("<legend>Typography <small>Home Hero Title"));
+  const homeHeroControl = fields.slice(fields.indexOf("<legend>Typography <small>Home Hero Title"), fields.indexOf("<legend>Typography <small>Page / Route Title"));
+  assert.doesNotMatch(homeHeroControl, /Route Title|Article Title|Section Heading|Lead|font-family|breakpoint|clamp|vw/i);
   assert.doesNotMatch(homeHeroControl, /weight|line-height|letter-spacing|font|breakpoint|mobile|clamp|vw|rem/i);
 });
