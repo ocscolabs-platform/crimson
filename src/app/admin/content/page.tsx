@@ -180,6 +180,9 @@ async function saveDesignSettings(formData: FormData) {
       home_hero_title: {
         scale: Number(formData.get("design_home_hero_title_scale")),
       },
+      page_route_title: {
+        scale: Number(formData.get("design_page_route_title_scale")),
+      },
     },
   };
   const validation = validateDesignSettingsV1(designSettings);
@@ -400,7 +403,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                   {designSettings ? (
                     <div className="admin-design-settings-actions">
                       <form className="admin-content-form admin-design-settings-form" action={saveDesignSettings}>
-                        <DesignSettingsFields values={designSettings.colors} eyebrow={designSettings.typography!.eyebrow} homeHeroTitle={designSettings.typography!.home_hero_title} disabled={!canEdit} />
+                        <DesignSettingsFields values={designSettings.colors} eyebrow={designSettings.typography!.eyebrow} homeHeroTitle={designSettings.typography!.home_hero_title} pageRouteTitle={designSettings.typography!.page_route_title} disabled={!canEdit} />
                         {canEdit ? <AdminSubmitButton label="Save Design Settings as review" pendingLabel="Saving Design Settings…" /> : null}
                       </form>
                       {canEdit ? <DesignSettingsResetControl action={resetDesignSettings} /> : null}

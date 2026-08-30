@@ -107,7 +107,7 @@ test("the existing Design Settings save path preserves every existing typography
   assert.match(page, /typography: \{\s*\.\.\.currentDesignSettings\.typography/);
   assert.match(page, /saveRevision\(supabase, "site_settings", "default", \{ design_settings: validation\.value \}\)/);
   assert.match(page, /home_hero_title:/);
-  assert.doesNotMatch(page, /page_route_title:/);
+  assert.match(page, /page_route_title:\s*\{\s*scale: Number\(formData\.get\("design_page_route_title_scale"\)\)/s);
 });
 
 test("Colors Reset preserves Page / Route Title, Home Hero, and Eyebrow values", async () => {
@@ -116,7 +116,7 @@ test("Colors Reset preserves Page / Route Title, Home Hero, and Eyebrow values",
   assert.match(page, /typography: currentDesignSettings\.typography/);
 });
 
-test("the new Page / Route Title value is not mapped to runtime CSS or the CMS UI in P1", async () => {
+test("the Page / Route Title contract remains distinct from the fixed detail runtime", async () => {
   const designSettings = await source("src/lib/design-settings.ts");
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
   const page = await source("src/app/admin/content/page.tsx");
@@ -126,8 +126,8 @@ test("the new Page / Route Title value is not mapped to runtime CSS or the CMS U
   assert.equal("--type-h1-route-mobile-size" in variables, false);
   assert.match(css, /--type-h1-route-size:\s*clamp\(3rem, 7vw, 6\.4rem\);/);
   assert.doesNotMatch(designSettings, /page_route_title.*--type-h1-route/s);
-  assert.doesNotMatch(fields, /page_route_title|Page \/ Route Title|design_page_route_title/i);
-  assert.doesNotMatch(page, /page_route_title|Page \/ Route Title|design_page_route_title/i);
+  assert.match(fields, /name="design_page_route_title_scale"/);
+  assert.match(page, /page_route_title/);
 });
 
 test("no generic H1 control or unrelated typography family is introduced", async () => {
