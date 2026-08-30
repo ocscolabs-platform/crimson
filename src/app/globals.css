@@ -389,7 +389,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-editor-form label:nth-child(3), .admin-editor-form label:nth-child(4), .admin-editor-form label:nth-child(5), .admin-editor-form label:nth-child(6), .admin-editor-form button { grid-column: 1 / -1; }
 .admin-textarea { min-height: 130px; resize: vertical; }
 .admin-select-wrap { position: relative; display: block; min-width: 0; width: 100%; }
-.admin-select { width: 100%; appearance: none; padding: 13px 44px 13px 14px; }
+.admin-select { width: 100%; appearance: none; font-size: .78rem; font-weight: 700; line-height: normal; padding: 13px 44px 13px 14px; }
 .admin-input.admin-select { padding-right: 44px; }
 .admin-select-caret { position: absolute; top: 50%; right: 13px; width: 16px; height: 16px; color: #cfcfcf; pointer-events: none; transform: translateY(-50%); transition: color 180ms ease-out; }
 .admin-select-wrap:focus-within .admin-select-caret { color: var(--green); }
@@ -548,9 +548,9 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-forgot-link:hover, .admin-forgot-link:focus-visible { color: var(--green); }
 .admin-back-link { display: inline-block; margin-top: 28px; color: #9a9a9a; font-size: .8rem; font-weight: 700; }
 .admin-back-link:hover { color: var(--green); }
-.admin-content-section { border-top: 1px solid rgb(255 255 255 / 16%); padding: 48px 0 64px; }
+.admin-content-section { border-top: 1px solid rgb(255 255 255 / 16%); padding: 36px 0 48px; }
 .admin-content-disclosure { display: block; }
-.admin-disclosure-summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .7fr); align-items: end; gap: 48px; min-height: 76px; cursor: pointer; list-style: none; }
+.admin-disclosure-summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .7fr); align-items: end; gap: 32px; min-height: 64px; cursor: pointer; list-style: none; }
 .admin-disclosure-summary::-webkit-details-marker, .admin-page-metadata-summary::-webkit-details-marker { display: none; }
 .admin-disclosure-summary h2 { margin: 12px 0 0; font-size: clamp(1.7rem, 3vw, 2.7rem); letter-spacing: -.05em; line-height: 1.05; }
 .admin-disclosure-summary-side { display: flex; align-items: end; justify-content: space-between; gap: 20px; min-width: 0; }
@@ -558,7 +558,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-content-disclosure[open] > .admin-disclosure-summary .admin-disclosure-icon, .admin-page-metadata-card[open] > .admin-page-metadata-summary .admin-disclosure-icon { transform: translateY(2px) rotate(225deg); }
 .admin-disclosure-summary:hover .admin-disclosure-icon, .admin-disclosure-summary:focus-visible .admin-disclosure-icon, .admin-page-metadata-summary:hover .admin-disclosure-icon, .admin-page-metadata-summary:focus-visible .admin-disclosure-icon { border-color: var(--green); }
 .admin-disclosure-summary:focus-visible, .admin-page-metadata-summary:focus-visible { outline: 2px solid var(--green); outline-offset: 5px; }
-.admin-content-section-body { display: grid; gap: 28px; margin-top: 36px; }
+.admin-content-section-body { display: grid; gap: 24px; margin-top: 28px; }
 .admin-disclosure-note { margin: 0; color: #8c8c8c; font-size: .82rem; line-height: 1.6; }
 .admin-content-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--admin-space-4); max-width: 920px; }
 .admin-color-grid { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
@@ -574,7 +574,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-typography-grid label { display: grid; gap: 9px; color: #c7c7c7; font-size: .78rem; font-weight: 700; }
 .admin-typography-grid .admin-input { min-width: 0; }
 .admin-field-unit { color: #8c8c8c; font-size: .68rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
-.admin-design-settings-actions { display: grid; gap: 18px; max-width: 920px; }
+.admin-design-settings-actions { display: grid; gap: 12px; max-width: 920px; }
 .admin-design-reset-control { display: grid; gap: 14px; }
 .admin-design-reset-control > .button { justify-self: start; }
 .admin-content-form label, .admin-content-row label, .admin-page-metadata-form label { display: grid; gap: 9px; color: #c7c7c7; font-size: .78rem; font-weight: 700; }
