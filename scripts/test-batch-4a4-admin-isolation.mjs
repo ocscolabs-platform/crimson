@@ -64,11 +64,13 @@ test("the public root mapping remains the Batch 4A2 boundary", async () => {
   assert.match(mapper, /DESIGN_SETTINGS_V1_COLOR_KEYS\.map\(\(key\) => \[`--\$\{key\}`, settings\.colors\[key\]\]\)/);
 });
 
-test("no Design Settings CMS controls or admin theme configuration were introduced", async () => {
+test("Design Settings controls do not become admin theme configuration", async () => {
   const adminDashboard = await source("src/app/admin/page.tsx");
   const adminContent = await source("src/app/admin/content/page.tsx");
-  assert.doesNotMatch(adminDashboard, /Design Settings|color picker|Reset to Default/i);
-  assert.doesNotMatch(adminContent, /Design Settings|color picker|Reset to Default/i);
+  assert.match(adminDashboard, /Design Settings/);
+  assert.match(adminContent, /Design Settings/);
+  assert.doesNotMatch(adminDashboard, /color picker|Reset to Default|adminTheme/i);
+  assert.doesNotMatch(adminContent, /Reset to Default|adminTheme/i);
   assert.doesNotMatch(adminDashboard, /designSettings|adminTheme/i);
-  assert.doesNotMatch(adminContent, /designSettings|adminTheme/i);
+  assert.match(adminContent, /designSettings/);
 });

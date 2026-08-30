@@ -43,6 +43,7 @@ export default async function AdminDashboardPage() {
         <nav className="admin-nav" aria-label="CMS sections">
           <AdminPendingLink href="#overview" pendingLabel="Opening Overview…">Overview</AdminPendingLink>
           {membership.role ? <AdminPendingLink href="/crimson-admin-control/content" pendingLabel="Opening Global content…">Global content</AdminPendingLink> : null}
+          {membership.role ? <AdminPendingLink href="/crimson-admin-control/content#design-settings" pendingLabel="Opening Design Settings…">Design Settings</AdminPendingLink> : null}
           {membership.role ? <AdminPendingLink href="/crimson-admin-control/content/pages" pendingLabel="Opening Pages…">Pages</AdminPendingLink> : null}
           {membership.role && (membership.role === "owner" || membership.accessScope === "full_cms" || membership.insightsAccess) ? <AdminPendingLink href="/crimson-admin-control/insights" pendingLabel="Opening Insights…">Insights</AdminPendingLink> : null}
           <AdminPendingLink href="#services-records" pendingLabel="Opening Services…" highlightTargetId="services-records">Services</AdminPendingLink>
