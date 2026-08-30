@@ -122,9 +122,11 @@ test("Home Hero Title runtime mapping remains on the approved semantic variables
   assert.doesNotMatch(css, /home_hero_title|home-hero-scale/);
 });
 
-test("no Home Hero Title CMS control or separate workflow is introduced", async () => {
+test("Home Hero Title remains on the existing Design Settings workflow", async () => {
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
   const page = await source("src/app/admin/content/page.tsx");
-  assert.doesNotMatch(fields, /home_hero_title|Home Hero Title|design_home_hero|Hero title scale/i);
-  assert.doesNotMatch(page, /home_hero_title|Home Hero Title|design_home_hero|Hero title scale/i);
+  assert.match(fields, /name="design_home_hero_title_scale"/);
+  assert.match(page, /saveDesignSettings/);
+  assert.doesNotMatch(fields, /design_home_hero_(?:weight|line_height|letter_spacing|font|breakpoint|mobile)/i);
+  assert.doesNotMatch(page, /design_home_hero_(?:weight|line_height|letter_spacing|font|breakpoint|mobile)/i);
 });

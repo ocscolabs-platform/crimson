@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import AdminSelect from "@/app/admin/AdminSelect";
 import {
   DESIGN_SETTINGS_V1_COLOR_KEYS,
   type DesignSettingsColorKey,
   type DesignSettingsEyebrow,
+  type DesignSettingsHomeHeroTitle,
 } from "@/lib/design-settings";
 
 const COLOR_LABELS: Record<DesignSettingsColorKey, string> = {
@@ -21,6 +23,7 @@ const COLOR_LABELS: Record<DesignSettingsColorKey, string> = {
 type DesignSettingsFieldsProps = {
   values: Record<DesignSettingsColorKey, string>;
   eyebrow: DesignSettingsEyebrow;
+  homeHeroTitle: DesignSettingsHomeHeroTitle;
   disabled?: boolean;
 };
 
@@ -29,10 +32,20 @@ function isHex(value: string) {
 }
 
 const EYEBROW_WEIGHTS = [400, 500, 600, 700, 800] as const;
+const HOME_HERO_TITLE_SCALES = [
+  { label: "80%", value: "0.8" },
+  { label: "85%", value: "0.85" },
+  { label: "90%", value: "0.9" },
+  { label: "95%", value: "0.95" },
+  { label: "100% — Default", value: "1" },
+  { label: "105%", value: "1.05" },
+  { label: "110%", value: "1.1" },
+] as const;
 
-export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, disabled = false }: DesignSettingsFieldsProps) {
+export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, homeHeroTitle: homeHeroTitleValues, disabled = false }: DesignSettingsFieldsProps) {
   const [colors, setColors] = useState(values);
   const [eyebrow, setEyebrow] = useState(eyebrowValues);
+  const [homeHeroTitle, setHomeHeroTitle] = useState(homeHeroTitleValues);
 
   function updateColor(key: DesignSettingsColorKey, value: string) {
     setColors((current) => ({ ...current, [key]: value }));
@@ -40,6 +53,10 @@ export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, d
 
   function updateEyebrow<K extends keyof DesignSettingsEyebrow>(key: K, value: DesignSettingsEyebrow[K]) {
     setEyebrow((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateHomeHeroTitle(value: string) {
+    setHomeHeroTitle({ scale: Number(value) });
   }
 
   return (
@@ -144,6 +161,25 @@ export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, d
             />
           </label>
         </div>
+      </fieldset>
+      <fieldset className="admin-typography-fieldset">
+        <legend>Typography <small>Home Hero Title</small></legend>
+        <div className="admin-typography-grid">
+          <label>
+            <span>Title Size</span>
+            <AdminSelect
+              name="design_home_hero_title_scale"
+              value={String(homeHeroTitle.scale)}
+              onChange={(event) => updateHomeHeroTitle(event.target.value)}
+              aria-label="Home Hero Title size"
+              disabled={disabled}
+              required
+            >
+              {HOME_HERO_TITLE_SCALES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </AdminSelect>
+          </label>
+        </div>
+        <p className="admin-section-note">Adjusts the Home hero title size while preserving its responsive behavior.</p>
       </fieldset>
     </>
   );

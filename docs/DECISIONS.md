@@ -611,3 +611,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Read the normalized published `typography.home_hero_title.scale` at the existing root Design Settings mapper and emit only the established `--type-h1-hero-size` and `--type-h1-hero-mobile-size` variables. Scale every min, fluid, and max component of the existing desktop and mobile clamp formulas, returning the exact current formulas at `1.0` and rounding generated numbers deterministically. Do not add inline styles, client-side scaling, CMS controls, or any other H1 mapping.
 - **Reason:** The existing semantic variables already form the public Home and authenticated Home Preview boundary. Server-side generation keeps the bounded contract responsive and prevents CSS injection while preserving the current selector and layout architecture.
 - **Consequence:** The published default `1.0` is visually equivalent to the current design; Colors and Eyebrow runtime variables remain unchanged; ordinary admin pages do not consume the Home Hero variables; authenticated Home PageDocument Preview inherits the same published scale through the root layout. Owner control remains deferred to T3.
+
+## ADR-084 - Expose Home Hero Title size as a bounded percentage selector
+
+- **Date:** 2026-08-31
+- **Status:** Proposed for staging review in Display Typography T3
+- **Decision:** Extend the existing Design Settings Typography surface with one separated Home Hero Title `Title Size` selector using the existing `AdminSelect` styling. Expose only `80%`, `85%`, `90%`, `95%`, `100% — Default`, `105%`, and `110%`, mapping exactly to the validated numeric scales `0.80` through `1.10`. Save through the existing `site_settings:default` revision and Owner publication path.
+- **Reason:** The Owner needs a practical way to tune the Home Hero Title for laptop-height layouts without editing CSS or changing other typography contexts. A small percentage allowlist preserves the responsive runtime contract and keeps the design setting understandable.
+- **Consequence:** Home Hero size changes remain private until Owner publication; Colors, Eyebrow, unrelated site settings, admin isolation, and all other H1 contexts remain unchanged. No raw CSS, mobile-specific size, weight, line-height, tracking, font, breakpoint, button setting, or second workflow is introduced.
