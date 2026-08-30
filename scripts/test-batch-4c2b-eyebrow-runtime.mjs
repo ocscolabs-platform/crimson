@@ -23,7 +23,7 @@ test("published eyebrow values map to the existing semantic variables with CSS u
   assert.equal(variables["--type-eyebrow-letter-spacing"], "0.2em");
   assert.deepEqual(
     Object.keys(variables),
-    [...DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => `--${key}`), "--type-eyebrow-size", "--type-eyebrow-weight", "--type-eyebrow-line-height", "--type-eyebrow-letter-spacing"],
+    [...DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => `--${key}`), "--type-eyebrow-size", "--type-eyebrow-weight", "--type-eyebrow-line-height", "--type-eyebrow-letter-spacing", "--type-h1-hero-size", "--type-h1-hero-mobile-size"],
   );
 });
 
