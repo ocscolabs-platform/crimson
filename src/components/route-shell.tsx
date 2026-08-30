@@ -6,6 +6,7 @@ import type { PublicPage } from "@/lib/page-content";
 import type { NavigationItem } from "@/lib/site-navigation";
 
 type RouteChrome = { settings: SiteSettings; primaryNavigation: NavigationItem[]; footerNavigation: NavigationItem[] };
+export type RouteTitleContext = "standard" | "service-detail" | "work-detail";
 
 type RouteShellProps = {
   eyebrow: string;
@@ -15,10 +16,11 @@ type RouteShellProps = {
   page?: PublicPage;
   chrome?: RouteChrome;
   preview?: { pageLabel: string; status: "draft" | "review"; revisionId: string; returnHref: string };
+  titleContext: RouteTitleContext;
   children: ReactNode;
 };
 
-export async function RouteShell({ eyebrow, title, intro, pageSlug, page: suppliedPage, chrome: suppliedChrome, preview, children }: RouteShellProps) {
+export async function RouteShell({ eyebrow, title, intro, pageSlug, page: suppliedPage, chrome: suppliedChrome, preview, titleContext, children }: RouteShellProps) {
   const [chrome, page] = suppliedChrome && suppliedPage !== undefined
     ? [suppliedChrome, suppliedPage]
     : suppliedChrome
@@ -39,7 +41,7 @@ export async function RouteShell({ eyebrow, title, intro, pageSlug, page: suppli
         </div>
         <div className="shell route-hero-content">
           <p className="overline overline-green">{resolvedEyebrow}</p>
-          <h1>{resolvedTitle}</h1>
+          <h1 className={`route-hero-title route-hero-title-${titleContext}`}>{resolvedTitle}</h1>
           <p className="route-hero-intro">{resolvedIntro}</p>
         </div>
       </section>

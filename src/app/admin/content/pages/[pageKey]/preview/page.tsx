@@ -39,14 +39,14 @@ export default async function PageDocumentPreviewPage({ params, searchParams }: 
     const servicesResult = await getPublishedPageServices();
     if (servicesResult.kind !== "resolved") notFound();
     const { hero, capabilities, plan } = createServicesPageRenderData(preview.document);
-    return <RouteShell eyebrow={hero.eyebrow} title={hero.title} intro={hero.intro} chrome={chrome} preview={previewProps}><ServicesPageBody capabilities={capabilities} plan={plan} services={servicesResult.services} /></RouteShell>;
+    return <RouteShell eyebrow={hero.eyebrow} title={hero.title} intro={hero.intro} chrome={chrome} titleContext="standard" preview={previewProps}><ServicesPageBody capabilities={capabilities} plan={plan} services={servicesResult.services} /></RouteShell>;
   }
 
   if (preview.pageKey === "about") {
     const { hero, body } = createAboutPageRenderData(preview.document);
-    return <RouteShell eyebrow={hero.eyebrow} title={hero.title} intro={hero.intro} chrome={chrome} preview={previewProps}><AboutPageBody body={body} /></RouteShell>;
+    return <RouteShell eyebrow={hero.eyebrow} title={hero.title} intro={hero.intro} chrome={chrome} titleContext="standard" preview={previewProps}><AboutPageBody body={body} /></RouteShell>;
   }
 
   const { hero, body } = createContactPageRenderData(preview.document);
-  return <RouteShell eyebrow={hero.eyebrow} title={hero.title} intro={hero.intro} chrome={chrome} preview={previewProps}><ContactPageBody body={body} preview /></RouteShell>;
+  return <RouteShell eyebrow={hero.eyebrow} title={hero.title} intro={hero.intro} chrome={chrome} titleContext="standard" preview={previewProps}><ContactPageBody body={body} preview /></RouteShell>;
 }

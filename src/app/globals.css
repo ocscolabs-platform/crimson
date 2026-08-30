@@ -38,6 +38,7 @@
   --type-h1-hero-mobile-size: clamp(2.9rem, 15vw, 4.5rem);
   --type-h1-hero-letter-spacing: -.065em;
   --type-h1-route-size: clamp(3rem, 7vw, 6.4rem);
+  --type-h1-page-route-size: clamp(3rem, 7vw, 6.4rem);
   --type-h1-route-letter-spacing: -.06em;
   --type-h1-article-size: clamp(2.8rem, 7vw, 6.6rem);
   --type-h1-article-letter-spacing: -.07em;
@@ -201,6 +202,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .route-hero-glass-two { top: 14%; right: -8%; width: 40%; height: 74%; transform: rotate(19deg); }
 .route-hero-content { position: relative; z-index: 3; padding: 100px 0 116px; }
 .route-hero-content h1 { max-width: 930px; margin: 0; color: var(--white); font-size: var(--type-h1-route-size); font-weight: var(--type-h1-weight); letter-spacing: var(--type-h1-route-letter-spacing); line-height: var(--type-h1-line-height); }
+.route-hero-content h1.route-hero-title-standard { font-size: var(--type-h1-page-route-size); }
 .route-hero-intro { max-width: 600px; margin: 34px 0 0; color: var(--muted); font-size: clamp(1.05rem, 1.8vw, 1.3rem); line-height: 1.65; }
 .route-section { min-height: 360px; }
 .route-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--grid-gap); }

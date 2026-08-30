@@ -619,3 +619,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Extend the existing Design Settings Typography surface with one separated Home Hero Title `Title Size` selector using the existing `AdminSelect` styling. Expose only `80%`, `85%`, `90%`, `95%`, `100% — Default`, `105%`, and `110%`, mapping exactly to the validated numeric scales `0.80` through `1.10`. Save through the existing `site_settings:default` revision and Owner publication path.
 - **Reason:** The Owner needs a practical way to tune the Home Hero Title for laptop-height layouts without editing CSS or changing other typography contexts. A small percentage allowlist preserves the responsive runtime contract and keeps the design setting understandable.
 - **Consequence:** Home Hero size changes remain private until Owner publication; Colors, Eyebrow, unrelated site settings, admin isolation, and all other H1 contexts remain unchanged. No raw CSS, mobile-specific size, weight, line-height, tracking, font, breakpoint, button setting, or second workflow is introduced.
+
+## ADR-085 - Split standard Page / Route Title from fixed detail titles
+
+- **Date:** 2026-08-31
+- **Status:** Proposed for staging review in Page / Route Title P2
+- **Decision:** Give `RouteShell` an explicit semantic title context. Standard public routes and standard PageDocument Previews use a dedicated `--type-h1-page-route-size` variable derived from the normalized published `typography.page_route_title.scale` and the existing `clamp(3rem, 7vw, 6.4rem)` formula. Service Detail and Work Detail, including Case Study Preview, continue using the fixed `--type-h1-route-size` formula.
+- **Reason:** Page / Route Title scaling must affect only standard Page / Route contexts. An explicit boundary prevents a future setting from recoloring or resizing service and work detail titles while reusing the existing responsive formulas and shared RouteShell presentation.
+- **Consequence:** Scale values remain bounded, responsive, and code-owned; `1.00` is exact visual parity. Authenticated standard PageDocument Previews inherit the published public scale, while Case Study Preview remains Work Detail. No CMS control, generic H1 mapping, inline style, migration, or change to Home Hero, Colors, or Eyebrow is introduced.

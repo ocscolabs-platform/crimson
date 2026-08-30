@@ -52,6 +52,7 @@ export default async function WorkPage() {
       intro="A preview of live prototypes and upcoming projects. Full case studies will be added as facts, outcomes, media, and publication permissions are approved."
       chrome={chrome}
       page={page}
+      titleContext="standard"
     >
       <OrderedPageSections
         sections={pageSections}
