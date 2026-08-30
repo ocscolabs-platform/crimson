@@ -170,6 +170,7 @@ async function saveDesignSettings(formData: FormData) {
       copy: String(formData.get("design_copy") || "").trim().toLowerCase(),
     },
     typography: {
+      ...currentDesignSettings.typography,
       eyebrow: {
         size: Number(formData.get("design_eyebrow_size")),
         weight: Number.parseInt(String(formData.get("design_eyebrow_weight") || ""), 10),
