@@ -40,6 +40,7 @@
     "test:batch2b2:manual-ui": "node --test scripts/test-batch-2b2-manual-scheduling-ui.mjs",
     "test:batch2c1:execution": "node --test scripts/test-batch-2c1-scheduled-execution.mjs",
     "test:batch2c2a1:idle": "node --test scripts/test-batch-2c2a1-idle-fix.mjs",
+    "test:batch3a:case-study-create": "node --test scripts/test-batch-3a-case-study-create-rpc.mjs",
     "test:phase6:owner-published-edit": "node scripts/test-phase6-owner-published-edit.mjs",
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
     "test:phase6:migration33": "node --test scripts/test-phase6-migration33.mjs",
