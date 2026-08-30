@@ -75,7 +75,7 @@ export default function PageDocumentPublishControl({
         disabled={pending}
         onClick={() => setConfirmationOpen(true)}
       >
-        Publish changes <span aria-hidden="true">↗</span>
+        Publish changes
       </button>
 
       {confirmationOpen && state.status !== "success" ? (

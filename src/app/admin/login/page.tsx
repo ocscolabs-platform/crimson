@@ -64,7 +64,7 @@ export default function AdminLoginPage() {
               </>
             ) : (
               <>
-                Sign in <span aria-hidden="true">↗</span>
+                Sign in
               </>
             )}
           </button>

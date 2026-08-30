@@ -7,6 +7,7 @@ type AdminSubmitButtonProps = {
   pendingLabel?: string;
   variant?: "primary" | "secondary";
   disabled?: boolean;
+  standalone?: boolean;
 };
 
 export default function AdminSubmitButton({
@@ -14,21 +15,20 @@ export default function AdminSubmitButton({
   pendingLabel = "Saving…",
   variant = "primary",
   disabled = false,
+  standalone = false,
 }: AdminSubmitButtonProps) {
   const { pending } = useFormStatus();
   const locked = pending || disabled;
 
   return (
-    <button className={`button ${variant === "secondary" ? "admin-button-secondary" : "button-primary"} admin-submit`} type="submit" disabled={locked}>
+    <button className={`button ${variant === "secondary" ? "admin-button-secondary" : "button-primary"} admin-submit${standalone ? " admin-submit-standalone" : ""}`} type="submit" disabled={locked}>
       {locked ? (
         <>
           <span className="admin-button-spinner" aria-hidden="true" />
           {pendingLabel}
         </>
       ) : (
-        <>
-          {label} <span aria-hidden="true">↗</span>
-        </>
+        label
       )}
     </button>
   );
