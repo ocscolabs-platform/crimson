@@ -542,7 +542,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgb(0 200 83 / 16%); outline: none; }
 .admin-page button:focus-visible, .admin-page select:focus-visible, .admin-page input:focus-visible, .admin-page textarea:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
 .admin-submit { width: 100%; margin-top: 8px; }
-.admin-submit-standalone { width: fit-content; min-width: 170px; }
+.admin-submit-standalone { width: fit-content; min-width: 170px; justify-self: start; }
 .admin-error { margin: 0; border-radius: 8px; background: rgb(255 92 92 / 10%); color: #ffb2b2; font-size: .8rem; line-height: 1.5; padding: 12px 14px; }
 .admin-forgot-link { justify-self: start; color: #a8a8a8; font-size: .76rem; font-weight: 700; }
 .admin-forgot-link:hover, .admin-forgot-link:focus-visible { color: var(--green); }
