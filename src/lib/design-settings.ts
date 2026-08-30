@@ -16,6 +16,8 @@ export type DesignSettingsV1 = {
   colors: Record<DesignSettingsColorKey, string>;
 };
 
+export type DesignSettingsCssVariables = Record<`--${DesignSettingsColorKey}`, string>;
+
 const DEFAULT_COLORS: Record<DesignSettingsColorKey, string> = {
   ink: "#0a0a0a",
   graphite: "#1a1a1a",
@@ -85,4 +87,11 @@ export function normalizeDesignSettingsV1(input: unknown): DesignSettingsV1 {
   ) as Record<DesignSettingsColorKey, string>;
 
   return { version: 1, colors };
+}
+
+export function designSettingsToCssVariables(input: unknown): DesignSettingsCssVariables {
+  const settings = normalizeDesignSettingsV1(input);
+  return Object.fromEntries(
+    DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => [`--${key}`, settings.colors[key]]),
+  ) as DesignSettingsCssVariables;
 }

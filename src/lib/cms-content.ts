@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { getLocalPage, type PageHero, type PublicPage } from "@/lib/page-content";
 import { getPageDocumentHero, readPageContent } from "@/lib/page-document";
@@ -173,7 +174,7 @@ function getPageHero(content: unknown, slug: string): Partial<PageHero> {
   };
 }
 
-export async function getPublishedSiteSettings(): Promise<SiteSettings> {
+export const getPublishedSiteSettings = cache(async function getPublishedSiteSettings(): Promise<SiteSettings> {
   const client = getPublicCmsClient();
 
   if (!client) {
@@ -223,7 +224,7 @@ export async function getPublishedSiteSettings(): Promise<SiteSettings> {
     primaryContactPath: data.primary_contact_path || localSiteSettings.primaryContactPath,
     designSettings: normalizeDesignSettingsV1(data.design_settings),
   };
-}
+});
 
 export async function getPublishedDesignSettings(): Promise<DesignSettingsV1> {
   return (await getPublishedSiteSettings()).designSettings;
