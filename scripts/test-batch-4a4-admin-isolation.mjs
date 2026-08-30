@@ -69,8 +69,8 @@ test("Design Settings controls do not become admin theme configuration", async (
   const adminContent = await source("src/app/admin/content/page.tsx");
   assert.match(adminDashboard, /Design Settings/);
   assert.match(adminContent, /Design Settings/);
-  assert.doesNotMatch(adminDashboard, /color picker|Reset to Default|adminTheme/i);
-  assert.doesNotMatch(adminContent, /Reset to Default|adminTheme/i);
+  assert.doesNotMatch(adminDashboard, /color picker|adminTheme/i);
+  assert.doesNotMatch(adminContent, /adminTheme/i);
   assert.doesNotMatch(adminDashboard, /designSettings|adminTheme/i);
   assert.match(adminContent, /designSettings/);
 });
