@@ -110,15 +110,17 @@ test("the storage family maps only to approved eyebrow runtime variables and is 
   assert.match(designSettings, /--type-eyebrow-line-height/);
   assert.match(designSettings, /--type-eyebrow-letter-spacing/);
   assert.doesNotMatch(designSettings, /--type-(?:h1|h2|h3|body|lead)-/);
-  assert.doesNotMatch(fields, /Typography|Eyebrow|font-family|line-height|letter-spacing/i);
-  assert.doesNotMatch(page, /Typography|Eyebrow|font-family|line-height|letter-spacing/);
+  assert.match(fields, /admin-typography-fieldset/);
+  assert.match(fields, /design_eyebrow_letter_spacing/);
+  assert.doesNotMatch(fields, /font-family|Typography Reset/i);
+  assert.doesNotMatch(page, /font-family|Typography Reset/);
 });
 
 test("existing color controls retain their current entry point and validation", async () => {
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
   const page = await source("src/app/admin/content/page.tsx");
   assert.match(fields, /DESIGN_SETTINGS_V1_COLOR_KEYS/);
-  assert.match(page, /Save colors as review/);
+  assert.match(page, /Save Design Settings as review/);
   assert.match(page, /validateDesignSettingsV1\(designSettings\)/);
   assert.match(page, /saved=design-reset/);
 });
