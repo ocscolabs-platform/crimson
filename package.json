@@ -53,6 +53,7 @@
     "test:batch4c2c:eyebrow-controls": "node --test scripts/test-batch-4c2c-eyebrow-controls.mjs",
     "test:batch4d1:home-hero-title-contract": "node --test scripts/test-batch-4d1-home-hero-title-contract.mjs",
     "test:batch4d2:home-hero-title-runtime": "node --test scripts/test-batch-4d2-home-hero-title-runtime.mjs",
+    "test:batch4d3:home-hero-title-control": "node --test scripts/test-batch-4d3-home-hero-title-control.mjs",
     "test:phase6:owner-published-edit": "node scripts/test-phase6-owner-published-edit.mjs",
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
     "test:phase6:migration33": "node --test scripts/test-phase6-migration33.mjs",
