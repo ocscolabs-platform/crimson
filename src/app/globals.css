@@ -390,7 +390,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-textarea { min-height: 130px; resize: vertical; }
 .admin-select-wrap { position: relative; display: block; min-width: 0; width: 100%; }
 .admin-select { width: 100%; appearance: none; font-size: .78rem; font-weight: 700; line-height: normal; padding: 13px 44px 13px 14px; }
-.admin-input.admin-select { padding-right: 44px; }
+.admin-input.admin-select { font-size: .78rem; font-weight: 700; line-height: normal; padding-right: 44px; }
 .admin-select-caret { position: absolute; top: 50%; right: 13px; width: 16px; height: 16px; color: #cfcfcf; pointer-events: none; transform: translateY(-50%); transition: color 180ms ease-out; }
 .admin-select-wrap:focus-within .admin-select-caret { color: var(--green); }
 .admin-select:disabled + .admin-select-caret { opacity: .58; }
