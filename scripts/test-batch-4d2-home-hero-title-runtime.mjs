@@ -90,13 +90,15 @@ test("the existing semantic variables remain the public Home selector contract",
   assert.match(mapper, /--type-h1-hero-mobile-size/);
 });
 
-test("no Home Hero CMS control or second typography system is introduced", async () => {
+test("the Home Hero control remains a single size selector with no second typography system", async () => {
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
   const page = await source("src/app/admin/content/page.tsx");
-  assert.doesNotMatch(fields, /home_hero_title|Home Hero Title|design_home_hero|Hero title scale/i);
-  assert.doesNotMatch(page, /home_hero_title|Home Hero Title|design_home_hero|Hero title scale/i);
-  assert.doesNotMatch(fields, /slider|percentage|Typography Reset/i);
-  assert.doesNotMatch(page, /slider|percentage|Typography Reset/i);
+  assert.equal((fields.match(/name="design_home_hero_title_scale"/g) ?? []).length, 1);
+  assert.equal((page.match(/design_home_hero_title_scale/g) ?? []).length, 1);
+  assert.doesNotMatch(fields, /design_home_hero_(?:weight|line_height|letter_spacing|font|breakpoint|mobile)/i);
+  assert.doesNotMatch(page, /design_home_hero_(?:weight|line_height|letter_spacing|font|breakpoint|mobile)/i);
+  assert.doesNotMatch(fields, /slider|Typography Reset/i);
+  assert.doesNotMatch(page, /slider|Typography Reset/i);
 });
 
 test("ordinary admin pages do not consume Home Hero semantic variables", async () => {
