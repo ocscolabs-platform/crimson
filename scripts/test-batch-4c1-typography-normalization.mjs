@@ -75,11 +75,11 @@ test("component-specific headings and supporting text remain outside the shared 
   assert.doesNotMatch(css, /type-h4|type-h5|type-small/);
 });
 
-test("normalization does not add typography storage, CMS controls, or runtime CMS values", async () => {
+test("normalization does not add CMS typography controls or runtime CMS values", async () => {
   const designSettings = await source("src/lib/design-settings.ts");
   const adminContent = await source("src/app/admin/content/page.tsx");
   const migration = await source("supabase/migrations/20260831110000_add_design_settings_storage_contract.sql");
-  assert.doesNotMatch(designSettings, /typography|type-/i);
-  assert.doesNotMatch(adminContent, /typography|type-/i);
-  assert.doesNotMatch(migration, /typography|type-/i);
+  assert.match(designSettings, /typography/);
+  assert.doesNotMatch(adminContent, /Typography|Eyebrow|font-family|line-height|letter-spacing/);
+  assert.doesNotMatch(migration, /--type-|designSettings\.typography/i);
 });

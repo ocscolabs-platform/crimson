@@ -11,9 +11,28 @@ export const DESIGN_SETTINGS_V1_COLOR_KEYS = [
 
 export type DesignSettingsColorKey = (typeof DESIGN_SETTINGS_V1_COLOR_KEYS)[number];
 
+export const DESIGN_SETTINGS_V1_EYEBROW_KEYS = [
+  "size",
+  "weight",
+  "line_height",
+  "letter_spacing",
+] as const;
+
+export type DesignSettingsEyebrow = {
+  size: number;
+  weight: 400 | 500 | 600 | 700 | 800;
+  line_height: number;
+  letter_spacing: number;
+};
+
+export type DesignSettingsTypographyV1 = {
+  eyebrow: DesignSettingsEyebrow;
+};
+
 export type DesignSettingsV1 = {
   version: 1;
   colors: Record<DesignSettingsColorKey, string>;
+  typography?: DesignSettingsTypographyV1;
 };
 
 export type DesignSettingsCssVariables = Record<`--${DesignSettingsColorKey}`, string>;
@@ -32,6 +51,14 @@ const DEFAULT_COLORS: Record<DesignSettingsColorKey, string> = {
 export const DEFAULT_DESIGN_SETTINGS_V1: DesignSettingsV1 = Object.freeze({
   version: 1,
   colors: Object.freeze({ ...DEFAULT_COLORS }),
+  typography: Object.freeze({
+    eyebrow: Object.freeze({
+      size: 0.72,
+      weight: 800,
+      line_height: 1.4,
+      letter_spacing: 0.16,
+    }),
+  }),
 });
 
 type RecordValue = Record<string, unknown>;
@@ -50,6 +77,29 @@ function isSafeColor(value: unknown): value is string {
   return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
 }
 
+const DESIGN_SETTINGS_EYEBROW_WEIGHTS = [400, 500, 600, 700, 800] as const;
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isSafeEyebrowValue(key: (typeof DESIGN_SETTINGS_V1_EYEBROW_KEYS)[number], value: unknown): boolean {
+  if (key === "weight") return DESIGN_SETTINGS_EYEBROW_WEIGHTS.includes(value as (typeof DESIGN_SETTINGS_EYEBROW_WEIGHTS)[number]);
+  if (!isFiniteNumber(value)) return false;
+  if (key === "size") return value >= 0.5 && value <= 1.25;
+  if (key === "line_height") return value >= 1 && value <= 2;
+  return value > 0 && value <= 0.3;
+}
+
+function validateEyebrow(input: RecordValue, issues: string[]) {
+  exactKeys(input, DESIGN_SETTINGS_V1_EYEBROW_KEYS, "design_settings.typography.eyebrow", issues);
+  for (const key of DESIGN_SETTINGS_V1_EYEBROW_KEYS) {
+    if (key in input && !isSafeEyebrowValue(key, input[key])) {
+      issues.push(`design_settings.typography.eyebrow.${key}: outside the approved range`);
+    }
+  }
+}
+
 export type DesignSettingsValidation =
   | { success: true; value: DesignSettingsV1 }
   | { success: false; issues: string[] };
@@ -58,7 +108,7 @@ export function validateDesignSettingsV1(input: unknown): DesignSettingsValidati
   const issues: string[] = [];
   if (!isRecord(input)) return { success: false, issues: ["design_settings: expected object"] };
 
-  exactKeys(input, ["version", "colors"], "design_settings", issues);
+  exactKeys(input, ["version", "colors", "typography"], "design_settings", issues);
   if (input.version !== 1) issues.push("design_settings.version: expected 1");
   if (!isRecord(input.colors)) {
     issues.push("design_settings.colors: expected object");
@@ -71,9 +121,24 @@ export function validateDesignSettingsV1(input: unknown): DesignSettingsValidati
     }
   }
 
+  if ("typography" in input) {
+    if (!isRecord(input.typography)) {
+      issues.push("design_settings.typography: expected object");
+    } else {
+      exactKeys(input.typography, ["eyebrow"], "design_settings.typography", issues);
+      if ("eyebrow" in input.typography) {
+        if (!isRecord(input.typography.eyebrow)) {
+          issues.push("design_settings.typography.eyebrow: expected object");
+        } else {
+          validateEyebrow(input.typography.eyebrow, issues);
+        }
+      }
+    }
+  }
+
   return issues.length > 0
     ? { success: false, issues: [...new Set(issues)] }
-    : { success: true, value: input as DesignSettingsV1 };
+    : { success: true, value: normalizeDesignSettingsV1(input) };
 }
 
 export function normalizeDesignSettingsV1(input: unknown): DesignSettingsV1 {
@@ -86,7 +151,14 @@ export function normalizeDesignSettingsV1(input: unknown): DesignSettingsV1 {
     DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => [key, isSafeColor(inputColors[key]) ? inputColors[key] : DEFAULT_COLORS[key]]),
   ) as Record<DesignSettingsColorKey, string>;
 
-  return { version: 1, colors };
+  const inputTypography = isRecord(input.typography) ? input.typography : {};
+  const inputEyebrow = isRecord(inputTypography.eyebrow) ? inputTypography.eyebrow : {};
+  const defaultEyebrow = DEFAULT_DESIGN_SETTINGS_V1.typography!.eyebrow;
+  const eyebrow = Object.fromEntries(
+    DESIGN_SETTINGS_V1_EYEBROW_KEYS.map((key) => [key, isSafeEyebrowValue(key, inputEyebrow[key]) ? inputEyebrow[key] : defaultEyebrow[key]]),
+  ) as DesignSettingsEyebrow;
+
+  return { version: 1, colors, typography: { eyebrow } };
 }
 
 export function designSettingsToCssVariables(input: unknown): DesignSettingsCssVariables {

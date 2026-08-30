@@ -53,6 +53,11 @@ async function saveRevision(
   }
 }
 
+async function getCurrentDesignSettingsForChange() {
+  const content = await getAdminGlobalContent();
+  return normalizeDesignSettingsV1(content.settings?.design_settings);
+}
+
 async function publishRevision(entityType: "site_settings" | "navigation_item" | "page" | "page_section", entityKey: string) {
   "use server";
 
@@ -150,7 +155,9 @@ async function saveDesignSettings(formData: FormData) {
   const { supabase, membership } = await requireMember();
   if (!canEditGlobalContent(membership.role)) redirectWithError("This role can review global content but cannot change it.");
 
+  const currentDesignSettings = await getCurrentDesignSettingsForChange();
   const designSettings = {
+    ...currentDesignSettings,
     version: 1 as const,
     colors: {
       ink: String(formData.get("design_ink") || "").trim().toLowerCase(),
@@ -180,7 +187,13 @@ async function resetDesignSettings() {
   const { supabase, membership } = await requireMember();
   if (!canEditGlobalContent(membership.role)) redirectWithError("This role can review global content but cannot change it.");
 
-  await saveRevision(supabase, "site_settings", "default", { design_settings: DEFAULT_DESIGN_SETTINGS_V1 });
+  const currentDesignSettings = await getCurrentDesignSettingsForChange();
+  await saveRevision(supabase, "site_settings", "default", {
+    design_settings: {
+      ...DEFAULT_DESIGN_SETTINGS_V1,
+      typography: currentDesignSettings.typography,
+    },
+  });
 
   for (const path of ["/", "/about", "/services", "/work", "/contact", "/insights", "/crimson-admin-control", "/crimson-admin-control/content"]) {
     revalidatePath(path);

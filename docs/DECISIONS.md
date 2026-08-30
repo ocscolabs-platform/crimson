@@ -571,3 +571,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Add one Design Settings entry point to the existing Global Content surface and expose only the eight validated public color tokens. Save the color document as a private `site_settings:default` Review revision through `cms_save_revision`; keep the existing Owner-only `cms_publish_revision` action authoritative.
 - **Reason:** The storage, validator, runtime mapping, and admin isolation contracts already exist. Reusing the current global-content page and revision merge preserves pending Draft/Review values, avoids a second publication system, and keeps the CMS visually independent from public colors.
 - **Consequence:** Color edits remain private until Owner publication. Invalid six-digit hex values cannot be saved, no unsupported token family is exposed, no migration or dependency is added, and public runtime colors continue to update only through the existing published `design_settings` path.
+
+## ADR-079 - Add the optional Design Settings eyebrow typography contract
+
+- **Date:** 2026-08-31
+- **Status:** Implemented in Batch 4C2A; runtime mapping and CMS controls remain deferred
+- **Decision:** Extend the existing `site_settings.design_settings` document with an optional, strictly typed `typography.eyebrow` family containing only numeric size, weight, line-height, and letter-spacing fields. Normalize absent or partial values to immutable Batch 4C1 defaults and carry the normalized document through the existing revision and Owner publication path.
+- **Reason:** Establish the first typography storage contract without adding a table, revision system, generic typography engine, or public visual change. Numeric bounds prevent arbitrary CSS from reaching a future runtime boundary.
+- **Consequence:** Existing color-only v1 documents remain valid. Colors Reset preserves a valid typography family. No typography CSS override, CMS control, font setting, or public visual change is introduced; runtime eyebrow mapping is deferred to Batch 4C2B.
