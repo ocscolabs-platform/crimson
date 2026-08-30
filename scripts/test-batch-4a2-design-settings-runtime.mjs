@@ -59,12 +59,12 @@ test("the root layout is the single server-rendered runtime theme boundary", asy
   }
 });
 
-test("published loading is request-deduplicated and admin controls remain unchanged", async () => {
+test("published loading is request-deduplicated and the admin theme remains unchanged", async () => {
   const loader = await source("src/lib/cms-content.ts");
   const admin = await source("src/app/admin/page.tsx");
 
   assert.match(loader, /cache\(/);
-  assert.doesNotMatch(admin, /Design Settings|color picker|Reset to Default/i);
+  assert.doesNotMatch(admin, /color picker|Reset to Default|adminTheme/i);
 });
 
 test("static defaults and existing public selectors remain intact", async () => {

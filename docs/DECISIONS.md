@@ -563,3 +563,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Override all eight approved color variables on the existing `.admin-page` root with the immutable Batch 4A1 current defaults. Keep authenticated public-content Preview routes outside that selector so they continue to inherit the published public Design Settings document.
 - **Reason:** Batch 4A3 confirmed that the Batch 4A2 root `<html>` variables inherit into the admin, where `--ink`, `--white`, and `--green` are directly used and shared button classes can consume additional tokens. A single existing admin-root override is the smallest stable boundary and avoids a second theme engine or component rewrites.
 - **Consequence:** Future public color changes cannot recolor the CMS or its login surface. Public homepage, RouteShell, Work, Insights, and authenticated public-content Preview continue to receive the public runtime values. No database configuration, admin theme editor, or Design Settings control is introduced.
+
+## ADR-078 - Reuse global content revisions for Design Settings color controls
+
+- **Date:** 2026-08-30
+- **Status:** Proposed for staging review in Batch 4B1; no additional settings architecture
+- **Decision:** Add one Design Settings entry point to the existing Global Content surface and expose only the eight validated public color tokens. Save the color document as a private `site_settings:default` Review revision through `cms_save_revision`; keep the existing Owner-only `cms_publish_revision` action authoritative.
+- **Reason:** The storage, validator, runtime mapping, and admin isolation contracts already exist. Reusing the current global-content page and revision merge preserves pending Draft/Review values, avoids a second publication system, and keeps the CMS visually independent from public colors.
+- **Consequence:** Color edits remain private until Owner publication. Invalid six-digit hex values cannot be saved, no unsupported token family is exposed, no migration or dependency is added, and public runtime colors continue to update only through the existing published `design_settings` path.
