@@ -109,13 +109,15 @@ test("Home Hero Title data preserves Colors and Eyebrow values during normalizat
   assert.equal(normalized.typography.home_hero_title.scale, 0.9);
 });
 
-test("Home Hero Title scale is not mapped to runtime CSS in T1", async () => {
+test("Home Hero Title runtime mapping remains on the approved semantic variables", async () => {
   const variables = designSettingsToCssVariables(documentWith({ home_hero_title: { scale: 0.9 } }));
+  assert.equal(variables["--type-h1-hero-size"], "clamp(2.88rem, 6.3vw, 6.21rem)");
+  assert.equal(variables["--type-h1-hero-mobile-size"], "clamp(2.61rem, 13.5vw, 4.05rem)");
   assert.equal("--type-h1-home-hero-scale" in variables, false);
-  assert.equal(Object.keys(variables).some((key) => key.includes("home-hero")), false);
   const designSettings = await source("src/lib/design-settings.ts");
   const css = await source("src/app/globals.css");
-  assert.doesNotMatch(designSettings, /--type-h1-home-hero-scale/);
+  assert.match(designSettings, /--type-h1-hero-size/);
+  assert.match(designSettings, /--type-h1-hero-mobile-size/);
   assert.match(css, /\.hero h1[^}]*var\(--type-h1-hero-size\)/s);
   assert.doesNotMatch(css, /home_hero_title|home-hero-scale/);
 });

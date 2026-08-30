@@ -47,7 +47,9 @@ export type DesignSettingsCssVariableKey =
   | "--type-eyebrow-size"
   | "--type-eyebrow-weight"
   | "--type-eyebrow-line-height"
-  | "--type-eyebrow-letter-spacing";
+  | "--type-eyebrow-letter-spacing"
+  | "--type-h1-hero-size"
+  | "--type-h1-hero-mobile-size";
 
 export type DesignSettingsCssVariables = Record<DesignSettingsCssVariableKey, string>;
 
@@ -131,6 +133,20 @@ function validateHomeHeroTitle(input: RecordValue, issues: string[]) {
   }
 }
 
+const HOME_HERO_TITLE_BASE_FORMULAS = Object.freeze({
+  desktop: Object.freeze({ minRem: 3.2, fluidVw: 7, maxRem: 6.9 }),
+  mobile: Object.freeze({ minRem: 2.9, fluidVw: 15, maxRem: 4.5 }),
+});
+
+function formatCssNumber(value: number): string {
+  return Number(value.toFixed(4)).toString();
+}
+
+function scaledClamp(formula: { minRem: number; fluidVw: number; maxRem: number }, scale: number, defaultFormula: string): string {
+  if (scale === 1) return defaultFormula;
+  return `clamp(${formatCssNumber(formula.minRem * scale)}rem, ${formatCssNumber(formula.fluidVw * scale)}vw, ${formatCssNumber(formula.maxRem * scale)}rem)`;
+}
+
 export type DesignSettingsValidation =
   | { success: true; value: DesignSettingsV1 }
   | { success: false; issues: string[] };
@@ -208,6 +224,7 @@ export function normalizeDesignSettingsV1(input: unknown): DesignSettingsV1 {
 export function designSettingsToCssVariables(input: unknown): DesignSettingsCssVariables {
   const settings = normalizeDesignSettingsV1(input);
   const eyebrow = settings.typography!.eyebrow;
+  const homeHeroScale = settings.typography!.home_hero_title.scale;
   return Object.fromEntries(
     [
       ...DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => [`--${key}`, settings.colors[key]]),
@@ -215,6 +232,8 @@ export function designSettingsToCssVariables(input: unknown): DesignSettingsCssV
       ["--type-eyebrow-weight", String(eyebrow.weight)],
       ["--type-eyebrow-line-height", String(eyebrow.line_height)],
       ["--type-eyebrow-letter-spacing", `${eyebrow.letter_spacing}em`],
+      ["--type-h1-hero-size", scaledClamp(HOME_HERO_TITLE_BASE_FORMULAS.desktop, homeHeroScale, "clamp(3.2rem, 7vw, 6.9rem)")],
+      ["--type-h1-hero-mobile-size", scaledClamp(HOME_HERO_TITLE_BASE_FORMULAS.mobile, homeHeroScale, "clamp(2.9rem, 15vw, 4.5rem)")],
     ],
   ) as DesignSettingsCssVariables;
 }

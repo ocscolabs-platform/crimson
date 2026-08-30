@@ -24,6 +24,8 @@ test("the approved colors map one-to-one to the public CSS variables", () => {
     "--type-eyebrow-weight",
     "--type-eyebrow-line-height",
     "--type-eyebrow-letter-spacing",
+    "--type-h1-hero-size",
+    "--type-h1-hero-mobile-size",
   ]);
   assert.equal(variables["--green"], "#123456");
   assert.equal(variables["--ink"], DEFAULT_DESIGN_SETTINGS_V1.colors.ink);
@@ -33,7 +35,7 @@ test("the approved colors map one-to-one to the public CSS variables", () => {
 test("absent, malformed, or partial settings retain every required variable", () => {
   for (const input of [undefined, null, { version: 1, colors: { green: "not-a-color" } }]) {
     const variables = designSettingsToCssVariables(input);
-    assert.equal(Object.keys(variables).length, 12);
+    assert.equal(Object.keys(variables).length, 14);
     assert.equal(variables["--green"], DEFAULT_DESIGN_SETTINGS_V1.colors.green);
     assert.equal(variables["--copy"], DEFAULT_DESIGN_SETTINGS_V1.colors.copy);
     assert.equal(variables["--type-eyebrow-weight"], "800");
@@ -49,7 +51,7 @@ test("unapproved values cannot inject extra CSS variables", () => {
 
   assert.equal("--ultraviolet" in variables, false);
   assert.equal("--danger" in variables, false);
-  assert.equal(Object.keys(variables).length, 12);
+  assert.equal(Object.keys(variables).length, 14);
 });
 
 test("the root layout is the single server-rendered runtime theme boundary", async () => {
