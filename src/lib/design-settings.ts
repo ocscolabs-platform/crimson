@@ -25,8 +25,15 @@ export type DesignSettingsEyebrow = {
   letter_spacing: number;
 };
 
+export const DESIGN_SETTINGS_V1_HOME_HERO_TITLE_KEYS = ["scale"] as const;
+
+export type DesignSettingsHomeHeroTitle = {
+  scale: number;
+};
+
 export type DesignSettingsTypographyV1 = {
   eyebrow: DesignSettingsEyebrow;
+  home_hero_title: DesignSettingsHomeHeroTitle;
 };
 
 export type DesignSettingsV1 = {
@@ -64,6 +71,9 @@ export const DEFAULT_DESIGN_SETTINGS_V1: DesignSettingsV1 = Object.freeze({
       weight: 800,
       line_height: 1.4,
       letter_spacing: 0.16,
+    }),
+    home_hero_title: Object.freeze({
+      scale: 1,
     }),
   }),
 });
@@ -107,6 +117,20 @@ function validateEyebrow(input: RecordValue, issues: string[]) {
   }
 }
 
+function isSafeHomeHeroTitleValue(key: (typeof DESIGN_SETTINGS_V1_HOME_HERO_TITLE_KEYS)[number], value: unknown): boolean {
+  if (key !== "scale" || !isFiniteNumber(value)) return false;
+  return value >= 0.8 && value <= 1.1;
+}
+
+function validateHomeHeroTitle(input: RecordValue, issues: string[]) {
+  exactKeys(input, DESIGN_SETTINGS_V1_HOME_HERO_TITLE_KEYS, "design_settings.typography.home_hero_title", issues);
+  for (const key of DESIGN_SETTINGS_V1_HOME_HERO_TITLE_KEYS) {
+    if (key in input && !isSafeHomeHeroTitleValue(key, input[key])) {
+      issues.push(`design_settings.typography.home_hero_title.${key}: outside the approved range`);
+    }
+  }
+}
+
 export type DesignSettingsValidation =
   | { success: true; value: DesignSettingsV1 }
   | { success: false; issues: string[] };
@@ -132,12 +156,19 @@ export function validateDesignSettingsV1(input: unknown): DesignSettingsValidati
     if (!isRecord(input.typography)) {
       issues.push("design_settings.typography: expected object");
     } else {
-      exactKeys(input.typography, ["eyebrow"], "design_settings.typography", issues);
+      exactKeys(input.typography, ["eyebrow", "home_hero_title"], "design_settings.typography", issues);
       if ("eyebrow" in input.typography) {
         if (!isRecord(input.typography.eyebrow)) {
           issues.push("design_settings.typography.eyebrow: expected object");
         } else {
           validateEyebrow(input.typography.eyebrow, issues);
+        }
+      }
+      if ("home_hero_title" in input.typography) {
+        if (!isRecord(input.typography.home_hero_title)) {
+          issues.push("design_settings.typography.home_hero_title: expected object");
+        } else {
+          validateHomeHeroTitle(input.typography.home_hero_title, issues);
         }
       }
     }
@@ -165,7 +196,13 @@ export function normalizeDesignSettingsV1(input: unknown): DesignSettingsV1 {
     DESIGN_SETTINGS_V1_EYEBROW_KEYS.map((key) => [key, isSafeEyebrowValue(key, inputEyebrow[key]) ? inputEyebrow[key] : defaultEyebrow[key]]),
   ) as DesignSettingsEyebrow;
 
-  return { version: 1, colors, typography: { eyebrow } };
+  const inputHomeHeroTitle = isRecord(inputTypography.home_hero_title) ? inputTypography.home_hero_title : {};
+  const defaultHomeHeroTitle = DEFAULT_DESIGN_SETTINGS_V1.typography!.home_hero_title;
+  const homeHeroTitle = Object.fromEntries(
+    DESIGN_SETTINGS_V1_HOME_HERO_TITLE_KEYS.map((key) => [key, isSafeHomeHeroTitleValue(key, inputHomeHeroTitle[key]) ? inputHomeHeroTitle[key] : defaultHomeHeroTitle[key]]),
+  ) as DesignSettingsHomeHeroTitle;
+
+  return { version: 1, colors, typography: { eyebrow, home_hero_title: homeHeroTitle } };
 }
 
 export function designSettingsToCssVariables(input: unknown): DesignSettingsCssVariables {
