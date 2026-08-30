@@ -555,3 +555,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Load the normalized published Design Settings v1 document once at the shared Next.js root layout and emit only the eight approved color tokens as inline CSS custom properties on the root `html` element. Keep the existing `globals.css :root` values as the static fallback layer and deduplicate the published settings read per request.
 - **Reason:** The root layout reliably wraps the homepage, RouteShell pages, Work, Insights, authenticated public-presentation previews, and the remaining application routes. A single boundary avoids per-component theme plumbing while invalid or unavailable stored values continue to resolve to the immutable current defaults.
 - **Consequence:** This batch changes no token values, selectors, visual components, admin controls, storage schema, workflow, authorization, or publishing behavior. The admin remains without a Design Settings surface; it inherits the same unchanged public token values only through the existing global root boundary.
+
+## ADR-077 - Isolate Crimson admin from public Design Settings colors
+
+- **Date:** 2026-08-30
+- **Status:** Proposed for staging review in Batch 4A4; no Design Settings controls
+- **Decision:** Override all eight approved color variables on the existing `.admin-page` root with the immutable Batch 4A1 current defaults. Keep authenticated public-content Preview routes outside that selector so they continue to inherit the published public Design Settings document.
+- **Reason:** Batch 4A3 confirmed that the Batch 4A2 root `<html>` variables inherit into the admin, where `--ink`, `--white`, and `--green` are directly used and shared button classes can consume additional tokens. A single existing admin-root override is the smallest stable boundary and avoids a second theme engine or component rewrites.
+- **Consequence:** Future public color changes cannot recolor the CMS or its login surface. Public homepage, RouteShell, Work, Insights, and authenticated public-content Preview continue to receive the public runtime values. No database configuration, admin theme editor, or Design Settings control is introduced.

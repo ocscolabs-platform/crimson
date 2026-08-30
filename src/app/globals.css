@@ -24,6 +24,18 @@
   --admin-space-7: 64px;
 }
 
+/* Stable CMS palette: public Design Settings do not cascade into admin. */
+.admin-page:not(:has(.insights-preview-banner)) {
+  --ink: #0a0a0a;
+  --graphite: #1a1a1a;
+  --green: #00c853;
+  --white: #ffffff;
+  --snow: #f7f7f7;
+  --muted: #9e9e9e;
+  --border: #e8e8e8;
+  --copy: #505050;
+}
+
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
