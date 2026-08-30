@@ -45,6 +45,7 @@
     "test:batch3c1:case-study-preview": "node --test scripts/test-batch-3c1-case-study-preview.mjs",
     "test:batch4a1:design-settings": "node --experimental-strip-types --test scripts/test-batch-4a1-design-settings.mjs",
     "test:batch4a2:design-settings-runtime": "node --experimental-strip-types --test scripts/test-batch-4a2-design-settings-runtime.mjs",
+    "test:batch4a4:admin-isolation": "node --experimental-strip-types --test scripts/test-batch-4a4-admin-isolation.mjs",
     "test:phase6:owner-published-edit": "node scripts/test-phase6-owner-published-edit.mjs",
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
     "test:phase6:migration33": "node --test scripts/test-phase6-migration33.mjs",
