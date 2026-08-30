@@ -20,7 +20,7 @@ test("the CMS exposes exactly the approved eight color controls", async () => {
   assert.match(page, /id="design-settings"/);
   assert.match(page, /<p className="admin-kicker">Design Settings<\/p>/);
   assert.match(page, /<h2>Colors<\/h2>/);
-  assert.doesNotMatch(fields, /Typography|Spacing|Gradient|alpha|rgba|hsl/i);
+  assert.doesNotMatch(fields, /Gradient|alpha|rgba|hsl/i);
 });
 
 test("color and hex inputs remain synchronized without a picker dependency", async () => {
@@ -34,7 +34,7 @@ test("color and hex inputs remain synchronized without a picker dependency", asy
 test("malformed values are rejected and valid values use the existing v1 contract", async () => {
   const page = await source("src/app/admin/content/page.tsx");
   assert.match(page, /validateDesignSettingsV1\(designSettings\)/);
-  assert.match(page, /Fix the color values:/);
+  assert.match(page, /Enter valid Design Settings values using the displayed ranges/);
   assert.match(page, /toLowerCase\(\)/);
 
   const invalid = { version: 1, colors: { ...DEFAULT_DESIGN_SETTINGS_V1.colors, green: "#fff" } };
@@ -65,7 +65,7 @@ test("the entry point reuses global-content permissions and excludes unsupported
   const page = await source("src/app/admin/content/page.tsx");
   assert.match(dashboard, /href="\/crimson-admin-control\/content#design-settings"/);
   assert.match(page, /canEditGlobalContent\(membership\.role\)/);
-  assert.doesNotMatch(page, /Typography|Spacing|Button controls|Preview pane/);
+  assert.doesNotMatch(page, /Button controls|Preview pane|font-family/i);
 });
 
 test("Reset to Default uses the immutable snapshot through the existing revision workflow", async () => {

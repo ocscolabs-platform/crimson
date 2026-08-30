@@ -169,9 +169,17 @@ async function saveDesignSettings(formData: FormData) {
       border: String(formData.get("design_border") || "").trim().toLowerCase(),
       copy: String(formData.get("design_copy") || "").trim().toLowerCase(),
     },
+    typography: {
+      eyebrow: {
+        size: Number(formData.get("design_eyebrow_size")),
+        weight: Number.parseInt(String(formData.get("design_eyebrow_weight") || ""), 10),
+        line_height: Number(formData.get("design_eyebrow_line_height")),
+        letter_spacing: Number(formData.get("design_eyebrow_letter_spacing")),
+      },
+    },
   };
   const validation = validateDesignSettingsV1(designSettings);
-  if (!validation.success) redirectWithError(`Fix the color values: ${validation.issues.join("; ")}`);
+  if (!validation.success) redirectWithError("Enter valid Design Settings values using the displayed ranges.");
 
   await saveRevision(supabase, "site_settings", "default", { design_settings: validation.value });
 
@@ -379,7 +387,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                     <h2>Colors</h2>
                   </div>
                   <div className="admin-disclosure-summary-side">
-                    <p className="admin-section-note">Public website color tokens only.</p>
+                    <p className="admin-section-note">Public website color and eyebrow typography tokens only.</p>
                     <span className="admin-disclosure-icon" aria-hidden="true" />
                   </div>
                 </summary>
@@ -388,8 +396,8 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                   {designSettings ? (
                     <div className="admin-design-settings-actions">
                       <form className="admin-content-form admin-design-settings-form" action={saveDesignSettings}>
-                        <DesignSettingsFields values={designSettings.colors} disabled={!canEdit} />
-                        {canEdit ? <AdminSubmitButton label="Save colors as review" pendingLabel="Saving colors…" /> : null}
+                        <DesignSettingsFields values={designSettings.colors} eyebrow={designSettings.typography!.eyebrow} disabled={!canEdit} />
+                        {canEdit ? <AdminSubmitButton label="Save Design Settings as review" pendingLabel="Saving Design Settings…" /> : null}
                       </form>
                       {canEdit ? <DesignSettingsResetControl action={resetDesignSettings} /> : null}
                     </div>

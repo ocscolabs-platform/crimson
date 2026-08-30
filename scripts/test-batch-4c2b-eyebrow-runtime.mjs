@@ -69,7 +69,7 @@ test("the public root and preview boundaries reuse the existing runtime architec
   assert.match(insightsPreview, /insights-preview-banner/);
 });
 
-test("ordinary admin resets eyebrow variables to immutable defaults without adding CMS controls", async () => {
+test("ordinary admin resets eyebrow variables to immutable defaults while the CMS exposes only Eyebrow controls", async () => {
   const css = await source("src/app/globals.css");
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
   const page = await source("src/app/admin/content/page.tsx");
@@ -78,15 +78,17 @@ test("ordinary admin resets eyebrow variables to immutable defaults without addi
   assert.match(adminBoundary, /--type-eyebrow-weight:\s*800/);
   assert.match(adminBoundary, /--type-eyebrow-line-height:\s*1\.4/);
   assert.match(adminBoundary, /--type-eyebrow-letter-spacing:\s*\.16em/);
-  assert.doesNotMatch(fields, /Typography|Eyebrow|line-height|letter-spacing|font-family/i);
-  assert.doesNotMatch(page, /Typography|Eyebrow|line-height|letter-spacing|font-family/);
+  assert.match(fields, /Typography <small>Eyebrow \/ Overline/);
+  assert.match(page, /design_eyebrow_letter_spacing/);
+  assert.doesNotMatch(fields, /font-family|H1 typography|H2 typography|H3 typography|Lead typography|Typography Reset/i);
+  assert.doesNotMatch(page, /font-family|H1 typography|H2 typography|H3 typography|Lead typography|Typography Reset/);
 });
 
 test("existing color mapping and Reset behavior remain present", async () => {
   const page = await source("src/app/admin/content/page.tsx");
   const reset = await source("src/app/admin/content/DesignSettingsResetControl.tsx");
   assert.match(page, /typography: currentDesignSettings\.typography/);
-  assert.match(page, /Save colors as review/);
+  assert.match(page, /Save Design Settings as review/);
   assert.match(reset, /Reset to Default/);
   const variables = designSettingsToCssVariables({ version: 1, colors: { ...colors, green: "#123456" } });
   assert.equal(variables["--green"], "#123456");
