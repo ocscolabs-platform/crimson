@@ -22,6 +22,7 @@ export default async function CaseStudyPreviewPage({ params }: { params: Promise
       eyebrow={preview.project.status}
       title={preview.project.name}
       intro={preview.project.description}
+      titleContext="work-detail"
       preview={{
         pageLabel: "Case Study",
         status: preview.status,

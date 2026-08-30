@@ -43,6 +43,7 @@ export default async function ServicesPage() {
       title={hero.title}
       intro={hero.intro}
       chrome={chrome}
+      titleContext="standard"
     >
       <ServicesPageBody capabilities={capabilities} plan={plan} services={services} />
     </RouteShell>

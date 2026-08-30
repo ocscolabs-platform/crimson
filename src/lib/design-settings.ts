@@ -56,7 +56,8 @@ export type DesignSettingsCssVariableKey =
   | "--type-eyebrow-line-height"
   | "--type-eyebrow-letter-spacing"
   | "--type-h1-hero-size"
-  | "--type-h1-hero-mobile-size";
+  | "--type-h1-hero-mobile-size"
+  | "--type-h1-page-route-size";
 
 export type DesignSettingsCssVariables = Record<DesignSettingsCssVariableKey, string>;
 
@@ -162,6 +163,8 @@ const HOME_HERO_TITLE_BASE_FORMULAS = Object.freeze({
   mobile: Object.freeze({ minRem: 2.9, fluidVw: 15, maxRem: 4.5 }),
 });
 
+const PAGE_ROUTE_TITLE_BASE_FORMULA = Object.freeze({ minRem: 3, fluidVw: 7, maxRem: 6.4 });
+
 function formatCssNumber(value: number): string {
   return Number(value.toFixed(4)).toString();
 }
@@ -262,6 +265,7 @@ export function designSettingsToCssVariables(input: unknown): DesignSettingsCssV
   const settings = normalizeDesignSettingsV1(input);
   const eyebrow = settings.typography!.eyebrow;
   const homeHeroScale = settings.typography!.home_hero_title.scale;
+  const pageRouteTitleScale = settings.typography!.page_route_title.scale;
   return Object.fromEntries(
     [
       ...DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => [`--${key}`, settings.colors[key]]),
@@ -271,6 +275,7 @@ export function designSettingsToCssVariables(input: unknown): DesignSettingsCssV
       ["--type-eyebrow-letter-spacing", `${eyebrow.letter_spacing}em`],
       ["--type-h1-hero-size", scaledClamp(HOME_HERO_TITLE_BASE_FORMULAS.desktop, homeHeroScale, "clamp(3.2rem, 7vw, 6.9rem)")],
       ["--type-h1-hero-mobile-size", scaledClamp(HOME_HERO_TITLE_BASE_FORMULAS.mobile, homeHeroScale, "clamp(2.9rem, 15vw, 4.5rem)")],
+      ["--type-h1-page-route-size", scaledClamp(PAGE_ROUTE_TITLE_BASE_FORMULA, pageRouteTitleScale, "clamp(3rem, 7vw, 6.4rem)")],
     ],
   ) as DesignSettingsCssVariables;
 }

@@ -44,6 +44,7 @@ export default async function InsightsPage() {
       title="Make the thinking useful."
       intro="Ideas, perspectives, and working notes for brands ready to move with precision."
       chrome={chrome}
+      titleContext="standard"
     >
       <section className="section-snow public-insights-list" aria-labelledby="public-insights-list-title">
         <div className="shell">

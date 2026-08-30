@@ -30,7 +30,7 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
   }
 
   return (
-    <RouteShell eyebrow={project.status} title={project.name} intro={project.description}>
+    <RouteShell eyebrow={project.status} title={project.name} intro={project.description} titleContext="work-detail">
       <WorkDetailView project={project} />
     </RouteShell>
   );
