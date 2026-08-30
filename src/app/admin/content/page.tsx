@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canEditGlobalContent, canPublishPages, getAdminGlobalContent, type AdminPageMetadata } from "@/lib/admin-global-content";
-import { normalizeDesignSettingsV1, validateDesignSettingsV1 } from "@/lib/design-settings";
+import { DEFAULT_DESIGN_SETTINGS_V1, normalizeDesignSettingsV1, validateDesignSettingsV1 } from "@/lib/design-settings";
 import { createClient } from "@/lib/supabase/server";
 import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import AdminSelect from "@/app/admin/AdminSelect";
@@ -11,6 +11,7 @@ import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 import AdminToast from "@/app/admin/AdminToast";
 import AdminAccountActions from "@/app/admin/AdminAccountActions";
 import DesignSettingsFields from "@/app/admin/content/DesignSettingsFields";
+import DesignSettingsResetControl from "@/app/admin/content/DesignSettingsResetControl";
 
 export const dynamic = "force-dynamic";
 
@@ -173,6 +174,20 @@ async function saveDesignSettings(formData: FormData) {
   redirect("/crimson-admin-control/content?saved=design-settings");
 }
 
+async function resetDesignSettings() {
+  "use server";
+
+  const { supabase, membership } = await requireMember();
+  if (!canEditGlobalContent(membership.role)) redirectWithError("This role can review global content but cannot change it.");
+
+  await saveRevision(supabase, "site_settings", "default", { design_settings: DEFAULT_DESIGN_SETTINGS_V1 });
+
+  for (const path of ["/", "/about", "/services", "/work", "/contact", "/insights", "/crimson-admin-control", "/crimson-admin-control/content"]) {
+    revalidatePath(path);
+  }
+  redirect("/crimson-admin-control/content?saved=design-reset");
+}
+
 async function savePageMetadata(pageId: string, formData: FormData) {
   "use server";
 
@@ -293,7 +308,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
           <p className="admin-intro">Update site-wide settings and navigation here. Home, Services, About, and Contact body content and authoritative PageDocument SEO are managed in Pages.</p>
         </section>
 
-        {saved ? <AdminToast tone="success" message={saved === "published" ? "Revision published successfully." : saved === "settings" ? "Site settings saved as a private Review revision." : saved === "design-settings" ? "Design Settings saved as a private Review revision." : saved === "navigation" ? "Navigation item saved as a private Review revision." : saved === "section" ? "Page section saved as a private Review revision." : "Page metadata saved as a private revision."} /> : null}
+        {saved ? <AdminToast tone="success" message={saved === "published" ? "Revision published successfully." : saved === "settings" ? "Site settings saved as a private Review revision." : saved === "design-settings" ? "Design Settings saved as a private Review revision." : saved === "design-reset" ? "All colors reset to a private Review revision using the OCSCO defaults." : saved === "navigation" ? "Navigation item saved as a private Review revision." : saved === "section" ? "Page section saved as a private Review revision." : "Page metadata saved as a private revision."} /> : null}
         {error ? <AdminToast tone="error" message={error} /> : null}
         <nav className="admin-content-jump-nav" aria-label="Global content sections">
           <span>Jump to</span>
@@ -358,10 +373,13 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                 <div className="admin-content-section-body">
                   <p className="admin-disclosure-note">Save a private Review revision first. The public site changes only after the owner publishes it.</p>
                   {designSettings ? (
-                    <form className="admin-content-form admin-design-settings-form" action={saveDesignSettings}>
-                      <DesignSettingsFields values={designSettings.colors} disabled={!canEdit} />
-                      {canEdit ? <AdminSubmitButton label="Save colors as review" pendingLabel="Saving colors…" /> : null}
-                    </form>
+                    <div className="admin-design-settings-actions">
+                      <form className="admin-content-form admin-design-settings-form" action={saveDesignSettings}>
+                        <DesignSettingsFields values={designSettings.colors} disabled={!canEdit} />
+                        {canEdit ? <AdminSubmitButton label="Save colors as review" pendingLabel="Saving colors…" /> : null}
+                      </form>
+                      {canEdit ? <DesignSettingsResetControl action={resetDesignSettings} /> : null}
+                    </div>
                   ) : <p className="admin-empty-state">Design Settings are not available.</p>}
                 </div>
               </details>

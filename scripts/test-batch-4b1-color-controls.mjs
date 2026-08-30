@@ -65,5 +65,18 @@ test("the entry point reuses global-content permissions and excludes unsupported
   const page = await source("src/app/admin/content/page.tsx");
   assert.match(dashboard, /href="\/crimson-admin-control\/content#design-settings"/);
   assert.match(page, /canEditGlobalContent\(membership\.role\)/);
-  assert.doesNotMatch(page, /Reset to Default|Typography|Spacing|Button controls|Preview pane/i);
+  assert.doesNotMatch(page, /Typography|Spacing|Button controls|Preview pane/i);
+});
+
+test("Reset to Default uses the immutable snapshot through the existing revision workflow", async () => {
+  const page = await source("src/app/admin/content/page.tsx");
+  const reset = await source("src/app/admin/content/DesignSettingsResetControl.tsx");
+  assert.match(page, /DEFAULT_DESIGN_SETTINGS_V1/);
+  assert.match(page, /async function resetDesignSettings/);
+  assert.match(page, /saveRevision\(supabase, "site_settings", "default", \{ design_settings: DEFAULT_DESIGN_SETTINGS_V1 \}\)/);
+  assert.match(page, /saved=design-reset/);
+  assert.match(reset, /Reset to Default/);
+  assert.match(reset, /all eight color settings/i);
+  assert.match(reset, /remain private until the owner publishes/i);
+  assert.match(reset, /role="dialog"/);
 });
