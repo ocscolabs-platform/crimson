@@ -42,6 +42,7 @@
     "test:batch2c2a1:idle": "node --test scripts/test-batch-2c2a1-idle-fix.mjs",
     "test:batch3a:case-study-create": "node --test scripts/test-batch-3a-case-study-create-rpc.mjs",
     "test:batch3b:case-study-create": "node --test scripts/test-batch-3b-case-study-create-ui.mjs",
+    "test:batch3c1:case-study-preview": "node --test scripts/test-batch-3c1-case-study-preview.mjs",
     "test:phase6:owner-published-edit": "node scripts/test-phase6-owner-published-edit.mjs",
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
     "test:phase6:migration33": "node --test scripts/test-phase6-migration33.mjs",
