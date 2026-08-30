@@ -6,6 +6,7 @@ import { defaultPrimaryNavigation, type NavigationItem } from "@/lib/site-naviga
 import { services as localServices, type Service } from "@/lib/site-content";
 import { workProjects as localWorkProjects, type WorkProject } from "@/lib/work-content";
 import { DEFAULT_OG_IMAGE_PATH } from "@/lib/og-assets";
+import { DEFAULT_DESIGN_SETTINGS_V1, normalizeDesignSettingsV1, type DesignSettingsV1 } from "@/lib/design-settings";
 
 export type SiteSettings = {
   siteName: string;
@@ -14,6 +15,7 @@ export type SiteSettings = {
   defaultSeoDescription: string;
   defaultOgImagePath: string;
   primaryContactPath: string;
+  designSettings: DesignSettingsV1;
 };
 
 const localSiteSettings: SiteSettings = {
@@ -23,6 +25,7 @@ const localSiteSettings: SiteSettings = {
   defaultSeoDescription: "Strategy, design, and technology for brands ready to move with precision.",
   defaultOgImagePath: DEFAULT_OG_IMAGE_PATH,
   primaryContactPath: "/contact",
+  designSettings: DEFAULT_DESIGN_SETTINGS_V1,
 };
 
 type PublishedService = {
@@ -177,16 +180,40 @@ export async function getPublishedSiteSettings(): Promise<SiteSettings> {
     return localSiteSettings;
   }
 
-  const { data, error } = await client
+  const result = await client
     .from("site_settings")
-    .select("site_name, positioning_statement, default_seo_title, default_seo_description, default_og_image_path, primary_contact_path")
+    .select("site_name, positioning_statement, default_seo_title, default_seo_description, default_og_image_path, primary_contact_path, design_settings")
     .eq("id", "default")
     .maybeSingle();
 
-  if (error || !data) {
+  if (result.error && result.error.message.toLowerCase().includes("design_settings")) {
+    const legacyResult = await client
+      .from("site_settings")
+      .select("site_name, positioning_statement, default_seo_title, default_seo_description, default_og_image_path, primary_contact_path")
+      .eq("id", "default")
+      .maybeSingle();
+
+    if (legacyResult.error || !legacyResult.data) {
+      return localSiteSettings;
+    }
+
+    const legacyData = legacyResult.data;
+    return {
+      siteName: legacyData.site_name || localSiteSettings.siteName,
+      positioningStatement: legacyData.positioning_statement || localSiteSettings.positioningStatement,
+      defaultSeoTitle: legacyData.default_seo_title || localSiteSettings.defaultSeoTitle,
+      defaultSeoDescription: legacyData.default_seo_description || localSiteSettings.defaultSeoDescription,
+      defaultOgImagePath: legacyData.default_og_image_path || localSiteSettings.defaultOgImagePath,
+      primaryContactPath: legacyData.primary_contact_path || localSiteSettings.primaryContactPath,
+      designSettings: DEFAULT_DESIGN_SETTINGS_V1,
+    };
+  }
+
+  if (result.error || !result.data) {
     return localSiteSettings;
   }
 
+  const data = result.data;
   return {
     siteName: data.site_name || localSiteSettings.siteName,
     positioningStatement: data.positioning_statement || localSiteSettings.positioningStatement,
@@ -194,7 +221,12 @@ export async function getPublishedSiteSettings(): Promise<SiteSettings> {
     defaultSeoDescription: data.default_seo_description || localSiteSettings.defaultSeoDescription,
     defaultOgImagePath: data.default_og_image_path || localSiteSettings.defaultOgImagePath,
     primaryContactPath: data.primary_contact_path || localSiteSettings.primaryContactPath,
+    designSettings: normalizeDesignSettingsV1(data.design_settings),
   };
+}
+
+export async function getPublishedDesignSettings(): Promise<DesignSettingsV1> {
+  return (await getPublishedSiteSettings()).designSettings;
 }
 
 export async function getPublishedNavigation(group: "primary" | "footer"): Promise<NavigationItem[]> {
