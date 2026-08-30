@@ -35,7 +35,14 @@ export type DesignSettingsV1 = {
   typography?: DesignSettingsTypographyV1;
 };
 
-export type DesignSettingsCssVariables = Record<`--${DesignSettingsColorKey}`, string>;
+export type DesignSettingsCssVariableKey =
+  | `--${DesignSettingsColorKey}`
+  | "--type-eyebrow-size"
+  | "--type-eyebrow-weight"
+  | "--type-eyebrow-line-height"
+  | "--type-eyebrow-letter-spacing";
+
+export type DesignSettingsCssVariables = Record<DesignSettingsCssVariableKey, string>;
 
 const DEFAULT_COLORS: Record<DesignSettingsColorKey, string> = {
   ink: "#0a0a0a",
@@ -163,7 +170,14 @@ export function normalizeDesignSettingsV1(input: unknown): DesignSettingsV1 {
 
 export function designSettingsToCssVariables(input: unknown): DesignSettingsCssVariables {
   const settings = normalizeDesignSettingsV1(input);
+  const eyebrow = settings.typography!.eyebrow;
   return Object.fromEntries(
-    DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => [`--${key}`, settings.colors[key]]),
+    [
+      ...DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => [`--${key}`, settings.colors[key]]),
+      ["--type-eyebrow-size", `${eyebrow.size}rem`],
+      ["--type-eyebrow-weight", String(eyebrow.weight)],
+      ["--type-eyebrow-line-height", String(eyebrow.line_height)],
+      ["--type-eyebrow-letter-spacing", `${eyebrow.letter_spacing}em`],
+    ],
   ) as DesignSettingsCssVariables;
 }

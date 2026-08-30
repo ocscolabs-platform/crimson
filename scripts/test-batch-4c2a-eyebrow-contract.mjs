@@ -99,13 +99,17 @@ test("Colors Reset preserves a valid typography family through the existing revi
   assert.match(page, /typography: currentDesignSettings\.typography/);
 });
 
-test("the storage family is not mapped to runtime CSS or exposed as CMS controls", async () => {
+test("the storage family maps only to approved eyebrow runtime variables and is not exposed as CMS controls", async () => {
   const designSettings = await source("src/lib/design-settings.ts");
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
   const page = await source("src/app/admin/content/page.tsx");
   assert.match(designSettings, /DESIGN_SETTINGS_V1_EYEBROW_KEYS/);
   assert.match(designSettings, /designSettingsToCssVariables/);
-  assert.doesNotMatch(designSettings, /typography.*--type-|--type-.*typography/s);
+  assert.match(designSettings, /--type-eyebrow-size/);
+  assert.match(designSettings, /--type-eyebrow-weight/);
+  assert.match(designSettings, /--type-eyebrow-line-height/);
+  assert.match(designSettings, /--type-eyebrow-letter-spacing/);
+  assert.doesNotMatch(designSettings, /--type-(?:h1|h2|h3|body|lead)-/);
   assert.doesNotMatch(fields, /Typography|Eyebrow|font-family|line-height|letter-spacing/i);
   assert.doesNotMatch(page, /Typography|Eyebrow|font-family|line-height|letter-spacing/);
 });

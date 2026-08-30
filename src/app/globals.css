@@ -60,7 +60,7 @@
   --type-card-title-line-height: 1.05;
 }
 
-/* Stable CMS palette: public Design Settings do not cascade into admin. */
+/* Stable CMS theme: public Design Settings do not cascade into normal admin UI. */
 .admin-page:not(:has(.insights-preview-banner)) {
   --ink: #0a0a0a;
   --graphite: #1a1a1a;
@@ -70,6 +70,10 @@
   --muted: #9e9e9e;
   --border: #e8e8e8;
   --copy: #505050;
+  --type-eyebrow-size: .72rem;
+  --type-eyebrow-weight: 800;
+  --type-eyebrow-line-height: 1.4;
+  --type-eyebrow-letter-spacing: .16em;
 }
 
 * { box-sizing: border-box; }

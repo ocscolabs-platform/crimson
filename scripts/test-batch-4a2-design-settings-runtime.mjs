@@ -18,17 +18,25 @@ test("the approved colors map one-to-one to the public CSS variables", () => {
     colors: { ...DEFAULT_DESIGN_SETTINGS_V1.colors, green: "#123456" },
   });
 
-  assert.deepEqual(Object.keys(variables), DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => `--${key}`));
+  assert.deepEqual(Object.keys(variables), [
+    ...DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => `--${key}`),
+    "--type-eyebrow-size",
+    "--type-eyebrow-weight",
+    "--type-eyebrow-line-height",
+    "--type-eyebrow-letter-spacing",
+  ]);
   assert.equal(variables["--green"], "#123456");
   assert.equal(variables["--ink"], DEFAULT_DESIGN_SETTINGS_V1.colors.ink);
+  assert.equal(variables["--type-eyebrow-size"], "0.72rem");
 });
 
 test("absent, malformed, or partial settings retain every required variable", () => {
   for (const input of [undefined, null, { version: 1, colors: { green: "not-a-color" } }]) {
     const variables = designSettingsToCssVariables(input);
-    assert.deepEqual(Object.keys(variables), DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => `--${key}`));
+    assert.equal(Object.keys(variables).length, 12);
     assert.equal(variables["--green"], DEFAULT_DESIGN_SETTINGS_V1.colors.green);
     assert.equal(variables["--copy"], DEFAULT_DESIGN_SETTINGS_V1.colors.copy);
+    assert.equal(variables["--type-eyebrow-weight"], "800");
   }
 });
 
@@ -41,7 +49,7 @@ test("unapproved values cannot inject extra CSS variables", () => {
 
   assert.equal("--ultraviolet" in variables, false);
   assert.equal("--danger" in variables, false);
-  assert.equal(Object.keys(variables).length, 8);
+  assert.equal(Object.keys(variables).length, 12);
 });
 
 test("the root layout is the single server-rendered runtime theme boundary", async () => {
