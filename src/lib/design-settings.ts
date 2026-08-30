@@ -31,9 +31,16 @@ export type DesignSettingsHomeHeroTitle = {
   scale: number;
 };
 
+export const DESIGN_SETTINGS_V1_PAGE_ROUTE_TITLE_KEYS = ["scale"] as const;
+
+export type DesignSettingsPageRouteTitle = {
+  scale: number;
+};
+
 export type DesignSettingsTypographyV1 = {
   eyebrow: DesignSettingsEyebrow;
   home_hero_title: DesignSettingsHomeHeroTitle;
+  page_route_title: DesignSettingsPageRouteTitle;
 };
 
 export type DesignSettingsV1 = {
@@ -75,6 +82,9 @@ export const DEFAULT_DESIGN_SETTINGS_V1: DesignSettingsV1 = Object.freeze({
       letter_spacing: 0.16,
     }),
     home_hero_title: Object.freeze({
+      scale: 1,
+    }),
+    page_route_title: Object.freeze({
       scale: 1,
     }),
   }),
@@ -133,6 +143,20 @@ function validateHomeHeroTitle(input: RecordValue, issues: string[]) {
   }
 }
 
+function isSafePageRouteTitleValue(key: (typeof DESIGN_SETTINGS_V1_PAGE_ROUTE_TITLE_KEYS)[number], value: unknown): boolean {
+  if (key !== "scale" || !isFiniteNumber(value)) return false;
+  return value >= 0.8 && value <= 1.1;
+}
+
+function validatePageRouteTitle(input: RecordValue, issues: string[]) {
+  exactKeys(input, DESIGN_SETTINGS_V1_PAGE_ROUTE_TITLE_KEYS, "design_settings.typography.page_route_title", issues);
+  for (const key of DESIGN_SETTINGS_V1_PAGE_ROUTE_TITLE_KEYS) {
+    if (key in input && !isSafePageRouteTitleValue(key, input[key])) {
+      issues.push(`design_settings.typography.page_route_title.${key}: outside the approved range`);
+    }
+  }
+}
+
 const HOME_HERO_TITLE_BASE_FORMULAS = Object.freeze({
   desktop: Object.freeze({ minRem: 3.2, fluidVw: 7, maxRem: 6.9 }),
   mobile: Object.freeze({ minRem: 2.9, fluidVw: 15, maxRem: 4.5 }),
@@ -172,7 +196,7 @@ export function validateDesignSettingsV1(input: unknown): DesignSettingsValidati
     if (!isRecord(input.typography)) {
       issues.push("design_settings.typography: expected object");
     } else {
-      exactKeys(input.typography, ["eyebrow", "home_hero_title"], "design_settings.typography", issues);
+      exactKeys(input.typography, ["eyebrow", "home_hero_title", "page_route_title"], "design_settings.typography", issues);
       if ("eyebrow" in input.typography) {
         if (!isRecord(input.typography.eyebrow)) {
           issues.push("design_settings.typography.eyebrow: expected object");
@@ -185,6 +209,13 @@ export function validateDesignSettingsV1(input: unknown): DesignSettingsValidati
           issues.push("design_settings.typography.home_hero_title: expected object");
         } else {
           validateHomeHeroTitle(input.typography.home_hero_title, issues);
+        }
+      }
+      if ("page_route_title" in input.typography) {
+        if (!isRecord(input.typography.page_route_title)) {
+          issues.push("design_settings.typography.page_route_title: expected object");
+        } else {
+          validatePageRouteTitle(input.typography.page_route_title, issues);
         }
       }
     }
@@ -218,7 +249,13 @@ export function normalizeDesignSettingsV1(input: unknown): DesignSettingsV1 {
     DESIGN_SETTINGS_V1_HOME_HERO_TITLE_KEYS.map((key) => [key, isSafeHomeHeroTitleValue(key, inputHomeHeroTitle[key]) ? inputHomeHeroTitle[key] : defaultHomeHeroTitle[key]]),
   ) as DesignSettingsHomeHeroTitle;
 
-  return { version: 1, colors, typography: { eyebrow, home_hero_title: homeHeroTitle } };
+  const inputPageRouteTitle = isRecord(inputTypography.page_route_title) ? inputTypography.page_route_title : {};
+  const defaultPageRouteTitle = DEFAULT_DESIGN_SETTINGS_V1.typography!.page_route_title;
+  const pageRouteTitle = Object.fromEntries(
+    DESIGN_SETTINGS_V1_PAGE_ROUTE_TITLE_KEYS.map((key) => [key, isSafePageRouteTitleValue(key, inputPageRouteTitle[key]) ? inputPageRouteTitle[key] : defaultPageRouteTitle[key]]),
+  ) as DesignSettingsPageRouteTitle;
+
+  return { version: 1, colors, typography: { eyebrow, home_hero_title: homeHeroTitle, page_route_title: pageRouteTitle } };
 }
 
 export function designSettingsToCssVariables(input: unknown): DesignSettingsCssVariables {
