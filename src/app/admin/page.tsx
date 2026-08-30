@@ -120,6 +120,7 @@ export default async function AdminDashboardPage() {
                   </div>
                   <div className="admin-panel-heading-actions">
                     <span>{content.caseStudies.length} published</span>
+                    {membership.role === "owner" || membership.role === "editor" ? <Link className="button button-light" href="/crimson-admin-control/case-studies/new">+ New Case Study <span aria-hidden="true">↗</span></Link> : null}
                     {content.caseStudies[0] ? (
                       <Link className="admin-panel-link" href={`/crimson-admin-control/case-studies/${content.caseStudies[0].slug}`}>Open review panel ↗</Link>
                     ) : null}
