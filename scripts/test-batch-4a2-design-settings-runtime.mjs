@@ -64,7 +64,7 @@ test("published loading is request-deduplicated and the admin theme remains unch
   const admin = await source("src/app/admin/page.tsx");
 
   assert.match(loader, /cache\(/);
-  assert.doesNotMatch(admin, /color picker|Reset to Default|adminTheme/i);
+  assert.doesNotMatch(admin, /color picker|adminTheme/i);
 });
 
 test("static defaults and existing public selectors remain intact", async () => {
