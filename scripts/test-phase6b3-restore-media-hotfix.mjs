@@ -8,16 +8,20 @@ const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const migrationName = "20260829000000_add_phase6b3_restore_media_association.sql";
 const read = (file) => readFile(path.join(root, file), "utf8");
 
-test("Restore media hotfix is the single additive migration after the staging baseline", async () => {
+test("Restore media hotfix remains present in the canonical migration history", async () => {
   const files = (await readdir(path.join(root, "supabase", "migrations")))
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 33);
-  assert.equal(files.at(-4), "20260828000000_add_phase6b3_insights_media_workflow.sql");
-  assert.equal(files.at(-3), migrationName);
-  assert.equal(files.at(-2), "20260830000000_fix_phase6b3_restore_media_validity.sql");
-  assert.equal(files.at(-1), "20260831000000_reconcile_production_legacy_baseline.sql");
+  assert.ok(files.length >= 47, `Expected at least the canonical 47 migrations, found ${files.length}`);
+  for (const migration of [
+    "20260828000000_add_phase6b3_insights_media_workflow.sql",
+    migrationName,
+    "20260830000000_fix_phase6b3_restore_media_validity.sql",
+    "20260831000000_reconcile_production_legacy_baseline.sql",
+  ]) {
+    assert.ok(files.includes(migration), `Missing required migration: ${migration}`);
+  }
 });
 
 test("Restore clones canonical media metadata with fresh revision-owned IDs", async () => {

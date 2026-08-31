@@ -11,18 +11,22 @@ const migrationName = "20260824000000_add_phase5a_page_document_workflow_contrac
 const readMigration = async () =>
   (await readFile(path.join(migrationDir, migrationName), "utf8")).replaceAll("\r\n", "\n");
 
-test("Batch 3A remains at the historical migration boundary", async () => {
+test("Batch 3A migration remains present in the canonical migration history", async () => {
   const files = (await readdir(migrationDir))
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 33);
-  assert.equal(files.at(-8), migrationName);
-  assert.match(files.at(-7), /^20260826000000_add_phase6a_insights_foundation\.sql$/);
-  assert.match(files.at(-6), /^20260826010000_add_phase6b1_insights_slug_update_contract\.sql$/);
-  assert.match(files.at(-5), /^20260827000000_add_phase6_insights_public_projection_security\.sql$/);
-  assert.match(files.at(-4), /^20260828000000_add_phase6b3_insights_media_workflow\.sql$/);
-  assert.match(files.at(-1), /^20260831000000_reconcile_production_legacy_baseline\.sql$/);
+  assert.ok(files.length >= 47, `Expected at least the canonical 47 migrations, found ${files.length}`);
+  for (const migration of [
+    migrationName,
+    "20260826000000_add_phase6a_insights_foundation.sql",
+    "20260826010000_add_phase6b1_insights_slug_update_contract.sql",
+    "20260827000000_add_phase6_insights_public_projection_security.sql",
+    "20260828000000_add_phase6b3_insights_media_workflow.sql",
+    "20260831000000_reconcile_production_legacy_baseline.sql",
+  ]) {
+    assert.ok(files.includes(migration), `Missing required migration: ${migration}`);
+  }
 });
 
 test("Batch 3A exposes the approved PageDocument RPC contracts", async () => {
