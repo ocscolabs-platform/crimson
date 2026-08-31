@@ -1,22 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useFormStatus } from "react-dom";
+import AdminSubmitButton from "../AdminSubmitButton";
 
 type DesignSettingsResetControlProps = {
   action: (formData: FormData) => void | Promise<void>;
 };
 
 function ResetConfirmationForm({ action, onCancel }: { action: (formData: FormData) => void | Promise<void>; onCancel: () => void }) {
-  const { pending } = useFormStatus();
-
   return (
     <form action={action}>
       <div className="admin-publish-confirmation-actions">
-        <button className="button button-primary admin-submit" type="submit" disabled={pending}>
-          {pending ? "Resetting…" : "Confirm Reset to Default"}
-        </button>
-        <button className="button admin-button-secondary" type="button" onClick={onCancel} disabled={pending}>Cancel</button>
+        <AdminSubmitButton label="Confirm Reset to Default" pendingLabel="Resetting…" />
+        <button className="button admin-button-secondary" type="button" onClick={onCancel}>Cancel</button>
       </div>
     </form>
   );
