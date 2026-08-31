@@ -14,9 +14,9 @@ async function source(path) {
 
 test("Design Settings exposes one Home Hero Title size control with the approved percentage allowlist", async () => {
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
-  const homeHeroControl = fields.slice(fields.indexOf("<legend>Typography <small>Home Hero Title"), fields.indexOf("<legend>Typography <small>Page / Route Title"));
+  const homeHeroControl = fields.slice(fields.indexOf("<h3>Home Hero Title</h3>"), fields.indexOf("<h3>Page / Route Title</h3>"));
   const options = fields.slice(fields.indexOf("const HOME_HERO_TITLE_SCALES"), fields.indexOf("const PAGE_ROUTE_TITLE_SCALES"));
-  assert.match(homeHeroControl, /<legend>Typography <small>Home Hero Title<\/small><\/legend>/);
+  assert.match(homeHeroControl, /<h3>Home Hero Title<\/h3>/);
   assert.match(homeHeroControl, /name="design_home_hero_title_scale"/);
   assert.match(homeHeroControl, /<span>Title Size<\/span>/);
   assert.match(homeHeroControl, /<AdminSelect/);
@@ -71,7 +71,7 @@ test("the published 90% runtime formulas remain the T2 semantic output", () => {
 test("no unrelated typography context or raw CSS control is introduced", async () => {
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
   const page = await source("src/app/admin/content/page.tsx");
-  const homeHeroControl = fields.slice(fields.indexOf("<legend>Typography <small>Home Hero Title"), fields.indexOf("<legend>Typography <small>Page / Route Title"));
+  const homeHeroControl = fields.slice(fields.indexOf("<h3>Home Hero Title</h3>"), fields.indexOf("<h3>Page / Route Title</h3>"));
   assert.doesNotMatch(homeHeroControl, /Route Title|Article Title|Section Heading|Lead|font-family|breakpoint|clamp|vw/i);
   assert.doesNotMatch(homeHeroControl, /weight|line-height|letter-spacing|font|breakpoint|mobile|clamp|vw|rem/i);
 });

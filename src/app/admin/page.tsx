@@ -119,12 +119,12 @@ export default async function AdminDashboardPage() {
                     <p className="admin-kicker">Work library</p>
                     <h2>Case studies</h2>
                   </div>
-                  <div className="admin-panel-heading-actions">
+                  <div className="admin-panel-heading-actions admin-work-panel-heading-actions">
                     <span>{content.caseStudies.length} published</span>
-                    {membership.role === "owner" || membership.role === "editor" ? <Link className="button button-light" href="/crimson-admin-control/case-studies/new">+ New Case Study</Link> : null}
-                    {content.caseStudies[0] ? (
-                      <Link className="admin-panel-link" href={`/crimson-admin-control/case-studies/${content.caseStudies[0].slug}`}>Open review panel ↗</Link>
-                    ) : null}
+                    <div className="admin-panel-utility-actions">
+                      {membership.role === "owner" || membership.role === "editor" ? <Link className="admin-panel-link" href="/crimson-admin-control/case-studies/new">+ New</Link> : null}
+                      {content.caseStudies[0] ? <Link className="admin-panel-link" href={`/crimson-admin-control/case-studies/${content.caseStudies[0].slug}`}>Open review panel ↗</Link> : null}
+                    </div>
                   </div>
                 </div>
                 <ul className="admin-record-list">

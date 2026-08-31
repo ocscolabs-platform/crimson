@@ -11,7 +11,8 @@ const [dashboard, page, packageJson] = await Promise.all([
 
 test("Work Library exposes creation only to Owner and Editor", () => {
   assert.match(dashboard, /membership\.role === "owner" \|\| membership\.role === "editor"/);
-  assert.match(dashboard, /\+ New Case Study/);
+  assert.match(dashboard, />\+ New<\/Link>/);
+  assert.doesNotMatch(dashboard, /\+ New Case Study/);
   assert.match(dashboard, /case-studies\/new/);
   assert.doesNotMatch(dashboard, /membership\.role === "reviewer".*case-studies\/new/);
 });

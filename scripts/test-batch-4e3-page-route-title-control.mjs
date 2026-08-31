@@ -12,7 +12,7 @@ const OPTIONS = ["80%", "85%", "90%", "95%", "100% — Default", "105%", "110%"]
 
 test("Design Settings exposes exactly one Page / Route Title size selector", async () => {
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
-  const matches = [...fields.matchAll(/<legend>Typography <small>Page \/ Route Title<\/small><\/legend>/g)];
+  const matches = [...fields.matchAll(/<h3>Page \/ Route Title<\/h3>/g)];
   assert.equal(matches.length, 1);
   const control = fields.slice(matches[0].index);
   const options = fields.slice(fields.indexOf("const PAGE_ROUTE_TITLE_SCALES"), fields.indexOf("export default function"));

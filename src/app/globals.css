@@ -358,6 +358,8 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-panel-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; border-bottom: 1px solid rgb(255 255 255 / 14%); padding-bottom: 22px; }
 .admin-panel-heading > span { color: var(--green); font-size: .72rem; font-weight: 700; white-space: nowrap; }
 .admin-panel-heading-actions { display: grid; justify-items: end; gap: 10px; }
+.admin-work-panel-heading-actions { align-items: end; }
+.admin-panel-utility-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px 16px; }
 .admin-panel-link { color: var(--green); font-size: .72rem; font-weight: 800; }
 .admin-panel-link:hover { color: var(--white); }
 .admin-record-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
@@ -569,13 +571,19 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-color-error { color: #ffadad; font-size: .72rem; font-weight: 500; }
 .admin-typography-fieldset { display: grid; grid-column: 1 / -1; gap: 18px; min-width: 0; border: 1px solid rgb(255 255 255 / 12%); border-radius: 10px; background: rgb(255 255 255 / 2%); padding: 18px; }
 .admin-typography-fieldset > legend { padding: 0 8px; color: #e5e5e5; font-size: .82rem; font-weight: 700; letter-spacing: .04em; }
-.admin-typography-fieldset > legend small { display: block; margin-top: 4px; color: #777; font-size: .68rem; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; }
+.admin-typography-groups { display: grid; gap: 18px; }
+.admin-typography-group { display: grid; gap: 14px; min-width: 0; }
+.admin-typography-group + .admin-typography-group { border-top: 1px solid rgb(255 255 255 / 10%); padding-top: 18px; }
+.admin-typography-group h3 { margin: 0; color: #bdbdbd; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .admin-typography-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .admin-typography-grid label { display: grid; gap: 9px; color: #c7c7c7; font-size: .78rem; font-weight: 700; }
 .admin-typography-grid .admin-input { min-width: 0; }
 .admin-field-unit { color: #8c8c8c; font-size: .68rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
-.admin-design-settings-actions { display: grid; gap: 12px; max-width: 920px; }
+.admin-design-settings-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 12px; max-width: 920px; }
+.admin-design-settings-form { display: contents; }
+.admin-design-settings-form > .admin-submit { grid-column: 1; width: fit-content; min-width: 170px; justify-self: start; margin-top: 0; }
 .admin-design-reset-control { display: grid; gap: 14px; }
+.admin-design-reset-control { grid-column: 2; }
 .admin-design-reset-control > .button { justify-self: start; }
 .admin-content-form label, .admin-content-row label, .admin-page-metadata-form label { display: grid; gap: 9px; color: #c7c7c7; font-size: .78rem; font-weight: 700; }
 .admin-content-form .admin-field-wide { grid-column: 1 / -1; }
@@ -786,6 +794,9 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-typography-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-content-form .admin-field-wide, .admin-content-form button { grid-column: auto; }
   .admin-submit-standalone { width: 100%; }
+  .admin-design-settings-actions { grid-template-columns: 1fr; }
+  .admin-design-settings-form > .admin-submit { grid-column: auto; width: 100%; justify-self: stretch; }
+  .admin-design-reset-control { grid-column: auto; }
   .admin-content-row { grid-template-columns: 1fr; }
   .admin-content-fields { grid-template-columns: 1fr; }
   .admin-content-row-actions { grid-column: auto; }
