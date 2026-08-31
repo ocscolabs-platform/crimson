@@ -26,6 +26,7 @@ type ComposerProps = {
 type InsightsMedia = { id: string; kind: "cover" | "inline"; altText: string; caption: string | null; width: number; height: number; previewUrl: string | null };
 type SaveKind = "autosave" | "explicit";
 type SaveStatus = "saved" | "dirty" | "saving" | "error" | "conflict";
+type MediaAction = "upload" | "remove" | "save-alt";
 type Snapshot = { articleId: string; expectedUpdatedAt: string; title: string; excerpt: string; categoryId: string; tagIds: string[]; bodyJson: string; version: number };
 
 const initialActionState: InsightsActionState = { status: "idle", message: "", issues: [] };
@@ -153,8 +154,10 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaKind, setMediaKind] = useState<"cover" | "inline">("cover");
   const [mediaState, setMediaState] = useState<InsightsMediaActionState>(initialMediaState);
+  const [mediaAction, setMediaAction] = useState<MediaAction | null>(null);
   const [mediaPending, startMediaTransition] = useTransition();
   const mediaFileRef = useRef<HTMLInputElement>(null);
+  const mediaInFlightRef = useRef(false);
   const [workflowPending, setWorkflowPending] = useState(false);
   const [leaveHref, setLeaveHref] = useState("");
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null);
@@ -373,6 +376,20 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
     return data;
   }
 
+  function runMediaAction(action: MediaAction, task: () => Promise<void>) {
+    if (mediaPending || mediaInFlightRef.current) return;
+    mediaInFlightRef.current = true;
+    setMediaAction(action);
+    startMediaTransition(async () => {
+      try {
+        await task();
+      } finally {
+        mediaInFlightRef.current = false;
+        setMediaAction(null);
+      }
+    });
+  }
+
   function handleMediaUpload(kind: "cover" | "inline" = mediaKind) {
     if (!mediaFile || !persistedArticleIdRef.current) {
       setMediaState({ ...initialMediaState, status: "error", message: "Save the Draft and choose an image before uploading." });
@@ -380,7 +397,7 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
     }
     const alt = kind === "cover" ? coverAlt.trim() : mediaAlt.trim();
     const caption = mediaCaption.trim();
-    startMediaTransition(async () => {
+    runMediaAction("upload", async () => {
       const result = await uploadInsightsMedia(initialMediaState, mediaFormData(kind));
       setMediaState(result);
       if (result.status !== "saved" || !result.mediaId) return;
@@ -410,7 +427,7 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
     data.set("expected_updated_at", expectedUpdatedAtRef.current);
     data.set("media_id", coverMedia.id);
     data.set("media_alt", coverAlt.trim());
-    startMediaTransition(async () => {
+    runMediaAction("save-alt", async () => {
       const result = await updateInsightsMediaAlt(initialMediaState, data);
       setMediaState(result);
       if (result.status !== "saved") return;
@@ -426,7 +443,7 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
     data.set("article_id", persistedArticleIdRef.current);
     data.set("expected_updated_at", expectedUpdatedAtRef.current);
     data.set("media_id", mediaId);
-    startMediaTransition(async () => {
+    runMediaAction("remove", async () => {
       const result = await removeInsightsMedia(initialMediaState, data);
       setMediaState(result);
       if (result.status !== "saved") return;
@@ -459,7 +476,7 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
     data.set("expected_updated_at", expectedUpdatedAtRef.current);
     data.set("media_id", mediaId);
     data.set("media_alt", mediaAlt.trim());
-    startMediaTransition(async () => {
+    runMediaAction("save-alt", async () => {
       const result = await updateInsightsMediaAlt(initialMediaState, data);
       setMediaState(result);
       if (result.status !== "saved") return;
@@ -496,7 +513,7 @@ export default function InsightsComposer({ taxonomy, role, canPublishInsights, a
           <label className="insights-field insights-title-field"><span>Title</span><input ref={titleRef} className="insights-title-input" name="title" value={title} onChange={(event) => { setTitle(event.target.value); markDirty(); }} maxLength={160} placeholder="Give this article a clear working title" aria-invalid={Boolean(clientIssue)} aria-describedby={clientIssue ? "title-error" : undefined} /></label>
           {clientIssue ? <p className="insights-field-error" id="title-error" role="alert">{clientIssue}</p> : null}
           <div className="insights-editor-block"><div className="insights-field-heading"><span className="insights-field-label">Body</span><span id="article-body-help">Write the article and add approved private media. Public URLs are never saved in the Draft body.</span></div><div className="insights-toolbar" aria-label="Text formatting"><ToolbarButton label="H2" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} disabled={!editor} /><ToolbarButton label="H3" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} disabled={!editor} /><ToolbarButton label="Bold" onClick={() => editor?.chain().focus().toggleBold().run()} disabled={!editor} /><ToolbarButton label="Italic" onClick={() => editor?.chain().focus().toggleItalic().run()} disabled={!editor} /><ToolbarButton label="Link" onClick={beginLink} onMouseDown={(event) => event.preventDefault()} disabled={!editor} /><ToolbarButton label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()} disabled={!editor} /><ToolbarButton label="Numbered list" onClick={() => editor?.chain().focus().toggleOrderedList().run()} disabled={!editor} /><ToolbarButton label="Blockquote" onClick={() => editor?.chain().focus().toggleBlockquote().run()} disabled={!editor} /><span className="insights-toolbar-spacer" /><ToolbarButton label="Undo" onClick={() => editor?.chain().focus().undo().run()} disabled={!editor} /><ToolbarButton label="Redo" onClick={() => editor?.chain().focus().redo().run()} disabled={!editor} /></div>{linkEntryOpen ? <div className="insights-link-entry"><label><span>Link URL</span><input aria-label="Link URL" value={linkHref} onChange={(event) => setLinkHref(event.target.value)} placeholder="https://example.com" inputMode="url" autoFocus /></label><button type="button" className="button button-light" onClick={applyLink}>Apply link</button><button type="button" className="button button-light" onClick={() => { setLinkHref(""); setLinkEntryOpen(false); setLinkIssue(""); }}>Cancel</button></div> : null}<div id="article-body-editor" className="insights-editor-surface"><EditorContent editor={editor} /></div>{linkIssue ? <p className="insights-field-error" role="alert">{linkIssue}</p> : null}</div>
-          <section className="insights-media-authoring" aria-labelledby="insights-media-heading"><div className="insights-field-heading"><span className="insights-field-label" id="insights-media-heading">Media</span><span>JPEG, PNG, WebP, or AVIF · source and normalized output up to 2 MB. Existing media metadata can be updated without replacing the asset.</span></div><div className="insights-media-grid"><div className="insights-media-card"><strong>Cover image</strong>{coverMedia?.previewUrl ? <img className="insights-cover-preview" src={coverMedia.previewUrl} alt={coverMedia.altText} /> : <div className="insights-media-empty">No Cover selected</div>}<label className="insights-field"><span>Cover file</span><input ref={mediaKind === "cover" ? mediaFileRef : undefined} type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { setMediaKind("cover"); setMediaFile(event.target.files?.[0] ?? null); }} /></label><label className="insights-field"><span>Alternative text</span><input value={coverAlt} onChange={(event) => setCoverAlt(event.target.value)} placeholder="Describe the Cover image" maxLength={300} /></label><div className="insights-media-actions"><button className="button button-light" type="button" onClick={updateCoverAlt} disabled={mediaPending || !coverMedia}>Update Cover alt</button><button className="button button-light" type="button" onClick={() => { setMediaKind("cover"); handleMediaUpload(); }} disabled={mediaPending}>{coverMedia ? "Replace Cover" : "Add Cover"}</button>{coverMedia ? <button className="button button-light" type="button" onClick={() => removeMedia(coverMedia.id, "cover")} disabled={mediaPending}>Remove Cover</button> : null}</div></div><div className="insights-media-card"><strong>Inline image</strong><p className="insights-muted">Upload, then insert the image at the current cursor position.</p><label className="insights-field"><span>Inline file</span><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { setMediaKind("inline"); setMediaFile(event.target.files?.[0] ?? null); }} /></label><label className="insights-field"><span>Alternative text</span><input value={mediaKind === "inline" ? mediaAlt : ""} onChange={(event) => { setMediaKind("inline"); setMediaAlt(event.target.value); }} placeholder="Describe the inline image" maxLength={300} /></label><label className="insights-field"><span>Caption <small>Optional · max 300 characters</small></span><input value={mediaKind === "inline" ? mediaCaption : ""} onChange={(event) => { setMediaKind("inline"); setMediaCaption(event.target.value); }} maxLength={300} /></label><button className="button button-light" type="button" onClick={() => { setMediaKind("inline"); handleMediaUpload(); }} disabled={mediaPending}>Insert inline image</button></div></div>{inlineMedia.length ? <div className="insights-inline-media-list"><strong>Inline media in this Draft</strong>{inlineMedia.map((media) => <div className="insights-inline-media-item" key={media.id}><span>{media.altText}</span><button className="button button-light" type="button" onClick={() => removeMedia(media.id, "inline")} disabled={mediaPending}>Remove</button></div>)}</div> : null}<div className="insights-media-edit-row"><label className="insights-field"><span>Selected inline image alternative text</span><input value={mediaAlt} onChange={(event) => setMediaAlt(event.target.value)} placeholder="Select an inline image in the editor" maxLength={300} /></label><button className="button button-light" type="button" onClick={updateSelectedInlineAlt} disabled={mediaPending}>Update selected alt</button></div>{mediaState.status !== "idle" ? <p className={mediaState.status === "saved" ? "insights-success" : "insights-error"} role={mediaState.status === "saved" ? "status" : "alert"}>{mediaState.message}</p> : null}</section>
+          <section className="insights-media-authoring" aria-labelledby="insights-media-heading"><div className="insights-field-heading"><span className="insights-field-label" id="insights-media-heading">Media</span><span>JPEG, PNG, WebP, or AVIF · source and normalized output up to 2 MB. Existing media metadata can be updated without replacing the asset.</span></div><div className="insights-media-grid"><div className="insights-media-card"><strong>Cover image</strong>{coverMedia?.previewUrl ? <img className="insights-cover-preview" src={coverMedia.previewUrl} alt={coverMedia.altText} /> : <div className="insights-media-empty">No Cover selected</div>}<label className="insights-field"><span>Cover file</span><input ref={mediaKind === "cover" ? mediaFileRef : undefined} type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { setMediaKind("cover"); setMediaFile(event.target.files?.[0] ?? null); }} /></label><label className="insights-field"><span>Alternative text</span><input value={coverAlt} onChange={(event) => setCoverAlt(event.target.value)} placeholder="Describe the Cover image" maxLength={300} /></label><div className="insights-media-actions"><button className="button button-light" type="button" onClick={updateCoverAlt} disabled={mediaPending || !coverMedia}>{mediaPending && mediaAction === "save-alt" ? <><span className="admin-button-spinner" aria-hidden="true" />Saving…</> : "Update Cover alt"}</button><button className="button button-light" type="button" onClick={() => { setMediaKind("cover"); handleMediaUpload(); }} disabled={mediaPending}>{mediaPending && mediaAction === "upload" ? <><span className="admin-button-spinner" aria-hidden="true" />Uploading…</> : coverMedia ? "Replace Cover" : "Add Cover"}</button>{coverMedia ? <button className="button button-light" type="button" onClick={() => removeMedia(coverMedia.id, "cover")} disabled={mediaPending}>{mediaPending && mediaAction === "remove" ? <><span className="admin-button-spinner" aria-hidden="true" />Removing…</> : "Remove Cover"}</button> : null}</div></div><div className="insights-media-card"><strong>Inline image</strong><p className="insights-muted">Upload, then insert the image at the current cursor position.</p><label className="insights-field"><span>Inline file</span><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { setMediaKind("inline"); setMediaFile(event.target.files?.[0] ?? null); }} /></label><label className="insights-field"><span>Alternative text</span><input value={mediaKind === "inline" ? mediaAlt : ""} onChange={(event) => { setMediaKind("inline"); setMediaAlt(event.target.value); }} placeholder="Describe the inline image" maxLength={300} /></label><label className="insights-field"><span>Caption <small>Optional · max 300 characters</small></span><input value={mediaKind === "inline" ? mediaCaption : ""} onChange={(event) => { setMediaKind("inline"); setMediaCaption(event.target.value); }} maxLength={300} /></label><button className="button button-light" type="button" onClick={() => { setMediaKind("inline"); handleMediaUpload(); }} disabled={mediaPending}>{mediaPending && mediaAction === "upload" ? <><span className="admin-button-spinner" aria-hidden="true" />Uploading…</> : "Insert inline image"}</button></div></div>{inlineMedia.length ? <div className="insights-inline-media-list"><strong>Inline media in this Draft</strong>{inlineMedia.map((media) => <div className="insights-inline-media-item" key={media.id}><span>{media.altText}</span><button className="button button-light" type="button" onClick={() => removeMedia(media.id, "inline")} disabled={mediaPending}>{mediaPending && mediaAction === "remove" ? <><span className="admin-button-spinner" aria-hidden="true" />Removing…</> : "Remove"}</button></div>)}</div> : null}<div className="insights-media-edit-row"><label className="insights-field"><span>Selected inline image alternative text</span><input value={mediaAlt} onChange={(event) => setMediaAlt(event.target.value)} placeholder="Select an inline image in the editor" maxLength={300} /></label><button className="button button-light" type="button" onClick={updateSelectedInlineAlt} disabled={mediaPending}>{mediaPending && mediaAction === "save-alt" ? <><span className="admin-button-spinner" aria-hidden="true" />Saving…</> : "Update selected alt"}</button></div>{mediaState.status !== "idle" ? <p className={mediaState.status === "saved" ? "insights-success" : "insights-error"} role={mediaState.status === "saved" ? "status" : "alert"}>{mediaState.message}</p> : null}</section>
           <label className="insights-field"><span>Excerpt <small>Optional · max 300 characters</small></span><textarea name="excerpt" value={excerpt} onChange={(event) => { setExcerpt(event.target.value); markDirty(); }} maxLength={300} placeholder="A short introduction for article lists" /></label>
         </div>
         <aside className="insights-metadata-panel" aria-label="Article metadata">
