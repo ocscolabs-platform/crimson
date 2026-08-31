@@ -79,16 +79,26 @@ test("PageDocument SEO supplies title, description, Open Graph, Twitter, and cod
     description: "How OCSCO brings strategy, design, and technology together.",
     type: "website",
     url: "/about",
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "About OCSCO" }],
+    images: [{ url: "/og/ocsco-about.png", width: 1200, height: 630, alt: "About OCSCO" }],
   });
-  assert.equal(metadata.twitter, undefined);
+  assert.deepEqual(metadata.twitter, {
+    card: "summary_large_image",
+    title: "About OCSCO",
+    description: "How OCSCO brings strategy, design, and technology together.",
+    images: ["/og/ocsco-about.png"],
+  });
 });
 
 test("omitted approved OG reference falls back to the generated default route", () => {
   const document = aboutDocument({ seo: { title: "About", description: "Description" } });
   const metadata = buildPageDocumentMetadata(document, "about");
-  assert.deepEqual(metadata.openGraph.images, [{ url: "/opengraph-image", width: 1200, height: 630, alt: "About" }]);
-  assert.equal(metadata.twitter, undefined);
+  assert.deepEqual(metadata.openGraph.images, [{ url: "/og/ocsco-about.png", width: 1200, height: 630, alt: "About" }]);
+  assert.deepEqual(metadata.twitter, {
+    card: "summary_large_image",
+    title: "About",
+    description: "Description",
+    images: ["/og/ocsco-about.png"],
+  });
 });
 
 test("metadata builder rejects a mismatched page key and invalid OG reference", () => {
@@ -139,10 +149,13 @@ test("origin, generated image path, and route paths remain code-controlled", asy
   const helper = await readFile("src/lib/page-metadata.ts", "utf8");
   const origin = await readFile("src/lib/site-origin.ts", "utf8");
   const layout = await readFile("src/app/layout.tsx", "utf8");
+  const ogAssets = await readFile("src/lib/og-assets.ts", "utf8");
   assert.match(origin, /NEXT_PUBLIC_SITE_URL/);
   assert.match(layout, /twitter:\s*\{/);
-  assert.match(helper, /\/opengraph-image/);
+  assert.match(helper, /PAGE_OG_IMAGE_PATHS/);
+  assert.match(ogAssets, /\/og\/ocsco-about\.png/);
   assert.doesNotMatch(helper, /NEXT_PUBLIC_SITE_URL|ocsco\\.io|VERCEL_URL/);
+  assert.doesNotMatch(helper, /\/opengraph-image/);
   assert.doesNotMatch(helper, /canonical:\s*document\.seo|ogImagePath\s*=\s*document\.seo/);
 });
 

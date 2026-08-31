@@ -38,10 +38,13 @@ test("Restore failure returns to retryable idle while preserving safe error UX",
 
 test("Restore repeat protection remains locked during the first pending submission", async () => {
   const control = await read("src/app/admin/content/pages/_components/PageDocumentRestoreControl.tsx");
+  const submitButton = await read("src/app/admin/AdminSubmitButton.tsx");
 
   assert.match(control, /const locked = pending \|\| \(submitLocked && state\.status === "idle"\)/);
   assert.match(control, /if \(locked\) \{\s+event\.preventDefault\(\);\s+return;\s+\}/s);
   assert.match(control, /setSubmitLocked\(true\)/);
   assert.match(control, /disabled=\{locked\}/);
-  assert.match(control, /\{locked \? "Restoring…" : "Confirm Restore revision"\}/);
+  assert.match(control, /<AdminSubmitButton[\s\S]*label="Confirm Restore revision"[\s\S]*pendingLabel="Restoring…"/);
+  assert.match(submitButton, /const locked = pending \|\| disabled/);
+  assert.match(submitButton, /locked \? \(\s*<>[\s\S]*pendingLabel/);
 });
