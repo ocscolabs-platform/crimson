@@ -21,8 +21,11 @@ test("Work detail retains related-Service loading", async () => {
   const loader = await source("src/lib/cms-content.ts");
 
   assert.match(detail, /getPublishedWorkProject\(slug\)/);
+  assert.match(detail, /<WorkDetailView project=\{project\} \/>/);
+  assert.match(loader, /const includeRelatedCapabilities = options\.includeRelatedCapabilities \?\? true/);
   assert.match(loader, /getPublishedWorkProjects\(\)/);
-  assert.match(detail, /relatedCapabilities/);
+  assert.match(loader, /from\("case_study_services"\)/);
+  assert.match(loader, /from\("services"\)/);
 });
 
 test("approved media uses one safe batch signing path", async () => {
