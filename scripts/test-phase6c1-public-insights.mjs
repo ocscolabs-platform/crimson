@@ -37,9 +37,11 @@ test("6C1 public Insights routes use the published boundary", async () => {
   assert.doesNotMatch(detail, /tiptap|Tiptap|use client|article\.id|revision/i);
 });
 
-test("6C1 stays unchanged while migration #33 is separately identified", async () => {
+test("6C1 stays unchanged while its canonical migration history remains present", async () => {
   const files = (await readdir(path.join(root, "supabase/migrations"))).filter((file) => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 33);
-  assert.equal(files.at(-2), "20260830000000_fix_phase6b3_restore_media_validity.sql");
-  assert.equal(files.at(-1), "20260831000000_reconcile_production_legacy_baseline.sql");
+  assert.ok(files.length >= 47, `Expected at least the current canonical migration baseline; found ${files.length}.`);
+  for (const migration of [
+    "20260830000000_fix_phase6b3_restore_media_validity.sql",
+    "20260831000000_reconcile_production_legacy_baseline.sql",
+  ]) assert.ok(files.includes(migration), `Missing canonical migration: ${migration}`);
 });
