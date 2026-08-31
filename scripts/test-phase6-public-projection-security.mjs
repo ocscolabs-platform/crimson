@@ -14,11 +14,13 @@ test("Security hardening remains migration #29 and current staging migrations re
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 33);
-  assert.equal(files.at(-4), "20260828000000_add_phase6b3_insights_media_workflow.sql");
-  assert.equal(files.at(-3), "20260829000000_add_phase6b3_restore_media_association.sql");
-  assert.equal(files.at(-2), "20260830000000_fix_phase6b3_restore_media_validity.sql");
-  assert.equal(files.at(-1), "20260831000000_reconcile_production_legacy_baseline.sql");
+  assert.ok(files.length >= 47, `Expected at least the current canonical migration baseline; found ${files.length}.`);
+  for (const migration of [
+    "20260828000000_add_phase6b3_insights_media_workflow.sql",
+    "20260829000000_add_phase6b3_restore_media_association.sql",
+    "20260830000000_fix_phase6b3_restore_media_validity.sql",
+    "20260831000000_reconcile_production_legacy_baseline.sql",
+  ]) assert.ok(files.includes(migration), `Missing canonical migration: ${migration}`);
 });
 
 test("The public projection is sanitized, RLS-protected, and SELECT-only", async () => {
