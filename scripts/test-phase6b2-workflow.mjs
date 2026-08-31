@@ -61,7 +61,7 @@ test("Needs Review queue and workflow controls remain authoritative and role-sco
   assert.match(dashboard, /Review ↗/);
   assert.match(data, /sort\(\(a, b\) => \(a\.submitted_at/);
   assert.match(page, /WorkflowControls/);
-  assert.match(page, /article\.status === "review" \|\| article\.status === "published"/);
+  assert.match(page, /article\.status === "review"\s*\|\|\s*article\.status === "scheduled"\s*\|\|\s*article\.status === "published"\s*\|\|\s*article\.status === "unpublished"/);
   assert.match(controls, /Preview ↗/);
   assert.match(controls, /Confirm Publish/);
   assert.match(controls, /Confirm Return to Draft/);
