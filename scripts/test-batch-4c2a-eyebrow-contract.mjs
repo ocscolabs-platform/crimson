@@ -109,7 +109,9 @@ test("the storage family maps only to approved eyebrow runtime variables and is 
   assert.match(designSettings, /--type-eyebrow-weight/);
   assert.match(designSettings, /--type-eyebrow-line-height/);
   assert.match(designSettings, /--type-eyebrow-letter-spacing/);
-  assert.doesNotMatch(designSettings, /--type-(?:h1|h2|h3|body|lead)-/);
+  assert.match(designSettings, /--type-h1-hero-size/);
+  assert.match(designSettings, /--type-h1-hero-mobile-size/);
+  assert.match(designSettings, /--type-h1-page-route-size/);
   assert.match(fields, /admin-typography-fieldset/);
   assert.match(fields, /design_eyebrow_letter_spacing/);
   assert.doesNotMatch(fields, /font-family|Typography Reset/i);

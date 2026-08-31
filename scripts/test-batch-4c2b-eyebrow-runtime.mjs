@@ -23,7 +23,7 @@ test("published eyebrow values map to the existing semantic variables with CSS u
   assert.equal(variables["--type-eyebrow-letter-spacing"], "0.2em");
   assert.deepEqual(
     Object.keys(variables),
-    [...DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => `--${key}`), "--type-eyebrow-size", "--type-eyebrow-weight", "--type-eyebrow-line-height", "--type-eyebrow-letter-spacing", "--type-h1-hero-size", "--type-h1-hero-mobile-size"],
+    [...DESIGN_SETTINGS_V1_COLOR_KEYS.map((key) => `--${key}`), "--type-eyebrow-size", "--type-eyebrow-weight", "--type-eyebrow-line-height", "--type-eyebrow-letter-spacing", "--type-h1-hero-size", "--type-h1-hero-mobile-size", "--type-h1-page-route-size"],
   );
 });
 
@@ -78,7 +78,10 @@ test("ordinary admin resets eyebrow variables to immutable defaults while the CM
   assert.match(adminBoundary, /--type-eyebrow-weight:\s*800/);
   assert.match(adminBoundary, /--type-eyebrow-line-height:\s*1\.4/);
   assert.match(adminBoundary, /--type-eyebrow-letter-spacing:\s*\.16em/);
-  assert.match(fields, /Typography <small>Eyebrow \/ Overline/);
+  assert.match(fields, /<legend>Typography<\/legend>/);
+  assert.match(fields, /<h3>Eyebrow \/ Overline<\/h3>/);
+  assert.match(fields, /<h3>Home Hero Title<\/h3>/);
+  assert.match(fields, /<h3>Page \/ Route Title<\/h3>/);
   assert.match(page, /design_eyebrow_letter_spacing/);
   assert.doesNotMatch(fields, /font-family|H1 typography|H2 typography|H3 typography|Lead typography|Typography Reset/i);
   assert.doesNotMatch(page, /font-family|H1 typography|H2 typography|H3 typography|Lead typography|Typography Reset/);

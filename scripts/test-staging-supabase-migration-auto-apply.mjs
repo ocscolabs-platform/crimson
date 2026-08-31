@@ -29,9 +29,9 @@ test("staging migration workflow applies on protected staging pushes", () => {
   assert.match(staging, /Verify staging migration parity/);
   assert.match(staging, /schema_migrations/);
   assert.match(staging, /diff -u.*local_versions_file.*remote_versions_file/s);
-  assert.match(staging, /getent ahostsv4.*PGHOST/);
-  assert.match(staging, /PGHOSTADDR/);
-  assert.match(staging, /No IPv4 address is available/);
+  assert.match(staging, /export PGHOST="aws-0-ap-northeast-1\.pooler\.supabase\.com"/);
+  assert.match(staging, /export PGPORT=5432/);
+  assert.match(staging, /psql -Atqc "select version from supabase_migrations\.schema_migrations order by version"/);
   assert.match(staging, /duplicates=0; pending=0/);
   assert.doesNotMatch(staging, /20260829000000|migration #31|Migration #31/);
 });

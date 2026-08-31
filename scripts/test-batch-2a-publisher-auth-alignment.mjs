@@ -9,7 +9,7 @@ const [controls, composer, migration] = await Promise.all([
   read("supabase/migrations/20260831000000_reconcile_production_legacy_baseline.sql"),
 ]);
 
-assert.match(controls, /const canPublish = props\.status === "review" && props\.role === "owner";/);
+assert.match(controls, /const canPublish = \(props\.status === "review" \|\| props\.status === "scheduled"\) && props\.role === "owner";/);
 assert.doesNotMatch(controls, /props\.role === "editor" && props\.canPublishInsights/);
 assert.match(composer, /const canPublishDraft = Boolean\(article\) && role === "editor" && canPublishInsights;/);
 assert.match(migration, /if not public\.cms_can_publish_insights\(\) then raise exception 'This member cannot publish Insights'; end if;/);

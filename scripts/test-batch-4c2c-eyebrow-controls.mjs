@@ -14,7 +14,10 @@ async function source(path) {
 test("Design Settings exposes exactly the four approved Eyebrow controls", async () => {
   const fields = await source("src/app/admin/content/DesignSettingsFields.tsx");
   const page = await source("src/app/admin/content/page.tsx");
-  assert.match(fields, /<legend>Typography <small>Eyebrow \/ Overline<\/small><\/legend>/);
+  assert.match(fields, /<legend>Typography<\/legend>/);
+  assert.match(fields, /<h3>Eyebrow \/ Overline<\/h3>/);
+  assert.match(fields, /<h3>Home Hero Title<\/h3>/);
+  assert.match(fields, /<h3>Page \/ Route Title<\/h3>/);
   assert.deepEqual(
     [...fields.matchAll(/name="(design_eyebrow_[^"]+)"/g)].map((match) => match[1]),
     ["design_eyebrow_size", "design_eyebrow_weight", "design_eyebrow_line_height", "design_eyebrow_letter_spacing"],
