@@ -330,6 +330,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-role { border: 1px solid rgb(0 200 83 / 38%); border-radius: 999px; color: var(--green); font-size: .68rem; font-weight: 800; letter-spacing: .08em; padding: 7px 10px; text-transform: uppercase; }
 .admin-role-pending { border-color: rgb(255 255 255 / 20%); color: #9a9a9a; }
 .admin-signout { border: 1px solid rgb(255 255 255 / 24%); border-radius: 9px; background: #242424; color: var(--white); cursor: pointer; font: inherit; font-size: .76rem; font-weight: 700; padding: 9px 13px; }
+.admin-signout:disabled { cursor: wait; opacity: .7; }
 .admin-signout:hover { border-color: var(--green); color: var(--green); }
 .admin-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .admin-nav a { border: 1px solid rgb(255 255 255 / 14%); border-radius: 999px; color: #a8a8a8; font-size: .74rem; font-weight: 700; padding: 8px 12px; }
