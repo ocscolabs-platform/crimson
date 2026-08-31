@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { publishPageDocument, type PageDocumentActionState } from "../actions";
+import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 
 const initialState: PageDocumentActionState = { status: "idle", message: "", issues: [] };
 
@@ -38,9 +39,7 @@ function PublishConfirmationForm({
       <input type="hidden" name="revision_id" value={revisionId} />
       <input type="hidden" name="expected_updated_at" value={expectedUpdatedAt} />
       <div className="admin-publish-confirmation-actions">
-        <button className="button button-primary admin-submit" type="submit" disabled={locked}>
-          {locked ? "Publishing…" : "Confirm Publish changes"}
-        </button>
+        <AdminSubmitButton label="Confirm Publish changes" pendingLabel="Publishing…" disabled={submitLocked} />
         <button className="button admin-button-secondary" type="button" disabled={locked} onClick={onCancel}>
           Cancel
         </button>
@@ -75,7 +74,7 @@ export default function PageDocumentPublishControl({
         disabled={pending}
         onClick={() => setConfirmationOpen(true)}
       >
-        Publish changes <span aria-hidden="true">↗</span>
+        Publish changes
       </button>
 
       {confirmationOpen && state.status !== "success" ? (

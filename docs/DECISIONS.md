@@ -499,3 +499,139 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Add `20260831000000_reconcile_production_legacy_baseline.sql` as a forward-only, transactionally guarded adoption path. Canonical Phase 6 environments are a no-op. Only the audited legacy signature may enter the reconciliation branch; it validates the five-page baseline and legacy JSON content before running the reviewed Phase 5/6 contract bundle, preserving all existing rows and case-study Storage objects, and normalizing the direct authenticated write boundary. No account-specific values, seed article, seed editor, or staging data copy is allowed.
 - **Reason:** The read-only Production audit found a real legacy public schema with no migration ledger and no Phase 5/6 contracts. Replaying migrations 1–32 is unsafe because several historical migrations are non-idempotent and Production already contains legitimate rows. A single forward adoption migration keeps the historical files immutable, provides an explicit no-op path for canonical staging, and fails closed on drift.
 - **Consequence:** A pinned Supabase CLI absent-ledger adoption proof against a disposable linked database is a hard prerequisite to any Production action. Until that proof exists, the migration may be reviewed in a staging-targeted PR but must not be applied to Production or used to claim Production parity.
+
+## ADR-070 - Deprecate Reviewer assignments without changing persisted roles
+
+- **Date:** 2026-08-29
+- **Status:** Implemented in the Team & Access application surface; database compatibility retained
+- **Decision:** Limit normal CMS invitations and existing-member role changes to `owner` and `editor`. Keep `reviewer` in the persisted role validation and authorization compatibility set so existing memberships remain readable and retain their current permissions. Render an existing Reviewer membership as legacy state and require an explicit Owner or Editor choice before changing it.
+- **Reason:** The approved role model is Owner and Editor, but removing the stored role or silently converting current users would create unnecessary data and access risk. The smallest safe deprecation is to stop new assignment while preserving backward compatibility.
+- **Consequence:** No database enum/check surgery, membership conversion, publishing-capability merge, or changes to Owner/Editor authorization are introduced. `can_publish_insights` remains an independent Editor capability.
+
+## ADR-071 - Align Insights publish affordances with the existing capability contract
+
+- **Date:** 2026-08-29
+- **Status:** Implemented in the staging-targeted Batch 2A fix
+- **Decision:** Keep the existing publication contract authoritative: Owners may publish a valid Review, while an Editor with `can_publish_insights = true` may publish their own valid Draft through the existing Composer action. Remove the contradictory Editor Review publish affordance from `WorkflowControls`; do not change the publish RPC, role model, capability flag, media boundary, public projection, or audit behavior.
+- **Reason:** The staging UI exposed Review publication for capable Editors, but the final authoritative `insights_publish_article` RPC deliberately restricts non-owner publication to the author's Draft. The existing Batch 6A/6B documentation and Composer already describe and implement the narrower Editor self-publish workflow. Aligning the UI to that backend contract is the smallest safe correction and avoids broadening permissions.
+- **Consequence:** `can_publish_insights` remains the independent Editor publishing gate. An Editor without the flag receives no own-Draft publish action and the backend still rejects the RPC. Owner Review publication remains unchanged. Scheduled Publishing is not implemented by this decision.
+
+## ADR-072 - Add the Scheduled article state without adding an execution system
+
+- **Date:** 2026-08-29
+- **Status:** Implemented in Batch 2B Step 1; staging verification pending
+- **Decision:** Add `insights_articles.scheduled_publish_at` as a nullable absolute instant, add `scheduled` to the article lifecycle, and provide authenticated Owner schedule/reschedule/cancel RPCs with row locks, optimistic concurrency, publishability checks, and existing audit events. Keep the active revision in `review`, keep scheduled articles out of the Review queue, and allow the existing Owner publication RPC to publish a Scheduled reviewed revision now. Do not add UI controls, a scheduler, a queue, notifications, or claims/leases in this step.
+- **Reason:** The first safe increment is a durable state contract that freezes the reviewed revision and makes future execution explicit. Adding a worker or lease before the media-preparation boundary is designed would create a second state machine and an incomplete retry surface.
+- **Consequence:** Draft, Review, Owner Schedule, Scheduled, Reschedule, Cancel-to-Review, and Owner Publish-now semantics are available to the next implementation step without changing Reviewer compatibility, Owner/Editor roles, or `can_publish_insights`. Step 2 must add an atomic claim/lease boundary before any automatic media preparation; until then no automatic execution is possible or enabled.
+
+## ADR-073 - Expose manual scheduling in browser-local time
+
+- **Date:** 2026-08-29
+- **Status:** Implemented in Batch 2B2; staging verification pending
+- **Decision:** Add the smallest Owner-only manual scheduling UI around the existing Batch 2B RPCs. Use a native `datetime-local` input, convert the browser-local value to an offset-aware ISO instant before submission, and display scheduled times using the browser's detected timezone and UTC offset. Scheduled articles expose only Publish now, Reschedule, and Cancel schedule controls; no automatic execution or new workflow system is introduced.
+- **Reason:** The existing backend contract already protects scheduling, so the UI should preserve that boundary while making local-time entry explicit and avoiding a server-timezone assumption.
+- **Consequence:** Review, Scheduled, and publication behavior remain separate. Editor permissions and `can_publish_insights` remain unchanged, and a future step is still required for any automatic scheduler or claim/lease boundary.
+
+## ADR-074 - Add a single-article scheduled execution claim boundary
+
+- **Date:** 2026-08-29
+- **Status:** Proposed for staging review in Batch 2C1; no recurring trigger or Production change
+- **Decision:** Add short-lived scheduler claim fields and a service-role-only claim, release, and finalize boundary. Expose one protected server-side manual execution route that claims at most one due Scheduled article, prepares its active reviewed revision through the shared publication artifact helper, and calls the same transactional publication/projection/audit path used by manual publishing. Manual status or schedule changes invalidate outstanding claims.
+- **Reason:** Automatic execution needs a concurrency-safe lease and stale-worker protection before any recurring trigger is introduced. Keeping execution manual and single-item makes the first step observable and reversible while avoiding a second publication implementation or an unbounded worker system.
+- **Consequence:** A due article is claimed only when it is Scheduled and its lease is absent or expired; a claim is bounded to 30–300 seconds, and stale claims cannot publish after cancellation, rescheduling, revision change, expiry, or a prior successful publication. The route is inert until an operator invokes it with a staging-only secret. No Cron, queue, worker, notification, dashboard, UI, role, or `can_publish_insights` change is introduced.
+
+## ADR-075 - Add the Design Settings v1 storage and validation contract
+
+- **Date:** 2026-08-30
+- **Status:** Proposed for staging review in Batch 4A1; CSS application and CMS controls remain deferred
+- **Decision:** Store one versioned, validated `design_settings` JSONB document on the existing `site_settings:id=default` singleton. Support only the eight existing public color tokens: ink, graphite, green, white, snow, muted, border, and copy. Use immutable application defaults matching `src/app/globals.css`, strict application normalization, and the existing revision/save/publish path. Do not create a new table or expose the document through CMS controls yet.
+- **Reason:** A single additive field reuses the existing global settings and revision architecture while preserving the current public output. Strict normalization prevents malformed or arbitrary CSS values from reaching a future token boundary, and deferring CSS injection keeps this batch visually inert.
+- **Consequence:** Batch 4A1 introduces no user-visible design controls and no CSS variable changes. Missing or invalid stored values resolve to the current defaults; valid reviewed values can be carried through the existing owner publication path. Typography, spacing, radii, button states, effects, and CMS UI require separate follow-on approval.
+
+## ADR-076 - Apply published Design Settings through one root runtime boundary
+
+- **Date:** 2026-08-30
+- **Status:** Proposed for staging review in Batch 4A2; CMS controls remain deferred
+- **Decision:** Load the normalized published Design Settings v1 document once at the shared Next.js root layout and emit only the eight approved color tokens as inline CSS custom properties on the root `html` element. Keep the existing `globals.css :root` values as the static fallback layer and deduplicate the published settings read per request.
+- **Reason:** The root layout reliably wraps the homepage, RouteShell pages, Work, Insights, authenticated public-presentation previews, and the remaining application routes. A single boundary avoids per-component theme plumbing while invalid or unavailable stored values continue to resolve to the immutable current defaults.
+- **Consequence:** This batch changes no token values, selectors, visual components, admin controls, storage schema, workflow, authorization, or publishing behavior. The admin remains without a Design Settings surface; it inherits the same unchanged public token values only through the existing global root boundary.
+
+## ADR-077 - Isolate Crimson admin from public Design Settings colors
+
+- **Date:** 2026-08-30
+- **Status:** Proposed for staging review in Batch 4A4; no Design Settings controls
+- **Decision:** Override all eight approved color variables on the existing `.admin-page` root with the immutable Batch 4A1 current defaults. Keep authenticated public-content Preview routes outside that selector so they continue to inherit the published public Design Settings document.
+- **Reason:** Batch 4A3 confirmed that the Batch 4A2 root `<html>` variables inherit into the admin, where `--ink`, `--white`, and `--green` are directly used and shared button classes can consume additional tokens. A single existing admin-root override is the smallest stable boundary and avoids a second theme engine or component rewrites.
+- **Consequence:** Future public color changes cannot recolor the CMS or its login surface. Public homepage, RouteShell, Work, Insights, and authenticated public-content Preview continue to receive the public runtime values. No database configuration, admin theme editor, or Design Settings control is introduced.
+
+## ADR-078 - Reuse global content revisions for Design Settings color controls
+
+- **Date:** 2026-08-30
+- **Status:** Proposed for staging review in Batch 4B1; no additional settings architecture
+- **Decision:** Add one Design Settings entry point to the existing Global Content surface and expose only the eight validated public color tokens. Save the color document as a private `site_settings:default` Review revision through `cms_save_revision`; keep the existing Owner-only `cms_publish_revision` action authoritative.
+- **Reason:** The storage, validator, runtime mapping, and admin isolation contracts already exist. Reusing the current global-content page and revision merge preserves pending Draft/Review values, avoids a second publication system, and keeps the CMS visually independent from public colors.
+- **Consequence:** Color edits remain private until Owner publication. Invalid six-digit hex values cannot be saved, no unsupported token family is exposed, no migration or dependency is added, and public runtime colors continue to update only through the existing published `design_settings` path.
+
+## ADR-079 - Add the optional Design Settings eyebrow typography contract
+
+- **Date:** 2026-08-31
+- **Status:** Implemented in Batch 4C2A; runtime mapping and CMS controls remain deferred
+- **Decision:** Extend the existing `site_settings.design_settings` document with an optional, strictly typed `typography.eyebrow` family containing only numeric size, weight, line-height, and letter-spacing fields. Normalize absent or partial values to immutable Batch 4C1 defaults and carry the normalized document through the existing revision and Owner publication path.
+- **Reason:** Establish the first typography storage contract without adding a table, revision system, generic typography engine, or public visual change. Numeric bounds prevent arbitrary CSS from reaching a future runtime boundary.
+- **Consequence:** Existing color-only v1 documents remain valid. Colors Reset preserves a valid typography family. No typography CSS override, CMS control, font setting, or public visual change is introduced; runtime eyebrow mapping is deferred to Batch 4C2B.
+
+## ADR-080 - Map published eyebrow settings at the shared public runtime boundary
+
+- **Date:** 2026-08-31
+- **Status:** Implemented in Batch 4C2B; CMS typography controls remain deferred
+- **Decision:** Extend the existing normalized Design Settings root mapping so only `typography.eyebrow` drives the established `--type-eyebrow-size`, `--type-eyebrow-weight`, `--type-eyebrow-line-height`, and `--type-eyebrow-letter-spacing` variables. Convert numeric storage to `rem`, numeric font weight, unitless line-height, and `em` at this boundary. Reset those four variables to the immutable Batch 4C1 defaults within the ordinary Crimson admin boundary while leaving public-content Preview outside the override.
+- **Reason:** The storage contract is now ready for public presentation, and one shared mapping preserves a single authoritative runtime boundary. The narrow admin override prevents future public eyebrow changes from recoloring or restyling the CMS without adding an admin theme system or component rewrites.
+- **Consequence:** Current published values produce no visual change. Homepage, RouteShell, Work, Insights, and authenticated public-content Previews inherit published public eyebrow values; normal admin and login retain the immutable defaults. The existing Insights Preview banner exception remains the public-content boundary. No CMS controls, H1/H2/H3/Body/Lead mapping, font-family setting, or other token family is introduced.
+
+## ADR-081 - Expose only the Eyebrow typography controls through Design Settings
+
+- **Date:** 2026-08-31
+- **Status:** Proposed for staging review in Batch 4C2C
+- **Decision:** Add exactly four editable Eyebrow controls—size, weight, line-height, and letter-spacing—to the existing Design Settings form. Parse and validate them with the existing `site_settings:default` document contract, save them through the existing private Review revision path, and keep Owner publication authoritative. Use the existing numeric units and bounds, with the approved weight allowlist of 400, 500, 600, 700, and 800.
+- **Reason:** Batch 4C2A and 4C2B already provide the storage, validation, public runtime mapping, and admin isolation boundaries. Reusing the existing form and revision merge is the smallest safe UI addition and preserves the eight color values and unrelated global content while leaving other typography families out of scope.
+- **Consequence:** Eyebrow changes remain private until Owner publication, then flow to the established public runtime variables and authenticated public-content previews. Colors and unrelated settings survive Eyebrow saves, color values survive the combined form, and no Typography Reset, font-family control, new role, new schema, or second settings architecture is introduced.
+
+## ADR-082 - Store a Home Hero Title scale without applying it to runtime or CMS UI
+
+- **Date:** 2026-08-31
+- **Status:** Proposed for staging review in Display Typography T1
+- **Decision:** Extend the existing optional `site_settings.design_settings.typography` object with an optional `home_hero_title.scale` numeric value. Accept only `0.80` through `1.10`, normalize absent or malformed values to `1.0`, and keep the current Home Hero desktop/mobile formulas, weight, line-height, tracking, font, breakpoints, and layout code-owned. Preserve the value through the existing revision merge and Owner publication contract, but do not emit a CSS variable or add a CMS control in this batch.
+- **Reason:** The Home Hero Title is the first approved context-specific Display setting with a bounded product need. A semantic multiplier preserves responsive formulas without storing CSS, while deferring runtime/UI exposure keeps this contract visually inert and avoids a global H1 control.
+- **Consequence:** Existing color-only, Eyebrow-only, and combined documents remain valid; Colors and Eyebrow saves preserve `home_hero_title`; Colors Reset preserves it by carrying the normalized typography object. The database validator is extended forward-only with strict optional-key and range checks. No new table, column, revision system, typography family, or Production behavior is introduced.
+
+## ADR-083 - Apply the Home Hero Title scale only at the public semantic runtime boundary
+
+- **Date:** 2026-08-31
+- **Status:** Proposed for staging review in Display Typography T2
+- **Decision:** Read the normalized published `typography.home_hero_title.scale` at the existing root Design Settings mapper and emit only the established `--type-h1-hero-size` and `--type-h1-hero-mobile-size` variables. Scale every min, fluid, and max component of the existing desktop and mobile clamp formulas, returning the exact current formulas at `1.0` and rounding generated numbers deterministically. Do not add inline styles, client-side scaling, CMS controls, or any other H1 mapping.
+- **Reason:** The existing semantic variables already form the public Home and authenticated Home Preview boundary. Server-side generation keeps the bounded contract responsive and prevents CSS injection while preserving the current selector and layout architecture.
+- **Consequence:** The published default `1.0` is visually equivalent to the current design; Colors and Eyebrow runtime variables remain unchanged; ordinary admin pages do not consume the Home Hero variables; authenticated Home PageDocument Preview inherits the same published scale through the root layout. Owner control remains deferred to T3.
+
+## ADR-084 - Expose Home Hero Title size as a bounded percentage selector
+
+- **Date:** 2026-08-31
+- **Status:** Proposed for staging review in Display Typography T3
+- **Decision:** Extend the existing Design Settings Typography surface with one separated Home Hero Title `Title Size` selector using the existing `AdminSelect` styling. Expose only `80%`, `85%`, `90%`, `95%`, `100% — Default`, `105%`, and `110%`, mapping exactly to the validated numeric scales `0.80` through `1.10`. Save through the existing `site_settings:default` revision and Owner publication path.
+- **Reason:** The Owner needs a practical way to tune the Home Hero Title for laptop-height layouts without editing CSS or changing other typography contexts. A small percentage allowlist preserves the responsive runtime contract and keeps the design setting understandable.
+- **Consequence:** Home Hero size changes remain private until Owner publication; Colors, Eyebrow, unrelated site settings, admin isolation, and all other H1 contexts remain unchanged. No raw CSS, mobile-specific size, weight, line-height, tracking, font, breakpoint, button setting, or second workflow is introduced.
+
+## ADR-085 - Split standard Page / Route Title from fixed detail titles
+
+- **Date:** 2026-08-31
+- **Status:** Proposed for staging review in Page / Route Title P2
+- **Decision:** Give `RouteShell` an explicit semantic title context. Standard public routes and standard PageDocument Previews use a dedicated `--type-h1-page-route-size` variable derived from the normalized published `typography.page_route_title.scale` and the existing `clamp(3rem, 7vw, 6.4rem)` formula. Service Detail and Work Detail, including Case Study Preview, continue using the fixed `--type-h1-route-size` formula.
+- **Reason:** Page / Route Title scaling must affect only standard Page / Route contexts. An explicit boundary prevents a future setting from recoloring or resizing service and work detail titles while reusing the existing responsive formulas and shared RouteShell presentation.
+- **Consequence:** Scale values remain bounded, responsive, and code-owned; `1.00` is exact visual parity. Authenticated standard PageDocument Previews inherit the published public scale, while Case Study Preview remains Work Detail. No CMS control, generic H1 mapping, inline style, migration, or change to Home Hero, Colors, or Eyebrow is introduced.
+
+## ADR-086 - Expose Page / Route Title as one bounded Design Settings selector
+
+- **Date:** 2026-08-31
+- **Status:** Proposed for staging review in Page / Route Title P3
+- **Decision:** Add one separated `Page / Route Title` `AdminSelect` to the existing Design Settings Typography surface. Expose only `80%`, `85%`, `90%`, `95%`, `100% — Default`, `105%`, and `110%`, mapping to the existing numeric `typography.page_route_title.scale` values from `0.80` through `1.10`.
+- **Reason:** The Owner needs a practical control for standard Page / Route titles without introducing raw CSS, a second workflow, or controls for detail and article contexts. Reusing the existing private Review and Owner publication path keeps the established authorization and preservation boundaries authoritative.
+- **Consequence:** Page / Route changes remain private until Owner publication and preserve Colors, Eyebrow, Home Hero `0.90`, and unrelated site settings. Home Hero, Service Detail, Work Detail, Case Study Preview, Insights Article titles, and Crimson admin typography remain outside this control. No new schema or capability is introduced.

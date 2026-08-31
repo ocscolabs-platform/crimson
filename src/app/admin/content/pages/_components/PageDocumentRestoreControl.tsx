@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { restorePageDocument, type PageDocumentActionState } from "../actions";
+import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 
 const initialState: PageDocumentActionState = { status: "idle", message: "", issues: [] };
 
@@ -84,9 +85,7 @@ export default function PageDocumentRestoreControl({
             <input type="hidden" name="page_key" value={pageKey} />
             <input type="hidden" name="source_revision_id" value={sourceRevisionId} />
             <div className="admin-restore-confirmation-actions">
-              <button className="button button-primary admin-submit" type="submit" disabled={locked}>
-                {locked ? "Restoring…" : "Confirm Restore revision"}
-              </button>
+              <AdminSubmitButton label="Confirm Restore revision" pendingLabel="Restoring…" disabled={submitLocked} />
               <button className="button admin-button-secondary" type="button" disabled={locked} onClick={() => setConfirmationOpen(false)}>
                 Cancel
               </button>

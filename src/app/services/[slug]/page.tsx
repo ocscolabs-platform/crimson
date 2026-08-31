@@ -31,7 +31,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
   if (!service) notFound();
 
   return (
-    <RouteShell eyebrow="Capability" title={service.name} intro={service.summary}>
+    <RouteShell eyebrow="Capability" title={service.name} intro={service.summary} titleContext="service-detail">
       <section className="section-light route-section">
         <div className="shell service-detail-layout">
           <div className="service-detail-visual">

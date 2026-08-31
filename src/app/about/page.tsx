@@ -38,6 +38,7 @@ export default async function AboutPage() {
       title={hero.title}
       intro={hero.intro}
       chrome={chrome}
+      titleContext="standard"
     >
       <AboutPageBody body={body} />
     </RouteShell>

@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
 import sharp, { type Metadata } from "sharp";
 import { getCmsMembership } from "@/lib/cms-auth";
-import { collectInsightsImageReferences, hasMeaningfulInsightsBody, MAX_INSIGHTS_BODY_TEXT, parseInsightsBody, stripResolvedInsightsMedia } from "@/lib/insights-body";
+import { MAX_INSIGHTS_BODY_TEXT, parseInsightsBody, stripResolvedInsightsMedia } from "@/lib/insights-body";
 import { getUniqueInsightsSlugCandidate, isValidInsightsSlug, slugifyInsightsTitle } from "@/lib/insights-slug";
+import { prepareInsightsPublication } from "@/lib/insights-publication";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -44,7 +45,7 @@ export type InsightsDeleteActionState = {
   message: string;
 };
 
-type WorkflowRpc = "insights_submit_for_review" | "insights_withdraw_review" | "insights_return_to_draft" | "insights_publish_article" | "insights_unpublish_article";
+type WorkflowRpc = "insights_submit_for_review" | "insights_withdraw_review" | "insights_return_to_draft" | "insights_publish_article" | "insights_unpublish_article" | "insights_cancel_scheduled_article";
 
 const MAX_TITLE_LENGTH = 160;
 const MAX_EXCERPT_LENGTH = 300;
@@ -141,6 +142,50 @@ async function runWorkflowAction(
   } catch (error) {
     console.error(`[insights] ${rpc} failure`, { articleId, error });
     return { ...errorState("The workflow action could not be completed. Try again."), articleId };
+  }
+}
+
+async function runScheduleAction(
+  formData: FormData,
+  rpc: "insights_schedule_article" | "insights_reschedule_article",
+  successMessage: string,
+): Promise<InsightsActionState> {
+  const articleId = getText(formData, "article_id").trim();
+  const expectedUpdatedAt = getText(formData, "expected_updated_at").trim() || null;
+  const scheduledPublishAt = getText(formData, "scheduled_publish_at").trim();
+  if (!articleId) return errorState("The article identity is missing. Reload and try again.");
+  if (!/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(scheduledPublishAt)) return errorState("Choose a valid publication time.");
+  const parsedPublishAt = new Date(scheduledPublishAt);
+  if (Number.isNaN(parsedPublishAt.getTime()) || parsedPublishAt.getTime() <= Date.now()) return errorState("Choose a future publication time.");
+
+  try {
+    const authorized = await getAuthorizedAction();
+    if (authorized.error) return authorized.error;
+    if (authorized.membership.role !== "owner") return errorState("Only the Owner can schedule Insights articles.");
+    const { error } = await authorized.supabase.rpc(rpc, {
+      p_article_id: articleId,
+      p_scheduled_publish_at: parsedPublishAt.toISOString(),
+      p_expected_updated_at: expectedUpdatedAt,
+    });
+    if (error) {
+      const conflict = /changed|reload/i.test(error.message);
+      return { ...errorState(conflict ? "Conflict — reload required." : error.message || "The scheduling action could not be completed."), status: conflict ? "conflict" : "error", articleId };
+    }
+
+    const { data: article, error: articleError } = await authorized.supabase
+      .from("insights_articles")
+      .select("updated_at")
+      .eq("id", articleId)
+      .maybeSingle();
+    if (articleError || !article) return errorState("The scheduling action completed, but the current article state could not be read.");
+
+    revalidatePath("/crimson-admin-control/insights");
+    revalidatePath(`/crimson-admin-control/insights/articles/${articleId}`);
+    revalidatePath(`/crimson-admin-control/insights/articles/${articleId}/preview`);
+    return { status: "saved", message: successMessage, issues: [], articleId, updatedAt: article.updated_at, savedAt: new Date().toISOString() };
+  } catch (error) {
+    console.error(`[insights] ${rpc} failure`, { articleId, error });
+    return { ...errorState("The scheduling action could not be completed. Try again."), articleId };
   }
 }
 
@@ -472,42 +517,13 @@ async function publishWithPublicArtifacts(formData: FormData): Promise<InsightsA
   const authorized = await getAuthorizedAction();
   if (authorized.error) return authorized.error;
   const { supabase } = authorized;
-  const { data: article, error: articleError } = await supabase.from("insights_articles").select("id, active_revision_id").eq("id", articleId).maybeSingle();
-  if (articleError || !article?.active_revision_id) return errorState("The active Draft or Review revision could not be loaded.");
-  const { data: revision, error: revisionError } = await supabase.from("insights_article_revisions").select("id, body, cover_media_id").eq("id", article.active_revision_id).maybeSingle();
-  if (revisionError || !revision) return errorState("The active revision could not be loaded.");
-  const body = parseInsightsBody(JSON.stringify(revision.body));
-  if (!body.success || !hasMeaningfulInsightsBody(body.value)) return errorState("Add meaningful article content before publishing.");
-  const imageIds = [...new Set(collectInsightsImageReferences(body.value).map((reference) => reference.mediaId))];
-  const requiredMediaIds = [revision.cover_media_id, ...imageIds].filter((id): id is string => typeof id === "string" && id.length > 0);
-  if (!revision.cover_media_id) return errorState("Add a Cover image with meaningful alternative text before publishing.");
-  const { data: mediaRows, error: mediaError } = await supabase.from("insights_media_assets").select("id, storage_path, kind, revision_id, status, alt_text").eq("article_id", articleId).in("id", requiredMediaIds);
-  if (mediaError || (mediaRows ?? []).length !== new Set(requiredMediaIds).size) return errorState("One or more required images are not available for publishing.");
-  const mediaMap = new Map((mediaRows ?? []).map((row) => [row.id as string, row as { id: string; storage_path: string; kind: string; revision_id: string; status: string; alt_text: string }]));
-  if (requiredMediaIds.some((id) => mediaMap.get(id)?.status !== "ready") || mediaMap.get(revision.cover_media_id)?.kind !== "cover") return errorState("Every required image must be ready before publishing.");
-  const uploadedPaths: string[] = [];
+  const admin = createAdminClient();
+  const prepared = await prepareInsightsPublication(supabase, admin, articleId);
+  if (!prepared.ok) return { ...errorState(prepared.message), articleId };
   try {
-    const admin = createAdminClient();
-    const cleanupUploaded = async () => { if (uploadedPaths.length) await admin.storage.from(PUBLISHED_MEDIA_BUCKET).remove(uploadedPaths); };
-    const artifacts = { cover: {} as { media_id: string; public_path: string }, inline: [] as Array<{ media_id: string; public_path: string }> };
-    for (const mediaId of requiredMediaIds) {
-      const media = mediaMap.get(mediaId);
-      if (!media) { await cleanupUploaded(); return errorState("A required image could not be resolved."); }
-      const { data: source, error: sourceError } = await admin.storage.from(MEDIA_BUCKET).download(media.storage_path);
-      if (sourceError || !source) { await cleanupUploaded(); return errorState("A required private image could not be read for publishing."); }
-      const publicPath = `articles/${articleId}/revisions/${revision.id}/${mediaId}.webp`;
-      const { error: artifactError } = await admin.storage.from(PUBLISHED_MEDIA_BUCKET).upload(publicPath, source, { cacheControl: "31536000", contentType: "image/webp", upsert: true });
-      if (artifactError) {
-        await cleanupUploaded();
-        return errorState("Published image delivery could not be prepared. The article remains unpublished.");
-      }
-      uploadedPaths.push(publicPath);
-      if (mediaId === revision.cover_media_id) artifacts.cover = { media_id: mediaId, public_path: publicPath };
-      else artifacts.inline.push({ media_id: mediaId, public_path: publicPath });
-    }
-    const { error: publishError } = await supabase.rpc("insights_publish_article", { p_article_id: articleId, p_expected_updated_at: expectedUpdatedAt, p_public_media: artifacts });
+    const { error: publishError } = await supabase.rpc("insights_publish_article", { p_article_id: articleId, p_expected_updated_at: expectedUpdatedAt, p_public_media: prepared.artifacts });
     if (publishError) {
-      await cleanupUploaded();
+      await prepared.cleanup();
       const conflict = /changed|reload/i.test(publishError.message);
       return { ...errorState(conflict ? "Conflict — reload required." : publishError.message || "The article could not be published. It remains unpublished."), status: conflict ? "conflict" : "error", articleId };
     }
@@ -519,9 +535,7 @@ async function publishWithPublicArtifacts(formData: FormData): Promise<InsightsA
     return { status: "saved", message: "Published with stable media delivery.", issues: [], articleId, updatedAt: currentArticle.updated_at, savedAt: new Date().toISOString() };
   } catch (error) {
     console.error("[insights] publication artifact failure", { articleId, error });
-    if (uploadedPaths.length) {
-      try { await createAdminClient().storage.from(PUBLISHED_MEDIA_BUCKET).remove(uploadedPaths); } catch { /* best-effort cleanup */ }
-    }
+    await prepared.cleanup();
     return { ...errorState("Published image delivery could not be prepared. The article remains unpublished."), articleId };
   }
 }
@@ -555,6 +569,18 @@ export async function submitInsightsForReview(_previousState: InsightsActionStat
 
 export async function withdrawInsightsReview(_previousState: InsightsActionState, formData: FormData) {
   return runWorkflowAction(formData, "insights_withdraw_review", "Returned to Draft.");
+}
+
+export async function scheduleInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
+  return runScheduleAction(formData, "insights_schedule_article", "Scheduled for publication.");
+}
+
+export async function rescheduleInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
+  return runScheduleAction(formData, "insights_reschedule_article", "Schedule updated.");
+}
+
+export async function cancelScheduledInsightsArticle(_previousState: InsightsActionState, formData: FormData) {
+  return runWorkflowAction(formData, "insights_cancel_scheduled_article", "Schedule cancelled; returned to Review.");
 }
 
 export async function returnInsightsToDraft(_previousState: InsightsActionState, formData: FormData) {

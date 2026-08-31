@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import type { CSSProperties } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { DEFAULT_OG_IMAGE_PATH, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/og-assets";
 import { getSiteOrigin } from "@/lib/site-origin";
+import { designSettingsToCssVariables } from "@/lib/design-settings";
+import { getPublishedDesignSettings } from "@/lib/cms-content";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -48,13 +51,15 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const designSettings = await getPublishedDesignSettings();
+
   return (
-    <html lang="en">
+    <html lang="en" style={designSettingsToCssVariables(designSettings) as CSSProperties}>
       <body>
         {children}
         <Analytics />

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
-import { CMS_ROLES, getAdminMembers, inviteCmsMember, isCmsRole, setCmsMemberTemporaryPassword, updateCmsMemberRole, type AdminMember } from "@/lib/admin-members";
+import { CMS_ROLE_LABELS, CMS_ROLES, getAdminMembers, inviteCmsMember, isAssignableCmsRole, setCmsMemberTemporaryPassword, updateCmsMemberRole, type AdminMember } from "@/lib/admin-members";
 import { createClient } from "@/lib/supabase/server";
 import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import AdminSelect from "@/app/admin/AdminSelect";
@@ -36,7 +36,7 @@ async function inviteMember(formData: FormData) {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const role = String(formData.get("role") || "");
 
-  if (!email || !email.includes("@") || !isCmsRole(role)) {
+  if (!email || !email.includes("@") || !isAssignableCmsRole(role)) {
     redirect("/crimson-admin-control/team?error=Enter a valid email and approved role.");
   }
 
@@ -65,7 +65,7 @@ async function updateMemberRole(formData: FormData) {
   const userId = String(formData.get("user_id") || "");
   const role = String(formData.get("role") || "");
 
-  if (!userId || !isCmsRole(role)) redirect("/crimson-admin-control/team?error=Choose an approved role.");
+  if (!userId || !isAssignableCmsRole(role)) redirect("/crimson-admin-control/team?error=Choose an approved role.");
 
   try {
     await updateCmsMemberRole(userId, role);
@@ -168,7 +168,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
                 <label>
                   Role
                   <AdminSelect name="role" defaultValue="editor" aria-label="Invite role">
-                    {CMS_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
+                    {CMS_ROLES.map((role) => <option key={role} value={role}>{CMS_ROLE_LABELS[role]}</option>)}
                   </AdminSelect>
                 </label>
                 <AdminSubmitButton label="Send invitation" pendingLabel="Inviting…" />
@@ -191,10 +191,17 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
                       <small>Added {formatDate(member.createdAt)}</small>
                     </div>
                     <div className="admin-member-actions">
+                      {member.role === "reviewer" ? (
+                        <div className="admin-member-role-legacy" role="status">
+                          <span className="admin-role admin-role-reviewer">Reviewer (legacy)</span>
+                          <small>Existing access is retained. Choose Owner or Editor to change this role.</small>
+                        </div>
+                      ) : null}
                       <form className="admin-member-role-form" action={updateMemberRole}>
                         <input type="hidden" name="user_id" value={member.userId} />
-                        <AdminSelect name="role" defaultValue={member.role} aria-label={`Role for ${member.email}`}>
-                          {CMS_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
+                        <AdminSelect name="role" defaultValue={member.role === "reviewer" ? "" : member.role} aria-label={`Role for ${member.email}`} required={member.role === "reviewer"}>
+                          {member.role === "reviewer" ? <option value="" disabled>Choose new role</option> : null}
+                          {CMS_ROLES.map((role) => <option key={role} value={role}>{CMS_ROLE_LABELS[role]}</option>)}
                         </AdminSelect>
                         <AdminSubmitButton label="Update" pendingLabel="Updating…" variant="secondary" />
                       </form>

@@ -38,6 +38,7 @@ export default async function ContactPage() {
       title={hero.title}
       intro={hero.intro}
       chrome={chrome}
+      titleContext="standard"
     >
       <ContactPageBody body={body} />
     </RouteShell>

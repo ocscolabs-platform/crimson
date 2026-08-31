@@ -9,18 +9,22 @@ const baselineName = "20260829000000_add_phase6b3_restore_media_association.sql"
 const fixName = "20260830000000_fix_phase6b3_restore_media_validity.sql";
 const read = (file) => readFile(path.join(root, file), "utf8");
 
-test("Migration 32 is the single additive Restore-validity correction", async () => {
+test("Restore-validity correction remains present in the canonical migration history", async () => {
   const files = (await readdir(path.join(root, "supabase", "migrations")))
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
-  assert.equal(files.length, 33);
-  assert.equal(files.at(-3), baselineName);
-  assert.equal(files.at(-2), fixName);
-  assert.equal(files.at(-1), "20260831000000_reconcile_production_legacy_baseline.sql");
+  assert.ok(files.length >= 47, `Expected at least the canonical 47 migrations, found ${files.length}`);
+  for (const migration of [
+    baselineName,
+    fixName,
+    "20260831000000_reconcile_production_legacy_baseline.sql",
+  ]) {
+    assert.ok(files.includes(migration), `Missing required migration: ${migration}`);
+  }
 });
 
-test("Regression: migration 31 passed the body envelope instead of body.doc", async () => {
+test("Regression: the original restore migration passed the body envelope instead of body.doc", async () => {
   const baseline = await read(`supabase/migrations/${baselineName}`);
   const fix = await read(`supabase/migrations/${fixName}`);
 
@@ -76,7 +80,7 @@ test("Regression fixture rewrites opaque inline IDs while preserving the body en
   assert.equal(sourceBody.doc.content[1].attrs.mediaId, sourceInlineId);
 });
 
-test("Migration 32 keeps the canonical validator and historical media immutable", async () => {
+test("Restore-validity correction keeps the canonical validator and historical media immutable", async () => {
   const sql = await read(`supabase/migrations/${fixName}`);
 
   assert.match(sql, /begin;/);

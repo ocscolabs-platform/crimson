@@ -56,7 +56,7 @@ export default function AdminForgotPasswordPage() {
             </>
           ) : null}
           <button className="button button-primary admin-submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <><span className="admin-button-spinner" aria-hidden="true" /> Sending…</> : <>Send reset link <span aria-hidden="true">↗</span></>}
+            {isSubmitting ? <><span className="admin-button-spinner" aria-hidden="true" /> Sending…</> : <>Send reset link</>}
           </button>
         </form>
         <Link className="admin-back-link" href="/crimson-admin-control/login">Back to sign in</Link>

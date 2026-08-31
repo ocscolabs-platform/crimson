@@ -47,7 +47,7 @@ export type AdminCaseStudyReview = {
   published_at: string | null;
   last_reviewed_at: string | null;
   updated_at: string;
-  services: Array<{ id: string; name: string; slug: string; status: string }>;
+  services: Array<{ id: string; name: string; cardName: string; slug: string; status: string }>;
   audit: AdminCaseStudyAuditEntry[];
   auditTotal: number;
   auditPage: number;
@@ -162,7 +162,7 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
   if (serviceIds.length) {
     const serviceResult = await supabase
       .from("services")
-      .select("id, name, slug, status")
+      .select("id, name, card_name, slug, status")
       .in("id", serviceIds)
       .order("name", { ascending: true });
 
@@ -170,7 +170,13 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
       throw new Error(serviceResult.error.message);
     }
 
-    services = serviceResult.data ?? [];
+    services = (serviceResult.data ?? []).map((service) => ({
+      id: service.id,
+      name: service.name,
+      cardName: service.card_name || service.name,
+      slug: service.slug,
+      status: service.status,
+    }));
   }
 
   return {

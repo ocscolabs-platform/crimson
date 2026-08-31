@@ -3,12 +3,15 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canEditGlobalContent, canPublishPages, getAdminGlobalContent, type AdminPageMetadata } from "@/lib/admin-global-content";
+import { DEFAULT_DESIGN_SETTINGS_V1, normalizeDesignSettingsV1, validateDesignSettingsV1 } from "@/lib/design-settings";
 import { createClient } from "@/lib/supabase/server";
 import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import AdminSelect from "@/app/admin/AdminSelect";
 import AdminSubmitButton from "@/app/admin/AdminSubmitButton";
 import AdminToast from "@/app/admin/AdminToast";
 import AdminAccountActions from "@/app/admin/AdminAccountActions";
+import DesignSettingsFields from "@/app/admin/content/DesignSettingsFields";
+import DesignSettingsResetControl from "@/app/admin/content/DesignSettingsResetControl";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +51,11 @@ async function saveRevision(
   if (revisionError || !revisionId) {
     redirectWithError(revisionError?.message || "The content revision could not be saved.");
   }
+}
+
+async function getCurrentDesignSettingsForChange() {
+  const content = await getAdminGlobalContent();
+  return normalizeDesignSettingsV1(content.settings?.design_settings);
 }
 
 async function publishRevision(entityType: "site_settings" | "navigation_item" | "page" | "page_section", entityKey: string) {
@@ -139,6 +147,73 @@ async function saveNavigationItem(itemId: string, formData: FormData) {
   revalidatePath("/contact");
   revalidatePath("/admin/content");
   redirect("/crimson-admin-control/content?saved=navigation");
+}
+
+async function saveDesignSettings(formData: FormData) {
+  "use server";
+
+  const { supabase, membership } = await requireMember();
+  if (!canEditGlobalContent(membership.role)) redirectWithError("This role can review global content but cannot change it.");
+
+  const currentDesignSettings = await getCurrentDesignSettingsForChange();
+  const designSettings = {
+    ...currentDesignSettings,
+    version: 1 as const,
+    colors: {
+      ink: String(formData.get("design_ink") || "").trim().toLowerCase(),
+      graphite: String(formData.get("design_graphite") || "").trim().toLowerCase(),
+      green: String(formData.get("design_green") || "").trim().toLowerCase(),
+      white: String(formData.get("design_white") || "").trim().toLowerCase(),
+      snow: String(formData.get("design_snow") || "").trim().toLowerCase(),
+      muted: String(formData.get("design_muted") || "").trim().toLowerCase(),
+      border: String(formData.get("design_border") || "").trim().toLowerCase(),
+      copy: String(formData.get("design_copy") || "").trim().toLowerCase(),
+    },
+    typography: {
+      ...currentDesignSettings.typography,
+      eyebrow: {
+        size: Number(formData.get("design_eyebrow_size")),
+        weight: Number.parseInt(String(formData.get("design_eyebrow_weight") || ""), 10),
+        line_height: Number(formData.get("design_eyebrow_line_height")),
+        letter_spacing: Number(formData.get("design_eyebrow_letter_spacing")),
+      },
+      home_hero_title: {
+        scale: Number(formData.get("design_home_hero_title_scale")),
+      },
+      page_route_title: {
+        scale: Number(formData.get("design_page_route_title_scale")),
+      },
+    },
+  };
+  const validation = validateDesignSettingsV1(designSettings);
+  if (!validation.success) redirectWithError("Enter valid Design Settings values using the displayed ranges.");
+
+  await saveRevision(supabase, "site_settings", "default", { design_settings: validation.value });
+
+  for (const path of ["/", "/about", "/services", "/work", "/contact", "/insights", "/crimson-admin-control", "/crimson-admin-control/content"]) {
+    revalidatePath(path);
+  }
+  redirect("/crimson-admin-control/content?saved=design-settings");
+}
+
+async function resetDesignSettings() {
+  "use server";
+
+  const { supabase, membership } = await requireMember();
+  if (!canEditGlobalContent(membership.role)) redirectWithError("This role can review global content but cannot change it.");
+
+  const currentDesignSettings = await getCurrentDesignSettingsForChange();
+  await saveRevision(supabase, "site_settings", "default", {
+    design_settings: {
+      ...DEFAULT_DESIGN_SETTINGS_V1,
+      typography: currentDesignSettings.typography,
+    },
+  });
+
+  for (const path of ["/", "/about", "/services", "/work", "/contact", "/insights", "/crimson-admin-control", "/crimson-admin-control/content"]) {
+    revalidatePath(path);
+  }
+  redirect("/crimson-admin-control/content?saved=design-reset");
 }
 
 async function savePageMetadata(pageId: string, formData: FormData) {
@@ -238,6 +313,7 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
 
   const canEdit = canEditGlobalContent(membership.role);
   const isOwner = membership.role === "owner";
+  const designSettings = content?.settings ? normalizeDesignSettingsV1(content.settings.design_settings) : null;
 
   return (
     <main className="admin-page">
@@ -260,11 +336,12 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
           <p className="admin-intro">Update site-wide settings and navigation here. Home, Services, About, and Contact body content and authoritative PageDocument SEO are managed in Pages.</p>
         </section>
 
-        {saved ? <AdminToast tone="success" message={saved === "published" ? "Revision published successfully." : saved === "settings" ? "Site settings saved as a private Review revision." : saved === "navigation" ? "Navigation item saved as a private Review revision." : saved === "section" ? "Page section saved as a private Review revision." : "Page metadata saved as a private revision."} /> : null}
+        {saved ? <AdminToast tone="success" message={saved === "published" ? "Revision published successfully." : saved === "settings" ? "Site settings saved as a private Review revision." : saved === "design-settings" ? "Design Settings saved as a private Review revision." : saved === "design-reset" ? "All colors reset to a private Review revision using the OCSCO defaults." : saved === "navigation" ? "Navigation item saved as a private Review revision." : saved === "section" ? "Page section saved as a private Review revision." : "Page metadata saved as a private revision."} /> : null}
         {error ? <AdminToast tone="error" message={error} /> : null}
         <nav className="admin-content-jump-nav" aria-label="Global content sections">
           <span>Jump to</span>
           <a href="#site-settings">Site settings</a>
+          <a href="#design-settings">Design / Colors</a>
           <a href="#navigation">Navigation</a>
           <a href="#pages">Page metadata compatibility</a>
         </nav>
@@ -300,11 +377,38 @@ export default async function AdminContentPage({ searchParams }: ContentPageProp
                       <label>Default SEO title<input className="admin-input" name="default_seo_title" defaultValue={content.settings.default_seo_title ?? ""} disabled={!canEdit} /></label>
                       <label>Default OG image path<input className="admin-input" name="default_og_image_path" defaultValue={content.settings.default_og_image_path ?? ""} disabled={!canEdit} placeholder="/og-image.png" /></label>
                       <label className="admin-field-wide">Default SEO description<textarea className="admin-input admin-textarea" name="default_seo_description" defaultValue={content.settings.default_seo_description ?? ""} disabled={!canEdit} rows={3} /></label>
-                      {canEdit ? <AdminSubmitButton label="Save as review" pendingLabel="Saving settings…" /> : null}
+                      {canEdit ? <AdminSubmitButton label="Save as review" pendingLabel="Saving settings…" standalone /> : null}
                     </form>
                     {isOwner && content.settings.revision_status === "review" ? <form className="admin-content-form admin-publish-form" action={publishRevision.bind(null, "site_settings", content.settings.id)}><AdminSubmitButton label="Publish site settings" pendingLabel="Publishing…" /></form> : null}
                     </>
                   ) : <p className="admin-empty-state">The default site settings record is not available.</p>}
+                </div>
+              </details>
+            </section>
+
+            <section className="admin-content-section" id="design-settings">
+              <details className="admin-content-disclosure" open>
+                <summary className="admin-disclosure-summary">
+                  <div>
+                    <p className="admin-kicker">Design Settings</p>
+                    <h2>Colors</h2>
+                  </div>
+                  <div className="admin-disclosure-summary-side">
+                    <p className="admin-section-note">Public website color and eyebrow typography tokens only.</p>
+                    <span className="admin-disclosure-icon" aria-hidden="true" />
+                  </div>
+                </summary>
+                <div className="admin-content-section-body">
+                  <p className="admin-disclosure-note">Save a private Review revision first. The public site changes only after the owner publishes it.</p>
+                  {designSettings ? (
+                    <div className="admin-design-settings-actions">
+                      <form className="admin-content-form admin-design-settings-form" action={saveDesignSettings}>
+                        <DesignSettingsFields values={designSettings.colors} eyebrow={designSettings.typography!.eyebrow} homeHeroTitle={designSettings.typography!.home_hero_title} pageRouteTitle={designSettings.typography!.page_route_title} disabled={!canEdit} />
+                        {canEdit ? <AdminSubmitButton label="Save Design Settings as review" pendingLabel="Saving Design Settings…" standalone /> : null}
+                      </form>
+                      {canEdit ? <DesignSettingsResetControl action={resetDesignSettings} /> : null}
+                    </div>
+                  ) : <p className="admin-empty-state">Design Settings are not available.</p>}
                 </div>
               </details>
             </section>

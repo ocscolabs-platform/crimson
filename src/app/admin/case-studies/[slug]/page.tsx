@@ -508,6 +508,11 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
   const canEditRelationships = canEditCaseStudies(membership.role) && review.status !== "published";
   const statusOptions = ["draft", "review"];
   const editorStatus = review.revision_status ?? (review.status === "published" ? "review" : review.status);
+  const canPreview = Boolean(
+    review.revision_id
+      && (review.revision_status === "draft" || review.revision_status === "review")
+      && (membership.role === "owner" || membership.role === "editor" || membership.role === "reviewer"),
+  );
   const availableServicesResult = await supabase
     .from("services")
     .select("id, name, slug, status")
@@ -575,6 +580,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
           <div className="admin-editor-status">
             <span>Current status</span>
             <strong>{review.status}</strong>
+            {canPreview ? <Link className="button button-light button-small" href={`/crimson-admin-control/case-studies/${review.slug}/preview`}>Preview <span aria-hidden="true">↗</span></Link> : null}
           </div>
         </section>
 

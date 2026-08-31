@@ -43,6 +43,7 @@ export default async function AdminDashboardPage() {
         <nav className="admin-nav" aria-label="CMS sections">
           <AdminPendingLink href="#overview" pendingLabel="Opening Overview…">Overview</AdminPendingLink>
           {membership.role ? <AdminPendingLink href="/crimson-admin-control/content" pendingLabel="Opening Global content…">Global content</AdminPendingLink> : null}
+          {membership.role ? <AdminPendingLink href="/crimson-admin-control/content#design-settings" pendingLabel="Opening Design Settings…">Design Settings</AdminPendingLink> : null}
           {membership.role ? <AdminPendingLink href="/crimson-admin-control/content/pages" pendingLabel="Opening Pages…">Pages</AdminPendingLink> : null}
           {membership.role && (membership.role === "owner" || membership.accessScope === "full_cms" || membership.insightsAccess) ? <AdminPendingLink href="/crimson-admin-control/insights" pendingLabel="Opening Insights…">Insights</AdminPendingLink> : null}
           <AdminPendingLink href="#services-records" pendingLabel="Opening Services…" highlightTargetId="services-records">Services</AdminPendingLink>
@@ -118,11 +119,12 @@ export default async function AdminDashboardPage() {
                     <p className="admin-kicker">Work library</p>
                     <h2>Case studies</h2>
                   </div>
-                  <div className="admin-panel-heading-actions">
+                  <div className="admin-panel-heading-actions admin-work-panel-heading-actions">
                     <span>{content.caseStudies.length} published</span>
-                    {content.caseStudies[0] ? (
-                      <Link className="admin-panel-link" href={`/crimson-admin-control/case-studies/${content.caseStudies[0].slug}`}>Open review panel ↗</Link>
-                    ) : null}
+                    <div className="admin-panel-utility-actions">
+                      {membership.role === "owner" || membership.role === "editor" ? <Link className="admin-panel-link" href="/crimson-admin-control/case-studies/new">+ New</Link> : null}
+                      {content.caseStudies[0] ? <Link className="admin-panel-link" href={`/crimson-admin-control/case-studies/${content.caseStudies[0].slug}`}>Open review panel ↗</Link> : null}
+                    </div>
                   </div>
                 </div>
                 <ul className="admin-record-list">

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { CmsRole } from "@/lib/cms-auth";
+import { normalizeDesignSettingsV1, type DesignSettingsV1 } from "@/lib/design-settings";
 
 export type AdminSiteSettings = {
   id: string;
@@ -9,6 +10,7 @@ export type AdminSiteSettings = {
   default_seo_description: string | null;
   default_og_image_path: string | null;
   primary_contact_path: string;
+  design_settings: DesignSettingsV1;
   revision_id?: string | null;
   revision_status?: "draft" | "review" | null;
 };
@@ -73,7 +75,7 @@ export async function getAdminGlobalContent(): Promise<AdminGlobalContent> {
   const [settings, navigation, pages, sections] = await Promise.all([
     supabase
       .from("site_settings")
-      .select("id, site_name, positioning_statement, default_seo_title, default_seo_description, default_og_image_path, primary_contact_path")
+      .select("id, site_name, positioning_statement, default_seo_title, default_seo_description, default_og_image_path, primary_contact_path, design_settings")
       .eq("id", "default")
       .maybeSingle(),
     supabase
@@ -125,8 +127,14 @@ export async function getAdminGlobalContent(): Promise<AdminGlobalContent> {
   const settingsRevision = revisionMap.get("site_settings:default");
   const settingsPayload = settingsRevision?.payload;
   const settingsRecord = settings.data as AdminSiteSettings | null;
-  const resolvedSettings = settingsRecord && settingsPayload
-    ? { ...settingsRecord, ...settingsPayload, id: settingsRecord.id, revision_id: settingsRevision.id, revision_status: settingsRevision.status }
+  const resolvedSettings = settingsRecord
+    ? {
+        ...settingsRecord,
+        ...(settingsPayload ?? {}),
+        id: settingsRecord.id,
+        design_settings: normalizeDesignSettingsV1(settingsPayload?.design_settings ?? settingsRecord.design_settings),
+        ...(settingsRevision ? { revision_id: settingsRevision.id, revision_status: settingsRevision.status } : {}),
+      }
     : settingsRecord;
 
   const resolvedNavigation = (navigation.data ?? []).map((item) => {
