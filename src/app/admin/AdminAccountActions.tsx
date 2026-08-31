@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOut } from "@/app/admin/actions";
+import SignOutButton from "@/app/admin/SignOutButton";
 
 type AdminAccountActionsProps = {
   email?: string | null;
@@ -24,9 +25,7 @@ export default function AdminAccountActions({ email, role, backHref }: AdminAcco
           {role ?? "Role pending"}
         </span>
         <form action={signOut}>
-          <button className="admin-signout" type="submit">
-            Sign out
-          </button>
+          <SignOutButton />
         </form>
       </div>
     </div>
