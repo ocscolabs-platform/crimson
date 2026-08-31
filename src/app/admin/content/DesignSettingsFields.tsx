@@ -112,8 +112,11 @@ export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, h
         })}
       </div>
       <fieldset className="admin-typography-fieldset">
-        <legend>Typography <small>Eyebrow / Overline</small></legend>
-        <div className="admin-typography-grid">
+        <legend>Typography</legend>
+        <div className="admin-typography-groups">
+          <div className="admin-typography-group">
+            <h3>Eyebrow / Overline</h3>
+            <div className="admin-typography-grid">
           <label>
             <span>Size <small className="admin-field-unit">rem</small></span>
             <input
@@ -176,45 +179,47 @@ export default function DesignSettingsFields({ values, eyebrow: eyebrowValues, h
               required
             />
           </label>
+            </div>
+          </div>
+          <div className="admin-typography-group admin-typography-group-title">
+            <h3>Home Hero Title</h3>
+            <div className="admin-typography-grid">
+              <label>
+                <span>Title Size</span>
+                <AdminSelect
+                  name="design_home_hero_title_scale"
+                  value={String(homeHeroTitle.scale)}
+                  onChange={(event) => updateHomeHeroTitle(event.target.value)}
+                  aria-label="Home Hero Title size"
+                  disabled={disabled}
+                  required
+                >
+                  {HOME_HERO_TITLE_SCALES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </AdminSelect>
+              </label>
+            </div>
+            <p className="admin-section-note">Adjusts the Home hero title size while preserving its responsive behavior.</p>
+          </div>
+          <div className="admin-typography-group admin-typography-group-title">
+            <h3>Page / Route Title</h3>
+            <div className="admin-typography-grid">
+              <label>
+                <span>Title Size</span>
+                <AdminSelect
+                  name="design_page_route_title_scale"
+                  value={String(pageRouteTitle.scale)}
+                  onChange={(event) => updatePageRouteTitle(event.target.value)}
+                  aria-label="Page / Route Title size"
+                  disabled={disabled}
+                  required
+                >
+                  {PAGE_ROUTE_TITLE_SCALES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </AdminSelect>
+              </label>
+            </div>
+            <p className="admin-section-note">Adjusts standard page and section-route titles while preserving responsive behavior.</p>
+          </div>
         </div>
-      </fieldset>
-      <fieldset className="admin-typography-fieldset">
-        <legend>Typography <small>Home Hero Title</small></legend>
-        <div className="admin-typography-grid">
-          <label>
-            <span>Title Size</span>
-            <AdminSelect
-              name="design_home_hero_title_scale"
-              value={String(homeHeroTitle.scale)}
-              onChange={(event) => updateHomeHeroTitle(event.target.value)}
-              aria-label="Home Hero Title size"
-              disabled={disabled}
-              required
-            >
-              {HOME_HERO_TITLE_SCALES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </AdminSelect>
-          </label>
-        </div>
-        <p className="admin-section-note">Adjusts the Home hero title size while preserving its responsive behavior.</p>
-      </fieldset>
-      <fieldset className="admin-typography-fieldset">
-        <legend>Typography <small>Page / Route Title</small></legend>
-        <div className="admin-typography-grid">
-          <label>
-            <span>Title Size</span>
-            <AdminSelect
-              name="design_page_route_title_scale"
-              value={String(pageRouteTitle.scale)}
-              onChange={(event) => updatePageRouteTitle(event.target.value)}
-              aria-label="Page / Route Title size"
-              disabled={disabled}
-              required
-            >
-              {PAGE_ROUTE_TITLE_SCALES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </AdminSelect>
-          </label>
-        </div>
-        <p className="admin-section-note">Adjusts standard page and section-route titles while preserving responsive behavior.</p>
       </fieldset>
     </>
   );
