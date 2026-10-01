@@ -3,6 +3,8 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Page not found",
   description: "The page you requested could not be found.",
