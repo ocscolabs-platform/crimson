@@ -10,6 +10,36 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  async headers() {
+    const contentSecurityPolicy = [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "frame-ancestors 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+      "img-src 'self' data: blob: https://*.supabase.co",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
+      "connect-src 'self' https://*.supabase.co https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+      "worker-src 'self' blob:",
+      "manifest-src 'self'",
+    ].join("; ");
+
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+          { key: "Content-Security-Policy-Report-Only", value: contentSecurityPolicy },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
