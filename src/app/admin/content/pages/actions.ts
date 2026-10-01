@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { getPageDocumentAdminAdapter } from "@/lib/admin-page-documents";
 import { validatePageDocument } from "@/lib/page-document";
+import { invalidatePublicHomepage } from "@/lib/public-homepage-cache";
 import { createClient } from "@/lib/supabase/server";
 
 export type PageDocumentActionState = {
@@ -209,7 +210,11 @@ export async function restorePageDocument(
   if (error || !restoredRevisionId) return errorState(restoreFailureMessage(error?.message));
 
   revalidatePageDocument(authorized.adapter.pageKey);
-  revalidatePath(authorized.adapter.route);
+  if (authorized.adapter.pageKey === "home") {
+    invalidatePublicHomepage();
+  } else {
+    revalidatePath(authorized.adapter.route);
+  }
   return successState("Historical content was restored as a new Review. The public page was not changed.", restoredRevisionId);
 }
 
@@ -236,6 +241,10 @@ export async function publishPageDocument(
   if (error || !publishedRevisionId) return errorState(publishFailureMessage(error?.message));
 
   revalidatePageDocument(authorized.adapter.pageKey);
-  revalidatePath(authorized.adapter.route);
+  if (authorized.adapter.pageKey === "home") {
+    invalidatePublicHomepage();
+  } else {
+    revalidatePath(authorized.adapter.route);
+  }
   return successState("Published. The new revision is now public and the previous Published revision is archived.", publishedRevisionId);
 }

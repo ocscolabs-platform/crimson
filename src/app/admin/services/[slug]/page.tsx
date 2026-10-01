@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canEditServices, getAdminService, getAdminServiceAudit, type AdminServiceAuditEntry } from "@/lib/admin-services";
+import { invalidatePublicHomepage } from "@/lib/public-homepage-cache";
 import { createClient } from "@/lib/supabase/server";
 import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import AdminPagination from "@/app/admin/AdminPagination";
@@ -102,6 +103,7 @@ async function publishService(slug: string) {
   revalidatePath("/admin/services");
   revalidatePath("/services");
   revalidatePath(`/services/${slug}`);
+  invalidatePublicHomepage();
   redirect(`/crimson-admin-control/services/${slug}?saved=published`);
 }
 

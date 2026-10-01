@@ -21,6 +21,7 @@
     "test:phase5b:wpb:work-list-performance": "node --test scripts/test-phase5-wpb-work-list-performance.mjs",
     "test:phase5b:slice4f:metadata": "node --test scripts/test-phase5b-slice4f-metadata.mjs",
     "test:phase5b:slice4e:home": "node --test scripts/test-phase5b-slice4e-home.mjs",
+    "test:homepage-cache": "node --test scripts/test-homepage-cache-revalidation.mjs",
     "test:phase5b:slice4d:contact": "node --test scripts/test-phase5b-slice4d-contact.mjs",
     "test:phase5b:slice4c:services": "node --test scripts/test-phase5b-slice4c-services.mjs",
     "test:phase5b:slice4b:about": "node --test scripts/test-phase5b-slice4b-about.mjs",

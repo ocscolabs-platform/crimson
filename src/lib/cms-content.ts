@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { getLocalPage, type PageHero, type PublicPage } from "@/lib/page-content";
 import { getPageDocumentHero, readPageContent } from "@/lib/page-document";
@@ -8,6 +9,7 @@ import { services as localServices, type Service } from "@/lib/site-content";
 import { workProjects as localWorkProjects, type WorkProject } from "@/lib/work-content";
 import { DEFAULT_OG_IMAGE_PATH } from "@/lib/og-assets";
 import { DEFAULT_DESIGN_SETTINGS_V1, normalizeDesignSettingsV1, type DesignSettingsV1 } from "@/lib/design-settings";
+import { PUBLIC_HOMEPAGE_CACHE_TAG } from "@/lib/public-homepage-cache";
 
 export type SiteSettings = {
   siteName: string;
@@ -161,7 +163,7 @@ function getPageHero(content: unknown, slug: string): Partial<PageHero> {
   };
 }
 
-export const getPublishedSiteSettings = cache(async function getPublishedSiteSettings(): Promise<SiteSettings> {
+async function readPublishedSiteSettings(): Promise<SiteSettings> {
   const client = getPublicCmsClient();
 
   if (!client) {
@@ -211,13 +213,21 @@ export const getPublishedSiteSettings = cache(async function getPublishedSiteSet
     primaryContactPath: data.primary_contact_path || localSiteSettings.primaryContactPath,
     designSettings: normalizeDesignSettingsV1(data.design_settings),
   };
-});
+}
+
+const getPersistedPublishedSiteSettings = unstable_cache(
+  readPublishedSiteSettings,
+  ["published-site-settings-v1"],
+  { tags: [PUBLIC_HOMEPAGE_CACHE_TAG], revalidate: false },
+);
+
+export const getPublishedSiteSettings = cache(getPersistedPublishedSiteSettings);
 
 export async function getPublishedDesignSettings(): Promise<DesignSettingsV1> {
   return (await getPublishedSiteSettings()).designSettings;
 }
 
-export async function getPublishedNavigation(group: "primary" | "footer"): Promise<NavigationItem[]> {
+async function readPublishedNavigation(group: "primary" | "footer"): Promise<NavigationItem[]> {
   const fallback = group === "primary" ? defaultPrimaryNavigation : [];
   const client = getPublicCmsClient();
 
@@ -245,6 +255,14 @@ export async function getPublishedNavigation(group: "primary" | "footer"): Promi
   const insertAt = workIndex >= 0 ? workIndex + 1 : navigation.length;
   return [...navigation.slice(0, insertAt), { href: "/insights", label: "Insights" }, ...navigation.slice(insertAt)];
 }
+
+const getPersistedPublishedNavigation = unstable_cache(
+  readPublishedNavigation,
+  ["published-navigation-v1"],
+  { tags: [PUBLIC_HOMEPAGE_CACHE_TAG], revalidate: false },
+);
+
+export const getPublishedNavigation = cache(getPersistedPublishedNavigation);
 
 export async function getPublishedSiteChrome() {
   const [settings, primaryNavigation, footerNavigation] = await Promise.all([
