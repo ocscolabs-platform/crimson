@@ -1,15 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function updateSession(request: NextRequest) {
+export async function updateSession(request: NextRequest, contentSecurityPolicy?: string, nonce?: string) {
+  const createNextResponse = () => {
+    if (!contentSecurityPolicy || !nonce) return NextResponse.next({ request });
+
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("Content-Security-Policy", contentSecurityPolicy);
+    requestHeaders.set("x-nonce", nonce);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  };
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!url || !publishableKey) {
-    return NextResponse.next({ request });
+    return createNextResponse();
   }
 
-  let response = NextResponse.next({ request });
+  let response = createNextResponse();
   const supabase = createServerClient(url, publishableKey, {
     cookies: {
       getAll() {
@@ -20,7 +29,7 @@ export async function updateSession(request: NextRequest) {
           request.cookies.set(name, value);
         });
 
-        response = NextResponse.next({ request });
+        response = createNextResponse();
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });

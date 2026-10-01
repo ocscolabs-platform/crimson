@@ -635,3 +635,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Add one separated `Page / Route Title` `AdminSelect` to the existing Design Settings Typography surface. Expose only `80%`, `85%`, `90%`, `95%`, `100% — Default`, `105%`, and `110%`, mapping to the existing numeric `typography.page_route_title.scale` values from `0.80` through `1.10`.
 - **Reason:** The Owner needs a practical control for standard Page / Route titles without introducing raw CSS, a second workflow, or controls for detail and article contexts. Reusing the existing private Review and Owner publication path keeps the established authorization and preservation boundaries authoritative.
 - **Consequence:** Page / Route changes remain private until Owner publication and preserve Colors, Eyebrow, Home Hero `0.90`, and unrelated site settings. Home Hero, Service Detail, Work Detail, Case Study Preview, Insights Article titles, and Crimson admin typography remain outside this control. No new schema or capability is introduced.
+
+## ADR-087 - Use per-request nonces for the enforced script policy
+
+- **Date:** 2026-10-01
+- **Status:** Implemented for staging validation
+- **Decision:** Generate a fresh nonce in the Next.js Proxy for rendered HTML requests, send the matching CSP on both the forwarded request and response, and require that nonce for inline scripts. Keep `unsafe-eval` development-only; production `script-src` contains neither `unsafe-inline` nor `unsafe-eval`. Preserve the existing Vercel Analytics source and other approved CSP directives. Avoid Supabase session refreshes on public requests; session handling remains scoped to CMS requests.
+- **Reason:** Removing the two unsafe script sources without authorizing Next.js streaming/hydration scripts would break page hydration. A per-request nonce allows only scripts rendered with the matching request nonce while keeping the existing public and authenticated CMS behavior.
+- **Consequence:** The CMS subtree and custom not-found route are request-rendered so cached inline scripts cannot be served without the nonce. Static assets and API routes are excluded from nonce injection. Existing inline style allowance is retained separately from the script policy. No CSP reporting or data workflow is changed.
