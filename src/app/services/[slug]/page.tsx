@@ -4,6 +4,7 @@ import { ImageOff } from "lucide-react";
 import { notFound } from "next/navigation";
 import { RouteShell } from "@/components/route-shell";
 import { getPublishedService } from "@/lib/cms-content";
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/og-assets";
 import { services } from "@/lib/site-content";
 
 type ServicePageProps = {
@@ -17,10 +18,21 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
   const { slug } = await params;
   const service = await getPublishedService(slug);
+  const title = service ? service.name : "Service";
+  const description = service?.summary || "Explore this OCSCO capability across strategy, design, and technology.";
+  const imagePath = `/services/${slug}/opengraph-image`;
   return {
-    title: service ? service.name : "Service",
-    description: service?.summary,
+    title,
+    description,
     alternates: { canonical: `/services/${slug}` },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `/services/${slug}`,
+      images: [{ url: imagePath, width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT, alt: title }],
+    },
+    twitter: { card: "summary_large_image", title, description, images: [imagePath] },
     robots: { index: false, follow: true },
   };
 }
