@@ -73,8 +73,6 @@ type PublishedRelatedService = {
   slug: string;
 };
 
-const CASE_STUDY_MEDIA_BUCKET = "case-study-media";
-
 type CaseStudyMediaItem = {
   path: string;
   alt: string;
@@ -98,25 +96,12 @@ function listItems(value: unknown): string[] {
     : [];
 }
 
-type PublicCmsClient = NonNullable<ReturnType<typeof getPublicCmsClient>>;
-
-async function createPublicMediaUrls(client: PublicCmsClient, paths: string[]) {
-  const uniquePaths = [...new Set(paths.filter(Boolean))];
-  if (uniquePaths.length === 0) {
-    return new Map<string, string>();
-  }
-
-  const { data, error } = await client.storage.from(CASE_STUDY_MEDIA_BUCKET).createSignedUrls(uniquePaths, 3600);
-  if (error || !data) {
-    return new Map<string, string>();
-  }
-
+function createPublicMediaUrls(paths: string[]) {
   return new Map<string, string>(
-    data.flatMap((item) => (
-      item.path && item.signedUrl && !item.error
-        ? [[item.path, item.signedUrl] as const]
-        : []
-    )),
+    [...new Set(paths.filter(Boolean))].map((path) => [
+      path,
+      `/api/work-media/${path.split("/").map(encodeURIComponent).join("/")}`,
+    ]),
   );
 }
 
@@ -466,7 +451,7 @@ export async function getPublishedWorkProjects(options: { includeRelatedCapabili
       : [];
     return [caseStudy.featured_image_path, ...supportingPaths].filter((path): path is string => Boolean(path));
   });
-  const mediaUrls = await createPublicMediaUrls(client, mediaPaths);
+  const mediaUrls = createPublicMediaUrls(mediaPaths);
 
   return Promise.all(caseStudies.map((caseStudy) => mapPublishedCaseStudy(
     caseStudy,
