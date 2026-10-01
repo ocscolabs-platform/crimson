@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getCmsMembership } from "@/lib/cms-auth";
 import { canEditGlobalContent, canPublishPages, getAdminGlobalContent, type AdminPageMetadata } from "@/lib/admin-global-content";
 import { DEFAULT_DESIGN_SETTINGS_V1, normalizeDesignSettingsV1, validateDesignSettingsV1 } from "@/lib/design-settings";
+import { invalidatePublicHomepage } from "@/lib/public-homepage-cache";
 import { createClient } from "@/lib/supabase/server";
 import AdminBreadcrumbs from "@/app/admin/AdminBreadcrumbs";
 import AdminSelect from "@/app/admin/AdminSelect";
@@ -76,6 +77,10 @@ async function publishRevision(entityType: "site_settings" | "navigation_item" |
 
   const { error: publishError } = await supabase.rpc("cms_publish_revision", { p_revision_id: revision.id });
   if (publishError) redirectWithError(publishError.message);
+
+  if (entityType === "site_settings" || entityType === "navigation_item") {
+    invalidatePublicHomepage();
+  }
 
   for (const path of ["/", "/about", "/services", "/work", "/contact", "/crimson-admin-control", "/crimson-admin-control/content"]) {
     revalidatePath(path);

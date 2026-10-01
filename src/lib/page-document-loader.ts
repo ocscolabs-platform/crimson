@@ -1,7 +1,9 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import type { PageDocument, PageKey, ServiceSlug } from "@/lib/page-document";
 import { validatePageDocument } from "@/lib/page-document";
+import { PUBLIC_HOMEPAGE_CACHE_TAG } from "@/lib/public-homepage-cache";
 import type { Service } from "@/lib/site-content";
 
 export type PublishedPageDocumentRow = {
@@ -110,7 +112,7 @@ export function resolvePublishedPageDocumentRow(
  * Reads only explicitly published, currently effective rows. RLS remains a
  * second boundary, but publication intent is visible in this query as well.
  */
-export const getPublishedPageDocument = cache(async function getPublishedPageDocument(pageKey: PageKey): Promise<PublishedPageDocumentResult> {
+async function readPublishedPageDocument(pageKey: PageKey): Promise<PublishedPageDocumentResult> {
   const client = getPublicCmsClient();
   if (!client) {
     return {
@@ -139,6 +141,18 @@ export const getPublishedPageDocument = cache(async function getPublishedPageDoc
   }
 
   return resolvePublishedPageDocumentRow(pageKey, data as PublishedPageDocumentRow | null, now);
+}
+
+const getPersistedPublishedHomePageDocument = unstable_cache(
+  () => readPublishedPageDocument("home"),
+  ["published-home-page-document-v1"],
+  { tags: [PUBLIC_HOMEPAGE_CACHE_TAG], revalidate: false },
+);
+
+export const getPublishedPageDocument = cache(async function getPublishedPageDocument(pageKey: PageKey): Promise<PublishedPageDocumentResult> {
+  return pageKey === "home"
+    ? getPersistedPublishedHomePageDocument()
+    : readPublishedPageDocument(pageKey);
 });
 
 function getHomeServiceSlugs(document: PageDocument): ServiceSlug[] {
@@ -266,7 +280,7 @@ export async function getPublishedPageServices(): Promise<PageDocumentServiceRes
   return resolvePublishedServiceList((data ?? []) as PublishedServiceRow[], now);
 }
 
-export async function resolvePublishedPageServices(document: PageDocument): Promise<PageDocumentServiceResult> {
+async function readPublishedPageServices(document: PageDocument): Promise<PageDocumentServiceResult> {
   const slugs = getHomeServiceSlugs(document);
   if (slugs.length === 0) {
     return { kind: "resolved", services: [] };
@@ -299,4 +313,16 @@ export async function resolvePublishedPageServices(document: PageDocument): Prom
   }
 
   return resolvePublishedServiceRows(document, (data ?? []) as PublishedServiceRow[], now);
+}
+
+const getPersistedPublishedHomePageServices = unstable_cache(
+  readPublishedPageServices,
+  ["published-home-page-services-v1"],
+  { tags: [PUBLIC_HOMEPAGE_CACHE_TAG], revalidate: false },
+);
+
+export async function resolvePublishedPageServices(document: PageDocument): Promise<PageDocumentServiceResult> {
+  return document.pageKey === "home"
+    ? getPersistedPublishedHomePageServices(document)
+    : readPublishedPageServices(document);
 }
