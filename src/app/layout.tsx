@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { CSSProperties } from "react";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { DEFAULT_OG_IMAGE_PATH, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/og-assets";
@@ -8,6 +9,13 @@ import { designSettingsToCssVariables } from "@/lib/design-settings";
 import { getPublishedDesignSettings } from "@/lib/cms-content";
 import { serializeStructuredData } from "@/lib/structured-data";
 import "./globals.css";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-jakarta",
+});
 
 const siteOrigin = getSiteOrigin();
 const organizationId = new URL("/#organization", siteOrigin).toString();
@@ -84,7 +92,11 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="en" style={designSettingsToCssVariables(designSettings) as CSSProperties}>
+    <html
+      lang="en"
+      className={jakarta.variable}
+      style={designSettingsToCssVariables(designSettings) as CSSProperties}
+    >
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeStructuredData(structuredData) }} />
         {children}
