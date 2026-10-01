@@ -12,7 +12,7 @@ const insightsDescription = "Ideas, perspectives, and practical thinking from OC
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: { absolute: "Insights" },
+    title: "Insights",
     description: insightsDescription,
     alternates: { canonical: "/insights" },
     openGraph: {

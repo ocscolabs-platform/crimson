@@ -1,4 +1,4 @@
-const PRODUCTION_SITE_ORIGIN = "https://ocsco.io";
+const PRODUCTION_SITE_ORIGIN = "https://www.ocsco.io";
 
 function parseSiteOrigin(value: string): URL {
   let url: URL;
@@ -16,7 +16,7 @@ function parseSiteOrigin(value: string): URL {
   return new URL(url.origin);
 }
 
-export function getSiteOrigin(): URL | undefined {
+export function getSiteOrigin(): URL {
   const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   const vercelEnvironment = process.env.VERCEL_ENV;
 

@@ -1,5 +1,5 @@
-/* eslint-disable @next/next/no-img-element -- signed Supabase media URLs are runtime-generated. */
 import Link from "next/link";
+import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import type { WorkProject } from "@/lib/work-content";
 
@@ -16,7 +16,14 @@ export function WorkDetailView({ project }: { project: WorkProject }) {
     <section className="section-light route-section">
       <div className="shell work-detail-layout">
         {project.featuredImageUrl ? (
-          <img className="work-detail-media work-media-image" src={project.featuredImageUrl} alt={project.featuredImageAlt || `${project.name} project visual`} />
+          <Image
+            className="work-detail-media work-media-image"
+            src={project.featuredImageUrl}
+            alt={project.featuredImageAlt || `${project.name} project visual`}
+            width={1600}
+            height={900}
+            sizes="(max-width: 900px) 100vw, 1200px"
+          />
         ) : (
           <div className="media-placeholder work-detail-media" role="img" aria-label={`${project.name} project visual placeholder`}>
             <ImageOff aria-hidden="true" size={34} strokeWidth={1.4} />
@@ -25,8 +32,8 @@ export function WorkDetailView({ project }: { project: WorkProject }) {
         )}
         {project.supportingMedia?.length ? (
           <div className="work-detail-gallery" aria-label="Supporting project visuals">
-            {project.supportingMedia.map((media) => (
-              <img key={media.url} src={media.url} alt={media.alt} />
+              {project.supportingMedia.map((media) => (
+                <Image key={media.url} src={media.url} alt={media.alt} width={1600} height={1200} sizes="(max-width: 760px) 100vw, 50vw" />
             ))}
           </div>
         ) : null}

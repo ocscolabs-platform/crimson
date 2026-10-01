@@ -5,6 +5,7 @@ export type Service = {
   summary: string;
   audience: string;
   outcome: string;
+  updatedAt?: string;
 };
 
 export const services: Service[] = [
