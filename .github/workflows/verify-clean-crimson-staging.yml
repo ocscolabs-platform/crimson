@@ -108,11 +108,14 @@ jobs:
           set -euo pipefail
           supabase link --project-ref "$EXPECTED_STAGING_REF" --password "$SUPABASE_DB_PASSWORD"
 
-      - name: Display linked migration status
+      - name: Display shared pooler migration status
         shell: bash
         run: |
           set -euo pipefail
-          supabase migration list --linked
+          pooler_db_url="postgresql://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE?sslmode=$PGSSLMODE"
+          supabase migration list \
+            --db-url "$pooler_db_url" \
+            --password "$SUPABASE_DB_PASSWORD"
 
       - name: Install PostgreSQL client
         shell: bash
@@ -185,7 +188,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if ! dry_run_output="$(supabase db push --linked --dry-run 2>&1)"; then
+          pooler_db_url="postgresql://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE?sslmode=$PGSSLMODE"
+          if ! dry_run_output="$(supabase db push \
+            --db-url "$pooler_db_url" \
+            --password "$SUPABASE_DB_PASSWORD" \
+            --dry-run 2>&1)"; then
             printf '%s\n' "$dry_run_output"
             echo "Supabase dry-run could not complete; no migration was applied."
             exit 1
