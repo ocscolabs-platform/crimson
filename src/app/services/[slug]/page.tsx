@@ -21,6 +21,7 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
     title: service ? service.name : "Service",
     description: service?.summary,
     alternates: { canonical: `/services/${slug}` },
+    robots: { index: false, follow: true },
   };
 }
 

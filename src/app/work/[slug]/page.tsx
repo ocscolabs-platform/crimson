@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: WorkDetailPageProps): Promise
     title: project ? project.name : "Project",
     description: project?.description,
     alternates: { canonical: `/work/${slug}` },
+    ...(slug === "membership-portal" ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
