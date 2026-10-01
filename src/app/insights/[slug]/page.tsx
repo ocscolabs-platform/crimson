@@ -25,12 +25,12 @@ function formatPublishedDate(value: string) {
 export async function generateMetadata({ params }: InsightsArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
   const article = await getPublishedInsightsArticle(slug);
-  if (!article) return { title: { absolute: "Insights" }, description: insightsFallbackDescription };
+  if (!article) return { title: "Insights", description: insightsFallbackDescription };
 
   const description = article.excerpt || insightsFallbackDescription;
   const canonical = `/insights/${article.slug}`;
   return {
-    title: { absolute: article.title },
+    title: article.title,
     description,
     alternates: { canonical },
     openGraph: {
