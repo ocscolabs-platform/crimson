@@ -1,4 +1,4 @@
-const PRODUCTION_SITE_ORIGIN = "https://ocsco.io";
+const PRODUCTION_SITE_ORIGIN = "https://www.ocsco.io";
 
 function parseSiteOrigin(value: string): URL {
   let url: URL;
