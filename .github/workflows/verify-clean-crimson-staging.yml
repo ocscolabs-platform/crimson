@@ -108,14 +108,29 @@ jobs:
           set -euo pipefail
           supabase link --project-ref "$EXPECTED_STAGING_REF" --password "$SUPABASE_DB_PASSWORD"
 
+      - name: Prepare masked shared pooler URL
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          encoded_db_password="$(jq -rn --arg value "$SUPABASE_DB_PASSWORD" '$value | @uri')"
+          if [[ -z "$encoded_db_password" ]]; then
+            echo "Refusing verification: encoded database password is empty."
+            exit 1
+          fi
+
+          echo "::add-mask::$encoded_db_password"
+          pooler_db_url="postgresql://$PGUSER:$encoded_db_password@$PGHOST:$PGPORT/$PGDATABASE?sslmode=$PGSSLMODE"
+          echo "::add-mask::$pooler_db_url"
+          printf 'STAGING_POOLER_DB_URL=%s\n' "$pooler_db_url" >> "$GITHUB_ENV"
+
+          unset encoded_db_password pooler_db_url
+
       - name: Display shared pooler migration status
         shell: bash
         run: |
           set -euo pipefail
-          pooler_db_url="postgresql://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE?sslmode=$PGSSLMODE"
-          supabase migration list \
-            --db-url "$pooler_db_url" \
-            --password "$SUPABASE_DB_PASSWORD"
+          supabase migration list --db-url "$STAGING_POOLER_DB_URL"
 
       - name: Install PostgreSQL client
         shell: bash
@@ -188,10 +203,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          pooler_db_url="postgresql://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE?sslmode=$PGSSLMODE"
           if ! dry_run_output="$(supabase db push \
-            --db-url "$pooler_db_url" \
-            --password "$SUPABASE_DB_PASSWORD" \
+            --db-url "$STAGING_POOLER_DB_URL" \
             --dry-run 2>&1)"; then
             printf '%s\n' "$dry_run_output"
             echo "Supabase dry-run could not complete; no migration was applied."
