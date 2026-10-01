@@ -7,6 +7,8 @@ import { SiteHeader } from "@/components/site-header";
 import { getPublishedSiteChrome } from "@/lib/cms-content";
 import { getPublishedInsightsArticle } from "@/lib/insights-data";
 import { renderInsightsBody } from "@/lib/insights-renderer";
+import { getSiteOrigin } from "@/lib/site-origin";
+import { serializeStructuredData } from "@/lib/structured-data";
 
 export const dynamic = "force-dynamic";
 
@@ -53,8 +55,27 @@ export default async function InsightsArticlePage({ params }: InsightsArticlePag
   const [article, chrome] = await Promise.all([getPublishedInsightsArticle(slug), getPublishedSiteChrome()]);
   if (!article) notFound();
 
+  const origin = getSiteOrigin();
+  const organizationId = new URL("/#organization", origin).toString();
+  const canonicalUrl = new URL(`/insights/${article.slug}`, origin).toString();
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: article.title,
+    description: article.excerpt || insightsFallbackDescription,
+    datePublished: article.publishedAt,
+    dateModified: article.publishedAt,
+    author: { "@type": "Organization", name: article.authorLabel, url: new URL("/about", origin).toString() },
+    publisher: { "@id": organizationId },
+    image: article.coverImageUrl,
+    mainEntityOfPage: canonicalUrl,
+    articleSection: article.categoryName,
+    keywords: article.tags.map((tag) => tag.name),
+  };
+
   return (
     <main className="public-insights-page">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeStructuredData(structuredData) }} />
       <SiteHeader navigation={chrome.primaryNavigation} ctaHref={chrome.settings.primaryContactPath} />
       <article className="public-insights-article-shell shell">
         <Link className="public-insights-back" href="/insights"><span aria-hidden="true">←</span> Back to Insights</Link>

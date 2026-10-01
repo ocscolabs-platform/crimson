@@ -6,10 +6,15 @@ import { DEFAULT_OG_IMAGE_PATH, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/og
 import { getSiteOrigin } from "@/lib/site-origin";
 import { designSettingsToCssVariables } from "@/lib/design-settings";
 import { getPublishedDesignSettings } from "@/lib/cms-content";
+import { serializeStructuredData } from "@/lib/structured-data";
 import "./globals.css";
 
+const siteOrigin = getSiteOrigin();
+const organizationId = new URL("/#organization", siteOrigin).toString();
+const websiteId = new URL("/#website", siteOrigin).toString();
+
 export const metadata: Metadata = {
-  metadataBase: getSiteOrigin(),
+  metadataBase: siteOrigin,
   title: {
     default: "OCSCO — Strategy, design, and technology",
     template: "%s — OCSCO",
@@ -57,10 +62,31 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const designSettings = await getPublishedDesignSettings();
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": organizationId,
+        name: "OCSCO",
+        url: siteOrigin.toString(),
+        logo: new URL("/favicon/android-chrome-512x512.png", siteOrigin).toString(),
+        description: "Strategy, design, and technology studio for brands ready to move with precision.",
+      },
+      {
+        "@type": "WebSite",
+        "@id": websiteId,
+        url: siteOrigin.toString(),
+        name: "OCSCO",
+        publisher: { "@id": organizationId },
+      },
+    ],
+  };
 
   return (
     <html lang="en" style={designSettingsToCssVariables(designSettings) as CSSProperties}>
       <body>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeStructuredData(structuredData) }} />
         {children}
         <Analytics />
         <SpeedInsights />
