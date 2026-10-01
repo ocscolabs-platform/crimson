@@ -36,6 +36,7 @@ type PublishedService = {
   short_description: string | null;
   audience: string | null;
   outcome: string | null;
+  updated_at: string;
 };
 
 type PublishedCaseStudy = {
@@ -57,6 +58,7 @@ type PublishedCaseStudy = {
   featured_image_alt: string | null;
   supporting_media: unknown;
   media_status: "pending" | "approved" | "rejected";
+  updated_at: string;
 };
 
 type PublishedCaseStudyServiceLink = {
@@ -312,7 +314,7 @@ export async function getPublishedServices(): Promise<Service[]> {
 
   const { data, error } = await client
     .from("services")
-    .select("name, card_name, slug, short_description, audience, outcome")
+    .select("name, card_name, slug, short_description, audience, outcome, updated_at")
     .order("created_at", { ascending: true });
 
   if (error || !data?.length) {
@@ -326,6 +328,7 @@ export async function getPublishedServices(): Promise<Service[]> {
     summary: service.short_description || "",
     audience: service.audience || "",
     outcome: service.outcome || "",
+    updatedAt: service.updated_at,
   }));
 }
 
@@ -389,6 +392,7 @@ async function mapPublishedCaseStudy(
     approach: caseStudy.approach || undefined,
     deliverables: deliverables.length ? deliverables : undefined,
     outcomes: outcomes.length ? outcomes : undefined,
+    updatedAt: caseStudy.updated_at,
   };
 }
 
@@ -402,7 +406,7 @@ export async function getPublishedWorkProjects(options: { includeRelatedCapabili
 
   const { data, error } = await client
     .from("case_studies")
-    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status")
+    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status, updated_at")
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
