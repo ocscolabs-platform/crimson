@@ -159,7 +159,7 @@ test("origin, generated image path, and route paths remain code-controlled", asy
   assert.doesNotMatch(helper, /canonical:\s*document\.seo|ogImagePath\s*=\s*document\.seo/);
 });
 
-test("published PageDocument reads are request-memoized without persistent revalidation", async () => {
+test("the Home PageDocument is persistently cached while every public route stays dynamically rendered", async () => {
   const loader = await readFile("src/lib/page-document-loader.ts", "utf8");
   const routes = await Promise.all([
     readFile("src/app/page.tsx", "utf8"),
@@ -168,7 +168,10 @@ test("published PageDocument reads are request-memoized without persistent reval
     readFile("src/app/contact/page.tsx", "utf8"),
   ]);
   assert.match(loader, /import \{ cache \} from "react"/);
+  assert.match(loader, /import \{ unstable_cache \} from "next\/cache"/);
   assert.match(loader, /cache\(async function getPublishedPageDocument/);
+  assert.match(loader, /pageKey === "home"\s*\? getPersistedPublishedHomePageDocument\(\)/);
+  assert.match(loader, /tags:\s*\[PUBLIC_HOMEPAGE_CACHE_TAG\]/);
   for (const source of routes) {
     assert.match(source, /force-dynamic/);
     assert.doesNotMatch(source, /unstable_cache|revalidateTag|export const revalidate/);
