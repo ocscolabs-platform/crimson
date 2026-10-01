@@ -16,7 +16,11 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: WorkDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const project = await getPublishedWorkProject(slug);
-  return { title: project ? project.name : "Project" };
+  return {
+    title: project ? project.name : "Project",
+    description: project?.description,
+    alternates: { canonical: `/work/${slug}` },
+  };
 }
 
 export const dynamic = "force-dynamic";
