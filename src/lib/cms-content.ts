@@ -36,6 +36,7 @@ type PublishedService = {
   short_description: string | null;
   audience: string | null;
   outcome: string | null;
+  updated_at: string;
 };
 
 type PublishedCaseStudy = {
@@ -57,6 +58,7 @@ type PublishedCaseStudy = {
   featured_image_alt: string | null;
   supporting_media: unknown;
   media_status: "pending" | "approved" | "rejected";
+  updated_at: string;
 };
 
 type PublishedCaseStudyServiceLink = {
@@ -70,8 +72,6 @@ type PublishedRelatedService = {
   card_name: string | null;
   slug: string;
 };
-
-const CASE_STUDY_MEDIA_BUCKET = "case-study-media";
 
 type CaseStudyMediaItem = {
   path: string;
@@ -96,25 +96,12 @@ function listItems(value: unknown): string[] {
     : [];
 }
 
-type PublicCmsClient = NonNullable<ReturnType<typeof getPublicCmsClient>>;
-
-async function createPublicMediaUrls(client: PublicCmsClient, paths: string[]) {
-  const uniquePaths = [...new Set(paths.filter(Boolean))];
-  if (uniquePaths.length === 0) {
-    return new Map<string, string>();
-  }
-
-  const { data, error } = await client.storage.from(CASE_STUDY_MEDIA_BUCKET).createSignedUrls(uniquePaths, 3600);
-  if (error || !data) {
-    return new Map<string, string>();
-  }
-
+function createPublicMediaUrls(paths: string[]) {
   return new Map<string, string>(
-    data.flatMap((item) => (
-      item.path && item.signedUrl && !item.error
-        ? [[item.path, item.signedUrl] as const]
-        : []
-    )),
+    [...new Set(paths.filter(Boolean))].map((path) => [
+      path,
+      `/api/work-media/${path.split("/").map(encodeURIComponent).join("/")}`,
+    ]),
   );
 }
 
@@ -312,7 +299,7 @@ export async function getPublishedServices(): Promise<Service[]> {
 
   const { data, error } = await client
     .from("services")
-    .select("name, card_name, slug, short_description, audience, outcome")
+    .select("name, card_name, slug, short_description, audience, outcome, updated_at")
     .order("created_at", { ascending: true });
 
   if (error || !data?.length) {
@@ -326,6 +313,7 @@ export async function getPublishedServices(): Promise<Service[]> {
     summary: service.short_description || "",
     audience: service.audience || "",
     outcome: service.outcome || "",
+    updatedAt: service.updated_at,
   }));
 }
 
@@ -389,6 +377,7 @@ async function mapPublishedCaseStudy(
     approach: caseStudy.approach || undefined,
     deliverables: deliverables.length ? deliverables : undefined,
     outcomes: outcomes.length ? outcomes : undefined,
+    updatedAt: caseStudy.updated_at,
   };
 }
 
@@ -402,7 +391,7 @@ export async function getPublishedWorkProjects(options: { includeRelatedCapabili
 
   const { data, error } = await client
     .from("case_studies")
-    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status")
+    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status, updated_at")
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
@@ -462,7 +451,7 @@ export async function getPublishedWorkProjects(options: { includeRelatedCapabili
       : [];
     return [caseStudy.featured_image_path, ...supportingPaths].filter((path): path is string => Boolean(path));
   });
-  const mediaUrls = await createPublicMediaUrls(client, mediaPaths);
+  const mediaUrls = createPublicMediaUrls(mediaPaths);
 
   return Promise.all(caseStudies.map((caseStudy) => mapPublishedCaseStudy(
     caseStudy,

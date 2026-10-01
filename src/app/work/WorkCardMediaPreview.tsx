@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element -- signed Supabase media URLs are runtime-generated. */
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 type WorkCardMediaPreviewProps = {
@@ -54,12 +54,15 @@ export function WorkCardMediaPreview({ name, images }: WorkCardMediaPreviewProps
       }}
     >
       {images.map((image, index) => (
-        <img
+        <Image
           key={image.url}
           className={index === activeIndex ? "is-active" : undefined}
           src={image.url}
           alt={index === 0 ? image.alt : ""}
           aria-hidden={index !== 0}
+          width={1600}
+          height={900}
+          sizes="(max-width: 760px) 100vw, 50vw"
         />
       ))}
       {hasPreview ? <span className="work-card-preview-count" aria-hidden="true">{images.length} views</span> : null}

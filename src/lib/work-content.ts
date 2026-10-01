@@ -15,6 +15,7 @@ export type WorkProject = {
   approach?: string;
   deliverables?: string[];
   outcomes?: string[];
+  updatedAt?: string;
 };
 
 export const workProjects: WorkProject[] = [
