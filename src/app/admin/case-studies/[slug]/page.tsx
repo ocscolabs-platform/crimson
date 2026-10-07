@@ -199,9 +199,8 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
       media_status: "pending",
       media_reviewed_at: null,
     };
-  const { error: updateError } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error: updateError } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: "review",
     p_payload: update,
   });
@@ -240,9 +239,8 @@ async function approveCaseStudyMedia(slug: string) {
     media_type: "image" as const,
     approval: "approved" as const,
   }));
-  const { error: updateError } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error: updateError } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: "review",
     p_payload: {
     supporting_media: approvedSupportingMedia,
@@ -303,9 +301,8 @@ async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting
     };
   }
 
-  const { error: updateError } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error: updateError } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: "review",
     p_payload: update,
   });
@@ -345,9 +342,8 @@ async function saveCaseStudyRelationships(slug: string, formData: FormData) {
   const serviceIds = [...new Set(formData.getAll("service_ids")
     .map((value) => String(value).trim())
     .filter((value) => /^[0-9a-f-]{36}$/i.test(value)))];
-  const { error: relationshipError } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error: relationshipError } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: "review",
     p_payload: { service_ids: serviceIds },
   });
@@ -403,9 +399,8 @@ async function saveCaseStudy(slug: string, formData: FormData) {
     redirect("/crimson-admin-control/case-studies/" + slug + "?error=Client visibility must be Hidden or Approved.");
   }
 
-  const { error } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: requestedStatus,
     p_payload: {
       project_name: projectName,
@@ -474,7 +469,44 @@ async function publishCaseStudy(slug: string) {
   revalidatePath(`/admin/case-studies/${slug}`);
   revalidatePath("/work");
   revalidatePath(`/work/${slug}`);
+  revalidatePath("/sitemap.xml");
   redirect(`/crimson-admin-control/case-studies/${slug}?saved=published`);
+}
+
+async function unpublishUpcoming(slug: string) {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/crimson-admin-control/login");
+
+  const membership = await getCmsMembership(user.id);
+  if (membership.role !== "owner") {
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=Only the owner can unpublish Upcoming Work.`);
+  }
+
+  const { data: caseStudy, error: caseStudyError } = await supabase
+    .from("case_studies")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (caseStudyError || !caseStudy) {
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=The Upcoming Work record could not be found.`);
+  }
+
+  const { error: unpublishError } = await supabase.rpc("cms_unpublish_upcoming_case_study", {
+    p_case_study_id: caseStudy.id,
+  });
+  if (unpublishError) {
+    redirect(`/crimson-admin-control/case-studies/${slug}?error=${encodeURIComponent(unpublishError.message)}`);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/case-studies/${slug}`);
+  revalidatePath("/work");
+  revalidatePath(`/work/${slug}`);
+  revalidatePath("/sitemap.xml");
+  redirect(`/crimson-admin-control/case-studies/${slug}?saved=unpublished`);
 }
 
 export const dynamic = "force-dynamic";
@@ -530,8 +562,8 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
     },
     {
       label: "Publication status",
-      value: review.status,
-      state: review.status === "published" ? "ready" : "pending",
+      value: review.publication_status,
+      state: review.publication_status === "published" ? "ready" : "pending",
     },
     {
       label: "Featured media",
@@ -595,7 +627,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
         {query.saved ? (
           <>
             <p className="admin-success" role="status">
-              {query.saved === "published" ? "Case study published successfully." : query.saved === "media-approved" ? "Media package approved successfully." : query.saved === "media" ? "Case-study media saved successfully." : query.saved === "relationships" ? "Related capabilities saved successfully." : "Case study saved as a private revision."}
+              {query.saved === "published" ? "Case study published successfully." : query.saved === "unpublished" ? "Upcoming Work unpublished successfully." : query.saved === "media-approved" ? "Media package approved successfully." : query.saved === "media" ? "Case-study media saved successfully." : query.saved === "relationships" ? "Related capabilities saved successfully." : "Case study saved as a private revision."}
             </p>
             <AdminToast
               tone="success"
@@ -605,6 +637,8 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
                   ? "Media saved as pending review."
                 : query.saved === "relationships"
                   ? "The case study now reflects the selected published capabilities."
+                  : query.saved === "unpublished"
+                    ? "Upcoming Work is private and remains available for review and republishing."
                   : query.saved === "published"
                     ? "Case study published successfully. The public Work page now uses this revision."
                     : "Saved as a private revision. The public Work page remains unchanged until the owner publishes it."}
@@ -844,7 +878,12 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             </div>
             {canEdit ? <AdminSubmitButton /> : null}
           </form>
-          {isOwner && review.revision_id && review.revision_status === "review" ? <form className="admin-publish-form" action={publishCaseStudy.bind(null, slug)}><AdminSubmitButton label="Publish case study" pendingLabel="Publishing…" /></form> : null}
+          {isOwner && review.revision_id && review.revision_status === "review" ? <form className="admin-publish-form" action={publishCaseStudy.bind(null, slug)}><AdminSubmitButton label={review.project_type === "upcoming" ? "Publish upcoming" : "Publish case study"} pendingLabel="Publishing…" /></form> : null}
+          {isOwner && review.publication_status === "published" && review.publication_project_type === "upcoming" ? (
+            <form className="admin-publish-form" action={unpublishUpcoming.bind(null, slug)}>
+              <AdminSubmitButton label="Unpublish" pendingLabel="Unpublishing…" variant="secondary" />
+            </form>
+          ) : null}
         </section>
 
         <section className="admin-review-grid admin-review-content-grid">
@@ -852,10 +891,11 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
             <p className="admin-kicker">Record identity</p>
             <dl className="admin-review-dl">
               <div><dt>Project type</dt><dd>{review.project_type}</dd></div>
+              <div><dt>Public status</dt><dd>{review.publication_status}</dd></div>
               <div><dt>Category</dt><dd>{review.project_category || "Not configured"}</dd></div>
               <div><dt>Slug</dt><dd>{review.slug}</dd></div>
-              <div><dt>Featured order</dt><dd>{review.is_featured ? `Featured · ${review.sort_order}` : `Supporting · ${review.sort_order}`}</dd></div>
-              <div><dt>Published</dt><dd>{formatDate(review.published_at)}</dd></div>
+              <div><dt>Manual order</dt><dd>Position {review.sort_order + 1}</dd></div>
+              <div><dt>Published</dt><dd>{formatDate(review.publication_published_at)}</dd></div>
               <div><dt>Updated</dt><dd>{formatDate(review.updated_at)}</dd></div>
             </dl>
             {review.external_url ? (

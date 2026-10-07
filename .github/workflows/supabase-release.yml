@@ -8,6 +8,7 @@ on:
       - ".github/workflows/supabase-release.yml"
       - "scripts/validate-migrations.mjs"
       - "scripts/test-staging-supabase-migration-auto-apply.mjs"
+      - "scripts/test-production-supabase-release-safety.mjs"
       - "package.json"
       - "package-lock.json"
   workflow_dispatch:
@@ -125,11 +126,30 @@ jobs:
       - name: Link staging project
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
 
+      - name: Prepare masked staging shared pooler URL
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "::add-mask::$SUPABASE_DB_PASSWORD"
+          encoded_db_password="$(jq -rn --arg value "$SUPABASE_DB_PASSWORD" '$value | @uri')"
+          if [[ -z "$encoded_db_password" ]]; then
+            echo "Refusing migration: encoded database password is empty."
+            exit 1
+          fi
+
+          echo "::add-mask::$encoded_db_password"
+          pooler_db_url="postgresql://postgres.${SUPABASE_PROJECT_REF}:$encoded_db_password@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require"
+          echo "::add-mask::$pooler_db_url"
+          printf 'STAGING_POOLER_DB_URL=%s\n' "$pooler_db_url" >> "$GITHUB_ENV"
+
+          unset encoded_db_password pooler_db_url
+
       - name: Show staging migration status
-        run: supabase migration list --linked
+        run: supabase migration list --db-url "$STAGING_POOLER_DB_URL"
 
       - name: Validate staging migration plan
-        run: supabase db push --linked --dry-run
+        run: supabase db push --db-url "$STAGING_POOLER_DB_URL" --dry-run
 
       - name: Enforce staging-only apply boundary
         if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging' && inputs.target == 'staging' && inputs.apply == true) }}
@@ -151,7 +171,7 @@ jobs:
         # manual staging dispatch remains available as an explicitly applied
         # recovery path, while Production stays in its separate job/gate.
         if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging' && inputs.target == 'staging' && inputs.apply == true) }}
-        run: supabase db push --linked --yes
+        run: supabase db push --db-url "$STAGING_POOLER_DB_URL" --yes
 
       - name: Install PostgreSQL client
         if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging' && inputs.target == 'staging' && inputs.apply == true) }}
@@ -228,57 +248,204 @@ jobs:
     # Configure required reviewers on this environment. No Production
     # migration can pass this gate without explicit owner approval.
     environment: production-supabase
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      EXPECTED_PRODUCTION_NAME: ocscolabs-platform-website-crm
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+
+      - name: Verify Production configuration presence
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for required in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF; do
+            if [[ -z "${!required:-}" ]]; then
+              echo "Refusing release: $required is missing."
+              exit 1
+            fi
+          done
+
+          echo "::add-mask::$SUPABASE_ACCESS_TOKEN"
+          echo "::add-mask::$SUPABASE_DB_PASSWORD"
+          echo "Required Production configuration is present."
 
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:
           version: 2.111.0
 
+      - name: Enforce Production-only apply boundary
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'production' && inputs.apply == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_REF:-}" != "refs/heads/main" ]]; then
+            echo "Refusing Production apply outside refs/heads/main."
+            exit 1
+          fi
+          if [[ -z "${SUPABASE_PROJECT_REF:-}" || "${EXPECTED_PRODUCTION_NAME:-}" != "ocscolabs-platform-website-crm" ]]; then
+            echo "Refusing Production apply: target configuration is incomplete."
+            exit 1
+          fi
+          echo "Production apply boundary confirmed: manual main dispatch and approved target."
+
+      - name: Verify exact Production project identity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          project_json="$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF")"
+          project_ref="$(jq -r '.id // .ref // empty' <<< "$project_json")"
+          project_name="$(jq -r '.name // empty' <<< "$project_json")"
+
+          if [[ -z "$project_ref" || "$project_ref" != "$SUPABASE_PROJECT_REF" ]]; then
+            echo "Refusing release: authenticated project ref does not match the configured Production ref."
+            exit 1
+          fi
+          if [[ "$project_name" != "$EXPECTED_PRODUCTION_NAME" ]]; then
+            echo "Refusing release: authenticated project name is not the approved Production project."
+            exit 1
+          fi
+
+          echo "Exact Production project identity confirmed: $EXPECTED_PRODUCTION_NAME."
+
       - name: Link Production project
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
 
-      - name: Configure Production database URL for ledger adoption
-        env:
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      - name: Prepare masked Production shared pooler URL
         shell: bash
         run: |
           set -euo pipefail
-          SUPABASE_DB_URL="$(node -e 'const u = new URL("postgresql://postgres." + process.env.SUPABASE_PROJECT_REF + "@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require"); u.password = process.env.SUPABASE_DB_PASSWORD; process.stdout.write(u.toString())')"
-          printf 'SUPABASE_DB_URL=%s\n' "$SUPABASE_DB_URL" >> "$GITHUB_ENV"
 
-      - name: Adopt the absent Production migration ledger
+          encoded_db_password="$(jq -rn --arg value "$SUPABASE_DB_PASSWORD" '$value | @uri')"
+          if [[ -z "$encoded_db_password" ]]; then
+            echo "Refusing release: encoded database password is empty."
+            exit 1
+          fi
+
+          echo "::add-mask::$encoded_db_password"
+          pooler_db_url="postgresql://postgres.${SUPABASE_PROJECT_REF}:$encoded_db_password@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require"
+          echo "::add-mask::$pooler_db_url"
+          printf 'PRODUCTION_POOLER_DB_URL=%s\n' "$pooler_db_url" >> "$GITHUB_ENV"
+
+          unset encoded_db_password pooler_db_url
+
+      - name: Install PostgreSQL client
         shell: bash
         run: |
           set -euo pipefail
-          for version in \
-            20260819000000 20260820000000 20260820010000 20260820020000 \
-            20260820040000 20260820050000 20260820060000 20260820070000 \
-            20260820080000 20260820090000 20260820100000 20260820110000 \
-            20260820120000 20260820130000 20260821000000 20260821010000 \
-            20260821020000 20260821030000 20260821040000 20260821050000 \
-            20260821060000 20260823000000 20260823010000 20260823020000 \
-            20260823030000 20260824000000 20260826000000 20260826010000 \
-            20260827000000 20260828000000 20260829000000 20260830000000; do
-            supabase migration repair "$version" --status applied --db-url "$SUPABASE_DB_URL"
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Verify Production ledger is a canonical prefix
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          local_versions_file="$RUNNER_TEMP/production-canonical-migration-versions.txt"
+          production_versions_file="$RUNNER_TEMP/production-ledger-versions.txt"
+          expected_prefix_file="$RUNNER_TEMP/production-expected-prefix-versions.txt"
+          pending_versions_file="$RUNNER_TEMP/production-pending-versions.txt"
+
+          find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' \
+            | sed -nE 's/^([0-9]{14})_.+\.sql$/\1/p' \
+            | sort > "$local_versions_file"
+
+          ledger_exists="$(psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 <<'SQL'
+          begin;
+          set transaction read only;
+          select (to_regclass('supabase_migrations.schema_migrations') is not null)::text;
+          commit;
+          SQL
+          )"
+          if [[ "$ledger_exists" != "true" ]]; then
+            echo "Production migration ledger is absent; explicit reconciliation review is required."
+            exit 1
+          fi
+
+          psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 > "$production_versions_file" <<'SQL'
+          begin;
+          set transaction read only;
+          select version from supabase_migrations.schema_migrations order by version;
+          commit;
+          SQL
+
+          for file in "$local_versions_file" "$production_versions_file"; do
+            if [[ ! -s "$file" ]]; then
+              echo "Migration version extraction returned an empty set."
+              exit 1
+            fi
+            if [[ -n "$(uniq -d "$file")" ]]; then
+              echo "Duplicate migration versions detected; explicit reconciliation review is required."
+              exit 1
+            fi
           done
 
+          if [[ -n "$(comm -23 "$production_versions_file" "$local_versions_file")" ]]; then
+            echo "Production contains migration versions absent from canonical Git; refusing release."
+            exit 1
+          fi
+
+          local_count="$(wc -l < "$local_versions_file" | tr -d '[:space:]')"
+          production_count="$(wc -l < "$production_versions_file" | tr -d '[:space:]')"
+          head -n "$production_count" "$local_versions_file" > "$expected_prefix_file"
+          if ! diff -u "$expected_prefix_file" "$production_versions_file"; then
+            echo "Production migration ledger is not an exact canonical prefix; refusing release."
+            exit 1
+          fi
+
+          comm -13 "$production_versions_file" "$local_versions_file" > "$pending_versions_file"
+          pending_count="$(wc -l < "$pending_versions_file" | tr -d '[:space:]')"
+          echo "Production ledger preflight passed: canonical=${local_count}; applied=${production_count}; pending=${pending_count}; duplicates=0; unexpected=0."
+
       - name: Show Production migration status
-        run: supabase migration list --db-url "$SUPABASE_DB_URL"
+        run: supabase migration list --db-url "$PRODUCTION_POOLER_DB_URL"
 
       - name: Validate Production migration plan
-        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
+        run: supabase db push --db-url "$PRODUCTION_POOLER_DB_URL" --dry-run
 
       - name: Apply Production migrations
         # Production is never changed by a push or by merging main. The owner
         # must explicitly dispatch this workflow with apply=true, then approve
         # the production-supabase environment gate.
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'production' && inputs.apply == true }}
-        run: supabase db push --db-url "$SUPABASE_DB_URL" --yes
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.target == 'production' && inputs.apply == true }}
+        run: supabase db push --db-url "$PRODUCTION_POOLER_DB_URL" --yes
+
+      - name: Verify Production migration parity
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.target == 'production' && inputs.apply == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          local_versions_file="$RUNNER_TEMP/production-canonical-migration-versions.txt"
+          production_versions_file="$RUNNER_TEMP/production-post-apply-versions.txt"
+          psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 > "$production_versions_file" <<'SQL'
+          begin;
+          set transaction read only;
+          select version from supabase_migrations.schema_migrations order by version;
+          commit;
+          SQL
+
+          if [[ ! -s "$production_versions_file" ]]; then
+            echo "Production migration ledger returned no versions after apply."
+            exit 1
+          fi
+          if [[ -n "$(uniq -d "$production_versions_file")" ]]; then
+            echo "Production migration ledger contains duplicate versions after apply."
+            exit 1
+          fi
+          if ! diff -u "$local_versions_file" "$production_versions_file"; then
+            echo "Production migration ledger does not exactly match canonical Git after apply."
+            exit 1
+          fi
+
+          local_count="$(wc -l < "$local_versions_file" | tr -d '[:space:]')"
+          production_count="$(wc -l < "$production_versions_file" | tr -d '[:space:]')"
+          echo "Production migration parity verified: ${production_count}/${local_count}; duplicates=0; pending=0."

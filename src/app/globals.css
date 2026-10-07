@@ -261,6 +261,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .work-card:hover, .work-card:focus-within { transform: translateY(-6px); box-shadow: 0 18px 40px rgb(10 10 10 / 12%); }
 .work-card-media { border: 0; border-radius: 0; }
 .work-card-media-preview { position: relative; overflow: hidden; background: #f2f2f0; }
+.work-featured > .work-card-media-preview { border-radius: 12px; }
 .work-card-media-preview:focus-visible { outline: 2px solid var(--green); outline-offset: -3px; }
 .work-card-media-preview img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: #f2f2f0; object-fit: contain; opacity: 0; transition: opacity .45s ease; }
 .work-card-media-preview img.is-active { opacity: 1; }
@@ -368,6 +369,10 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
 .admin-record-list li span, .admin-record-list li a { color: var(--white); font-size: .9rem; font-weight: 700; }
 .admin-record-list li a:hover { color: var(--green); }
 .admin-record-list li small { color: #818181; font-size: .72rem; }
+.admin-work-record-main { display: grid; min-width: 0; gap: 5px; }
+.admin-work-order-controls { display: flex; flex: 0 0 auto; gap: 8px; }
+.admin-order-button { min-height: 38px; padding: 8px 13px; font-size: .7rem; white-space: nowrap; }
+.admin-order-button:disabled { cursor: not-allowed; opacity: .42; transform: none; }
 .admin-alert { display: grid; gap: 8px; border: 1px solid rgb(255 92 92 / 45%); border-radius: 12px; background: rgb(255 92 92 / 8%); color: #ffb2b2; padding: 20px 22px; }
 .admin-alert span { color: #d99494; font-size: .86rem; }
 .admin-role-alert { display: grid; gap: 7px; border: 1px solid rgb(255 255 255 / 16%); border-radius: 12px; background: #141414; color: #d5d5d5; padding: 18px 20px; }
@@ -767,6 +772,9 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-stat-card { min-height: 0; }
   .admin-record-panel { padding: 22px; }
   .admin-record-list li { align-items: start; flex-direction: column; gap: 6px; }
+  .admin-work-record { gap: 14px !important; }
+  .admin-work-record form, .admin-work-order-controls { width: 100%; }
+  .admin-order-button { flex: 1; }
   .admin-editor-heading { align-items: start; flex-direction: column; padding: 48px 0 32px; }
   .admin-editor-status { border-left: 0; border-top: 1px solid rgb(255 255 255 / 18%); padding: 16px 0 0; }
   .admin-editor-form { grid-template-columns: 1fr; }

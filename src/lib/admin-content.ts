@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { hasDuplicateWorkSortOrder, orderWorkRowsForCompatibility } from "@/lib/work-order-compatibility";
 
 export type AdminCollection = {
   label: string;
@@ -9,7 +10,14 @@ export type AdminCollection = {
 export type AdminContent = {
   collections: AdminCollection[];
   services: Array<{ name: string; slug: string; status: string }>;
-  caseStudies: Array<{ project_name: string; slug: string; status: string }>;
+  caseStudies: Array<{
+    id: string;
+    project_name: string;
+    slug: string;
+    project_type: "case-study" | "prototype" | "upcoming";
+    status: string;
+    sort_order: number;
+  }>;
 };
 
 export async function getAdminContent(): Promise<AdminContent> {
@@ -25,8 +33,10 @@ export async function getAdminContent(): Promise<AdminContent> {
       .order("created_at", { ascending: true }),
     supabase
       .from("case_studies")
-      .select("project_name, slug, status")
-      .order("sort_order", { ascending: true }),
+      .select("id, project_name, slug, project_type, status, sort_order, is_featured, published_at, created_at")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true })
+      .order("slug", { ascending: true }),
   ]);
 
   const firstError = [settings, navigation, pages, services, caseStudies].find(
@@ -36,6 +46,18 @@ export async function getAdminContent(): Promise<AdminContent> {
   if (firstError) {
     throw new Error(firstError.message);
   }
+
+  const rawCaseStudies = caseStudies.data ?? [];
+  const now = new Date().toISOString();
+  const publishedCaseStudies = rawCaseStudies.filter((caseStudy) => (
+    caseStudy.status === "published"
+      && typeof caseStudy.published_at === "string"
+      && caseStudy.published_at <= now
+  ));
+  const orderedCaseStudies = orderWorkRowsForCompatibility(
+    rawCaseStudies,
+    hasDuplicateWorkSortOrder(publishedCaseStudies),
+  );
 
   return {
     collections: [
@@ -62,10 +84,10 @@ export async function getAdminContent(): Promise<AdminContent> {
       {
         label: "Case studies",
         count: caseStudies.data?.length ?? 0,
-        description: "Published work records with approved visibility.",
+        description: "Work records visible to this CMS role across Draft, Review, and Published states.",
       },
     ],
     services: (services.data ?? []) as AdminContent["services"],
-    caseStudies: (caseStudies.data ?? []) as AdminContent["caseStudies"],
+    caseStudies: orderedCaseStudies as AdminContent["caseStudies"],
   };
 }

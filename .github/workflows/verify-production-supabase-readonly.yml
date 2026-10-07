@@ -1,0 +1,246 @@
+name: Verify Production Supabase read-only readiness
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Production Supabase read-only verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production-supabase
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      EXPECTED_PRODUCTION_NAME: ocscolabs-platform-website-crm
+      EXPECTED_MAIN_MIGRATION_COUNT: "48"
+      EXPECTED_STAGING_MIGRATION_COUNT: "51"
+      PGHOST: aws-0-ap-northeast-1.pooler.supabase.com
+      PGPORT: "5432"
+      PGDATABASE: postgres
+      PGSSLMODE: require
+
+    steps:
+      - name: Check out accepted staging source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enforce verifier boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_REF:-}" != "refs/heads/staging" ]]; then
+            echo "Refusing verification outside refs/heads/staging."
+            exit 1
+          fi
+
+          for required in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF; do
+            if [[ -z "${!required:-}" ]]; then
+              echo "Refusing verification: $required is missing."
+              exit 1
+            fi
+          done
+
+          echo "::add-mask::$SUPABASE_ACCESS_TOKEN"
+          echo "::add-mask::$SUPABASE_DB_PASSWORD"
+          echo "Production verifier boundary confirmed; required configuration is present."
+
+      - name: Set up pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.111.0
+
+      - name: Verify GitHub Environment token authentication and project identity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cli_version="$(supabase --version)"
+          if [[ "$cli_version" != *"2.111.0"* ]]; then
+            echo "Refusing verification: unexpected Supabase CLI version: $cli_version"
+            exit 1
+          fi
+
+          project_json="$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF")"
+          project_ref="$(jq -r '.id // .ref // empty' <<< "$project_json")"
+          project_name="$(jq -r '.name // empty' <<< "$project_json")"
+
+          if [[ -z "$project_ref" || "$project_ref" != "$SUPABASE_PROJECT_REF" ]]; then
+            echo "Refusing verification: authenticated project ref does not match the configured Production ref."
+            exit 1
+          fi
+          if [[ "$project_name" != "$EXPECTED_PRODUCTION_NAME" ]]; then
+            echo "Refusing verification: authenticated project name does not match the approved Production project."
+            exit 1
+          fi
+
+          echo "Supabase management authentication passed; Unauthorized absent."
+          echo "Exact Production project identity confirmed: $EXPECTED_PRODUCTION_NAME."
+
+      - name: Install PostgreSQL client
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Prepare masked Production shared pooler URL
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          encoded_db_password="$(jq -rn --arg value "$SUPABASE_DB_PASSWORD" '$value | @uri')"
+          if [[ -z "$encoded_db_password" ]]; then
+            echo "Refusing verification: encoded database password is empty."
+            exit 1
+          fi
+
+          echo "::add-mask::$encoded_db_password"
+          pooler_db_url="postgresql://postgres.${SUPABASE_PROJECT_REF}:$encoded_db_password@$PGHOST:$PGPORT/$PGDATABASE?sslmode=$PGSSLMODE"
+          echo "::add-mask::$pooler_db_url"
+          printf 'PRODUCTION_POOLER_DB_URL=%s\n' "$pooler_db_url" >> "$GITHUB_ENV"
+
+          unset encoded_db_password pooler_db_url
+
+      - name: Prove explicitly read-only Production database connectivity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          connection_state="$(psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 <<'SQL'
+          begin;
+          set transaction read only;
+          select case
+            when current_database() = 'postgres'
+             and current_setting('transaction_read_only') = 'on'
+            then 'PASS'
+            else 'FAIL'
+          end;
+          commit;
+          SQL
+          )"
+
+          if [[ "$connection_state" != "PASS" ]]; then
+            echo "Production read-only connectivity proof failed."
+            exit 1
+          fi
+          echo "Production database connectivity passed inside an explicit read-only transaction."
+
+      - name: Verify Production ledger parity and expected staging delta
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          main_versions_file="$RUNNER_TEMP/main-migration-versions.txt"
+          staging_versions_file="$RUNNER_TEMP/staging-migration-versions.txt"
+          production_versions_file="$RUNNER_TEMP/production-migration-versions.txt"
+          expected_pending_file="$RUNNER_TEMP/expected-work-cms-pending-versions.txt"
+          actual_pending_file="$RUNNER_TEMP/actual-work-cms-pending-versions.txt"
+
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          git ls-tree -r --name-only origin/main -- supabase/migrations \
+            | sed -nE 's#^supabase/migrations/([0-9]{14})_.+\.sql$#\1#p' \
+            | sort > "$main_versions_file"
+          find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' \
+            | sed -nE 's/^([0-9]{14})_.+\.sql$/\1/p' \
+            | sort > "$staging_versions_file"
+
+          ledger_exists="$(psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 <<'SQL'
+          begin;
+          set transaction read only;
+          select (to_regclass('supabase_migrations.schema_migrations') is not null)::text;
+          commit;
+          SQL
+          )"
+          if [[ "$ledger_exists" != "true" ]]; then
+            echo "Production migration ledger is absent."
+            exit 1
+          fi
+
+          psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 > "$production_versions_file" <<'SQL'
+          begin;
+          set transaction read only;
+          select version from supabase_migrations.schema_migrations order by version;
+          commit;
+          SQL
+
+          for file in "$main_versions_file" "$staging_versions_file" "$production_versions_file"; do
+            if [[ ! -s "$file" ]]; then
+              echo "Migration version extraction returned an empty set."
+              exit 1
+            fi
+            if [[ -n "$(uniq -d "$file")" ]]; then
+              echo "Duplicate migration versions detected."
+              exit 1
+            fi
+          done
+
+          main_count="$(wc -l < "$main_versions_file" | tr -d '[:space:]')"
+          staging_count="$(wc -l < "$staging_versions_file" | tr -d '[:space:]')"
+          production_count="$(wc -l < "$production_versions_file" | tr -d '[:space:]')"
+          if [[ "$main_count" != "$EXPECTED_MAIN_MIGRATION_COUNT" \
+             || "$production_count" != "$EXPECTED_MAIN_MIGRATION_COUNT" \
+             || "$staging_count" != "$EXPECTED_STAGING_MIGRATION_COUNT" ]]; then
+            echo "Unexpected migration counts: main=$main_count Production=$production_count staging=$staging_count."
+            exit 1
+          fi
+
+          if ! diff -u "$main_versions_file" "$production_versions_file"; then
+            echo "Production migration ledger does not exactly match current main."
+            exit 1
+          fi
+
+          printf '%s\n' \
+            20261007000000 \
+            20261007010000 \
+            20261007020000 > "$expected_pending_file"
+          comm -13 "$production_versions_file" "$staging_versions_file" > "$actual_pending_file"
+          if ! diff -u "$expected_pending_file" "$actual_pending_file"; then
+            echo "Staging does not contain exactly the three expected pending Work CMS migrations."
+            exit 1
+          fi
+          if [[ -n "$(comm -23 "$production_versions_file" "$staging_versions_file")" ]]; then
+            echo "Production contains a migration version absent from accepted staging."
+            exit 1
+          fi
+
+          echo "Production ledger parity passed: 48/48 current-main versions, duplicates=0, unexpected=0."
+          echo "Accepted staging delta passed: exactly 3 pending Work CMS migrations."
+
+      - name: Verify Production catalog baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          catalog_state="$(psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 <<'SQL'
+          begin;
+          set transaction read only;
+          select concat_ws('|',
+            (to_regclass('public.pages') is not null)::text,
+            (to_regclass('public.services') is not null)::text,
+            (to_regclass('public.case_studies') is not null)::text,
+            (to_regclass('public.cms_revisions') is not null)::text,
+            (to_regprocedure('public.cms_unpublish_upcoming_case_study(uuid)') is null)::text,
+            (to_regprocedure('public.cms_save_case_study_revision(uuid,text,jsonb)') is null)::text,
+            (to_regprocedure('public.cms_reorder_case_studies(uuid[])') is null)::text
+          );
+          commit;
+          SQL
+          )"
+
+          if [[ "$catalog_state" != "true|true|true|true|true|true|true" ]]; then
+            echo "Production catalog baseline does not match the approved pre-promotion state."
+            exit 1
+          fi
+
+          echo "Representative Production CMS contracts are present."
+          echo "All three Work CMS v1 objects are absent as expected before promotion."
+          echo "Production Supabase read-only readiness verification passed; mutation=NONE."

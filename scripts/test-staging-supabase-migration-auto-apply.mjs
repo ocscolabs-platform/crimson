@@ -24,8 +24,17 @@ test("staging migration workflow applies on protected staging pushes", () => {
   assert.match(staging, /EXPECTED_STAGING_NAME: crimson-staging/);
   assert.match(staging, /https:\/\/api\.supabase\.com\/v1\/projects\/\$SUPABASE_PROJECT_REF/);
   assert.match(staging, /project_name.*EXPECTED_STAGING_NAME/);
-  assert.match(staging, /supabase db push --linked --dry-run/);
-  assert.match(staging, /supabase db push --linked --yes/);
+  assert.match(staging, /Link staging project[\s\S]*?supabase link --project-ref "\$SUPABASE_PROJECT_REF" --password "\$SUPABASE_DB_PASSWORD"/);
+  assert.match(staging, /Prepare masked staging shared pooler URL/);
+  assert.match(staging, /jq -rn --arg value "\$SUPABASE_DB_PASSWORD" '\$value \| @uri'/);
+  assert.match(staging, /::add-mask::\$SUPABASE_DB_PASSWORD/);
+  assert.match(staging, /::add-mask::\$encoded_db_password/);
+  assert.match(staging, /::add-mask::\$pooler_db_url/);
+  assert.match(staging, /postgresql:\/\/postgres\.\$\{SUPABASE_PROJECT_REF\}:\$encoded_db_password@aws-0-ap-northeast-1\.pooler\.supabase\.com:5432\/postgres\?sslmode=require/);
+  assert.match(staging, /supabase migration list --db-url "\$STAGING_POOLER_DB_URL"/);
+  assert.match(staging, /supabase db push --db-url "\$STAGING_POOLER_DB_URL" --dry-run/);
+  assert.match(staging, /supabase db push --db-url "\$STAGING_POOLER_DB_URL" --yes/);
+  assert.doesNotMatch(staging, /supabase (?:migration list|db push) --linked/);
   assert.match(staging, /Verify staging migration parity/);
   assert.match(staging, /schema_migrations/);
   assert.match(staging, /diff -u.*local_versions_file.*remote_versions_file/s);
@@ -54,6 +63,8 @@ test("staging apply is branch- and target-gated while Production remains separat
 
 test("release documentation records idempotent parity verification", () => {
   assert.match(pipelineDocs, /applies all pending canonical migrations in order/);
+  assert.match(pipelineDocs, /Shared Session Pooler/);
+  assert.match(pipelineDocs, /--db-url/);
   assert.match(pipelineDocs, /exact repository\/database migration parity/);
   assert.match(pipelineDocs, /If no migrations are pending/);
   assert.match(decisionLog, /ADR-066 - Automatically apply canonical migrations on protected staging pushes/);

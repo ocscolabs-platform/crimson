@@ -33,7 +33,7 @@ npm run build
 npm run start
 ```
 
-Database changes use the canonical files in `supabase/migrations`. The guarded GitHub workflow in `.github/workflows/supabase-release.yml` validates the migration history on every relevant push, applies approved migrations to staging, and performs a read-only Production plan on `main`. Production application requires an explicit workflow dispatch with the protected `production-supabase` environment approval; merging `staging` into `main` never changes the Production database by itself.
+Database changes use the canonical files in `supabase/migrations`. The guarded GitHub workflow in `.github/workflows/supabase-release.yml` validates the migration history on every relevant push, applies approved migrations to staging, and performs a non-mutating Production plan on `main`. Production planning verifies exact project identity and a duplicate-free canonical ledger prefix; unexpected drift fails for separate review rather than being repaired automatically. Production application is forward-only and requires an explicit `main` workflow dispatch with the protected `production-supabase` environment approval; merging `staging` into `main` never changes the Production database by itself.
 
 Copy `.env.example` to `.env.local` only when local configuration is needed. Keep real values local and never commit them.
 

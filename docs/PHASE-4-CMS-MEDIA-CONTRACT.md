@@ -40,7 +40,7 @@ Example supporting item:
 
 ## Featured-project rule
 
-There may be at most one record where `is_featured = true` and `status = 'published'`. The database enforces this with a partial unique index. Public and admin queries use `is_featured desc`, `sort_order asc`, and `created_at asc` for deterministic ordering. Featured placement remains an owner-controlled decision; no new case-study write policy is introduced here.
+There may be at most one record where `is_featured = true` and `status = 'published'`. The database retains that historical compatibility constraint. As of Work CMS Update v1 Task 2, public placement no longer reads `is_featured`: the Owner-controlled `sort_order` is authoritative, with `created_at` and `slug` as deterministic tie-breakers, and the first visible Published record receives the existing featured-card presentation.
 
 ## Staging verification
 

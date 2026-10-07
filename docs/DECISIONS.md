@@ -651,3 +651,59 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Keep the public homepage dynamically server-rendered, including its per-request CSP nonce, while persisting only its anonymous published Supabase reads in the Next.js Data Cache. One homepage tag covers the Home PageDocument, referenced published Services, site and design settings, and primary/footer navigation. Successful Home publication or restore, referenced Service publication, site/design settings publication, and navigation publication synchronously expire that tag from their existing Server Actions; the next public request blocks for fresh published data.
 - **Reason:** Production evidence showed variable document latency from repeating the complete CMS dependency chain on every `/` request. A tagged data boundary removes that latency without caching authenticated state, drafts, previews, or the rendered response, and without introducing an application-wide cache rewrite.
 - **Consequence:** Draft and Review saves remain private and do not enter cached public data. Metadata and body share the same cached published Home document. Publication must continue through the application Server Actions so the explicit invalidation contract runs; direct out-of-band database writes are not a supported editorial path.
+
+## ADR-089 - Unpublish Upcoming Work through the existing revision boundary
+
+- **Date:** 2026-10-07
+- **Status:** Implemented for Task 1 protected review
+- **Decision:** Keep Upcoming as `case_studies.project_type = 'upcoming'` and add one Owner-only `cms_unpublish_upcoming_case_study(uuid)` RPC. The RPC retains or creates a Review revision, transitions only an effectively Published Upcoming base row to Review, and clears `published_at` through the existing publication guard. Configured public Work reads explicitly require effective publication and fail closed on query errors or zero rows; only a truly unconfigured local environment keeps the static developer fallback.
+- **Reason:** Upcoming already uses the Work Library and generic revision publisher. A narrow recoverable transition supplies the missing publication control without a second content type, workflow, status, table, direct-write grant, or RLS change, while fail-closed reads ensure an unpublish cannot be masked by hardcoded public Work.
+- **Consequence:** Owners can republish the preserved Review revision through `cms_publish_revision`; Editors cannot publish or unpublish. Anonymous Work list, detail, sitemap, relationships, and media authority continue to derive from the existing Published-only database boundary. Client visibility remains a separate anonymization control, and manual Work ordering remains deferred to Task 2.
+
+## ADR-090 - Use the staging Shared Session Pooler for migration transport
+
+- **Date:** 2026-10-07
+- **Status:** Implemented for staging recovery review; Production unchanged
+- **Decision:** Keep Supabase project linking and the exact `crimson-staging` identity guard, but construct one masked Shared Session Pooler URL at runtime and pass it with `--db-url` to staging migration status, dry-run, and apply commands. Percent-encode the protected database password before URL construction and mask the raw password, encoded password, and complete URL before database commands run.
+- **Reason:** The linked Supabase project was correct, but `supabase migration list --linked` selected a direct IPv6 database route unavailable to the GitHub-hosted runner. The existing clean-staging verifier and parity query already prove the approved project-qualified session pooler path is IPv4-reachable.
+- **Consequence:** Staging migration semantics, branch/target gates, canonical ordering, and post-apply parity remain unchanged; only database transport moves to the established pooler path. No application, schema, credential, Production project, or Production workflow behavior changes.
+
+## ADR-091 - Align non-public Case Study base state through a dedicated revision boundary
+
+- **Date:** 2026-10-07
+- **Status:** Proposed for Task 1 staging blocker repair
+- **Decision:** Route Case Study revision writes through `cms_save_case_study_revision(uuid, text, jsonb)`. The helper reuses `cms_save_revision` for payload merge and revision history, then aligns only a non-public Draft/Review base row with the requested private state. A Published base row remains Published while a private replacement revision is prepared. Keep `cms_prepare_case_study_publication` and `cms_publish_revision` unchanged and authoritative.
+- **Reason:** A newly created Case Study could hold a legitimate Review revision while its base row remained Draft, causing the existing trigger to reject Owner publication. The mismatch is Case Study-specific; weakening Draft-to-Published protection or changing the shared revision semantics would broaden the repair unnecessarily.
+- **Consequence:** Newly created Case Studies and Upcoming Work genuinely reach Review before Owner publication, while arbitrary Draft-to-Published writes remain rejected. Editors retain Draft/Review preparation only, public RLS remains Published-only, direct authenticated writes remain revoked, audit/revision history remains active, and Published-to-private-revision republishing plus Task 1 Unpublish remain compatible.
+
+## ADR-092 - Render the public sitemap from the current publication boundary
+
+- **Date:** 2026-10-07
+- **Status:** Proposed for Task 1 staging acceptance repair
+- **Decision:** Render `/sitemap.xml` dynamically from the existing Published-only public loaders. Keep publish and unpublish path invalidation calls as explicit editorial intent, but do not rely on static metadata-route regeneration for Work publication privacy.
+- **Reason:** Staging proved that `/work` and Work detail routes reflected an Upcoming unpublish while the statically prerendered sitemap continued exposing its route. A live Published-only read is the narrowest reliable way to keep sitemap visibility synchronized with the same database authority.
+- **Consequence:** Sitemap requests perform the existing anonymous Published-only reads and immediately follow Publish/Unpublish state. No RLS, CMS workflow, public content, route shape, Production configuration, or Task 2 behavior changes.
+
+## ADR-093 - Make the complete Work Library order authoritative
+
+- **Date:** 2026-10-07
+- **Status:** Proposed for Task 2 protected review
+- **Decision:** Use the existing `case_studies.sort_order` as the sole manual Work-order authority. An Owner-only `cms_reorder_case_studies(uuid[])` RPC validates and locks the complete current Work Library, rejects incomplete or malformed lists, writes dense positions atomically, and synchronizes only active Draft/Review revision payloads. A transaction-local trigger context permits only `sort_order` changes on Published rows. Public Work reads order by `sort_order`, then `created_at`, then `slug`; the first visible Published record receives the existing featured-card layout.
+- **Reason:** Reordering must work across Draft, Review, Published, and Archived records without letting client input write arbitrary positions, weakening published-content protection, or allowing a private revision to restore stale placement on a later publish.
+- **Consequence:** Owners get adjacent Move up/Move down controls with safe boundaries and shared pending-state locking; Editors and Reviewers cannot reorder. `is_featured` remains stored for compatibility but no longer controls public placement. Existing publication, CTA, preview, audit, RLS, and direct-write boundaries remain intact; no new table, column, role, or dependency is introduced.
+
+## ADR-094 - Retire one-time Production ledger adoption from ordinary releases
+
+- **Date:** 2026-10-07
+- **Status:** Proposed for staging review in the Production release-pipeline safety gate
+- **Decision:** Remove the unconditional Production `supabase migration repair` loop for migrations 1–32 from `.github/workflows/supabase-release.yml`. Require exact Management API project identity, a masked Shared Session Pooler URL, and a duplicate-free canonical-prefix ledger preflight before status and dry-run. Keep Production application manual, `main`-only, and forward-only; after an authorized apply, require exact canonical ledger parity. Unexpected ledger drift fails for a separate explicit reconciliation decision.
+- **Reason:** PR #97 added the repair loop as a one-time absent-ledger bridge before guarded migration #33. Production Readiness Gate 1 subsequently proved through the real `production-supabase` Environment that Production has all 48 current-`main` versions exactly, with zero duplicates or unexpected versions, and that the representative catalog baseline agrees. Repeating the obsolete repair made push-to-`main` and `apply=false` mutate the ledger and could silently normalize future drift.
+- **Consequence:** Pushes to `main` continue to validate and plan but never apply. Only an explicit `workflow_dispatch` from `main` with target `production`, `apply=true`, and the Production Environment gate may apply pending canonical migrations. The staging identity, pooler, dry-run, automatic staging apply, and parity path remain unchanged. No Production command is executed by this decision, and any future ledger reconciliation requires its own evidence and authorization.
+
+## ADR-095 - Preserve legacy Work order while duplicate positions are normalized
+
+- **Date:** 2026-10-07
+- **Status:** Proposed for compatibility-patch staging review
+- **Decision:** While an environment's effectively Published Work contains duplicate `sort_order` values, public Work and the Work Library preserve the former presentation rule (`is_featured` first, then `sort_order`, `created_at`, and `slug`). Once Published positions are unique, both use the canonical manual rule (`sort_order`, `created_at`, and `slug`). A forward migration independently detects duplicate current Work positions in each environment, derives that environment's own legacy order, writes dense positions, and aligns only active Draft/Review revision payloads.
+- **Reason:** Production predates manual ordering and contains a legitimate duplicate position whose featured flag preserves the approved public sequence. Applying the manual-order migration alone would change that sequence before an Owner intentionally reorders it. The transitional read rule prevents deployment drift, and the data migration converts only the local environment without copying staging content or metadata.
+- **Consequence:** Already-normalized staging data is a migration no-op. Legacy Production keeps the same public sequence before and after normalization, after which `sort_order` is again the sole authority. Content, status, media, relationships, featured flags, historical revisions, RLS, grants, and final trigger state remain unchanged; normal audit and timestamp triggers continue to record the position rewrite.
