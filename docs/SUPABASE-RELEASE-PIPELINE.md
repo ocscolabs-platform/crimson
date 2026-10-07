@@ -52,6 +52,12 @@ To apply Production migrations, the owner must manually dispatch `Apply versione
 
 Merging `staging` into `main` therefore does **not** automatically modify Production Supabase. Production database changes require the explicit approval gate.
 
+### Read-only Production readiness verifier
+
+`.github/workflows/verify-production-supabase-readonly.yml` is a separate, manually dispatched readiness verifier that must run from `staging` through the protected `production-supabase` GitHub Environment. It authenticates the environment-scoped Supabase token with a read-only Management API request, confirms the exact Production project identity, and uses explicit read-only PostgreSQL transactions to verify connectivity, current-`main` migration-ledger parity, the three expected staging-only Work CMS migrations, and the pre-promotion catalog baseline.
+
+The verifier cannot repair or apply migrations. It contains no `supabase link`, `supabase migration repair`, `supabase db push`, SQL DDL, or SQL DML. A failed assertion exits without remediation. The historical ledger-adoption behavior in `supabase-release.yml` remains a separate release-time concern and must be reviewed explicitly before a future Production migration apply.
+
 ## Parity verification
 
 Run the read-only contract in `supabase/verification/release-contract.sql` against each project and compare the result. It covers:
