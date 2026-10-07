@@ -199,9 +199,8 @@ async function uploadCaseStudyMedia(slug: string, kind: "featured" | "supporting
       media_status: "pending",
       media_reviewed_at: null,
     };
-  const { error: updateError } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error: updateError } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: "review",
     p_payload: update,
   });
@@ -240,9 +239,8 @@ async function approveCaseStudyMedia(slug: string) {
     media_type: "image" as const,
     approval: "approved" as const,
   }));
-  const { error: updateError } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error: updateError } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: "review",
     p_payload: {
     supporting_media: approvedSupportingMedia,
@@ -303,9 +301,8 @@ async function removeCaseStudyMedia(slug: string, kind: "featured" | "supporting
     };
   }
 
-  const { error: updateError } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error: updateError } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: "review",
     p_payload: update,
   });
@@ -345,9 +342,8 @@ async function saveCaseStudyRelationships(slug: string, formData: FormData) {
   const serviceIds = [...new Set(formData.getAll("service_ids")
     .map((value) => String(value).trim())
     .filter((value) => /^[0-9a-f-]{36}$/i.test(value)))];
-  const { error: relationshipError } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error: relationshipError } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: "review",
     p_payload: { service_ids: serviceIds },
   });
@@ -403,9 +399,8 @@ async function saveCaseStudy(slug: string, formData: FormData) {
     redirect("/crimson-admin-control/case-studies/" + slug + "?error=Client visibility must be Hidden or Approved.");
   }
 
-  const { error } = await supabase.rpc("cms_save_revision", {
-    p_entity_type: "case_study",
-    p_entity_key: current.id,
+  const { error } = await supabase.rpc("cms_save_case_study_revision", {
+    p_case_study_id: current.id,
     p_status: requestedStatus,
     p_payload: {
       project_name: projectName,

@@ -60,7 +60,7 @@ test("created row uses existing safe defaults and audit trigger", () => {
   assert.match(presentation, /is_featured boolean not null default false/);
   assert.match(media, /media_status text not null default 'pending'/);
   assert.match(migration, /return query select created_case_study_id, candidate_slug/);
-  assert.match(editor, /cms_save_revision/);
+  assert.match(editor, /cms_save_case_study_revision/);
   assert.match(editor, /cms_publish_revision/);
 });
 
