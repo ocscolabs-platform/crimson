@@ -54,8 +54,8 @@ test("Production verifier requires exact ledger and catalog baselines", () => {
   assert.match(verifier, /mutation=NONE/);
 });
 
-test("historical Production release behavior remains separate and unchanged", () => {
-  assert.match(releaseWorkflow, /Adopt the absent Production migration ledger/);
-  assert.match(releaseWorkflow, /supabase migration repair/);
+test("Production verifier remains separate from the forward-only release path", () => {
+  assert.doesNotMatch(releaseWorkflow, /Adopt the absent Production migration ledger/);
+  assert.doesNotMatch(releaseWorkflow, /supabase migration repair/);
   assert.doesNotMatch(verifier, /Adopt the absent Production migration ledger/);
 });

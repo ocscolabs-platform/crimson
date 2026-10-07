@@ -46,17 +46,19 @@ The staging environment must provide only owner-managed GitHub Environment confi
 
 ## Production
 
-On a push to `main`, the workflow validates the same repository state and performs a read-only Production migration plan. It does not apply a migration automatically.
+On a push to `main`, the workflow validates the same repository state and performs a non-mutating Production migration plan. It authenticates through the protected `production-supabase` Environment, confirms the exact `ocscolabs-platform-website-crm` project through the Management API, retains project linking, constructs and masks the Shared Session Pooler URL, and requires the existing Production ledger to be an exact duplicate-free prefix of canonical Git history before showing status or running `supabase db push --dry-run`. Unexpected remote versions, duplicate versions, gaps, or a missing ledger fail closed for separate reconciliation; ordinary release automation never repairs or adopts migration history.
 
-To apply Production migrations, the owner must manually dispatch `Apply versioned Supabase migrations`, select `production`, set `apply` to `true`, and approve the protected `production-supabase` Environment. The workflow then links the Production project, prints migration status, performs a dry run, and applies the same canonical files that passed in staging.
+To apply Production migrations, the owner must manually dispatch `Apply versioned Supabase migrations` from `main`, select `production`, set `apply` to `true`, and approve the protected `production-supabase` Environment. The workflow repeats the same identity, canonical-prefix, status, and dry-run gates, applies only pending forward migrations through the masked pooler URL, then requires exact repository/Production ledger parity with zero duplicates and zero pending versions.
 
 Merging `staging` into `main` therefore does **not** automatically modify Production Supabase. Production database changes require the explicit approval gate.
+
+The historical one-time `supabase migration repair` loop for versions 1–32 was removed after Production Readiness Gate 1 proved that the Production ledger exists and exactly matches all 48 current-`main` versions. That legacy adoption served PR #97's absent-ledger recovery before migration #33; repeating it in normal releases would make `apply=false` mutating and could conceal future drift. Any future ledger reconciliation requires separate evidence and explicit authorization.
 
 ### Read-only Production readiness verifier
 
 `.github/workflows/verify-production-supabase-readonly.yml` is a separate, manually dispatched readiness verifier that must run from `staging` through the protected `production-supabase` GitHub Environment. It authenticates the environment-scoped Supabase token with a read-only Management API request, confirms the exact Production project identity, and uses explicit read-only PostgreSQL transactions to verify connectivity, current-`main` migration-ledger parity, the three expected staging-only Work CMS migrations, and the pre-promotion catalog baseline.
 
-The verifier cannot repair or apply migrations. It contains no `supabase link`, `supabase migration repair`, `supabase db push`, SQL DDL, or SQL DML. A failed assertion exits without remediation. The historical ledger-adoption behavior in `supabase-release.yml` remains a separate release-time concern and must be reviewed explicitly before a future Production migration apply.
+The verifier cannot repair or apply migrations. It contains no `supabase link`, `supabase migration repair`, `supabase db push`, SQL DDL, or SQL DML. A failed assertion exits without remediation. The ordinary release workflow is likewise forward-only: it plans without mutation unless an owner explicitly dispatches `apply=true` from `main`, and it fails rather than normalizing unexpected ledger drift.
 
 ## Parity verification
 

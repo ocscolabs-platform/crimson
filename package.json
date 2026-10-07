@@ -63,6 +63,7 @@
     "test:batch4e3:page-route-title-control": "node --test scripts/test-batch-4e3-page-route-title-control.mjs",
     "test:phase6:owner-published-edit": "node scripts/test-phase6-owner-published-edit.mjs",
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
+    "test:production:migration-safety": "node --test scripts/test-production-supabase-release-safety.mjs",
     "test:production-supabase-readonly": "node --test scripts/test-production-supabase-readonly-verifier.mjs",
     "test:phase6:migration33": "node --test scripts/test-phase6-migration33.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
