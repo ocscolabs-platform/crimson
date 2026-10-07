@@ -70,10 +70,23 @@ test("featured status and actions are type-aware without weakening privacy gatin
   assert.match(workPage, /project\.href && project\.status !== "Upcoming"/);
 });
 
-test("featured real media reuses the established twelve-pixel Work radius and clips cleanly", () => {
-  assert.match(globalStyles, /\.work-featured > \.work-card-media-preview \{ border-radius: 12px; \}/);
+test("featured real media reuses the established Work border and radius and clips cleanly", () => {
+  assert.match(globalStyles, /\.work-featured > \.work-card-media-preview \{ border: 1px solid var\(--border\); border-radius: 12px; \}/);
   assert.match(globalStyles, /\.work-card-media-preview \{[^}]*overflow: hidden;/);
   assert.match(globalStyles, /\.media-placeholder \{[^}]*border-radius: 12px;[^}]*overflow: hidden;/);
+});
+
+test("Work Library rows separate readable metadata from compact responsive ordering controls", () => {
+  assert.match(globalStyles, /\.admin-record-list \.admin-work-record \{[^}]*align-items: center;[^}]*flex-wrap: wrap;/);
+  assert.match(globalStyles, /\.admin-work-record-main \{[^}]*flex: 1 1 240px;[^}]*min-width: 0;[^}]*gap: 7px;/);
+  assert.match(globalStyles, /\.admin-work-record-main a \{[^}]*line-height: 1\.35;[^}]*overflow-wrap: anywhere;/);
+  assert.match(globalStyles, /\.admin-work-record-main small \{[^}]*line-height: 1\.45;[^}]*overflow-wrap: anywhere;/);
+  assert.match(globalStyles, /\.admin-work-record form \{[^}]*flex: 0 0 82px;[^}]*margin-left: auto;/);
+  assert.match(globalStyles, /\.admin-work-order-controls \{[^}]*grid-template-columns: 1fr;[^}]*gap: 6px;[^}]*width: 100%;/);
+  assert.match(globalStyles, /\.admin-work-order-controls \.admin-order-button \{[^}]*min-height: 32px;[^}]*padding: 6px 9px;[^}]*font-size: \.66rem;/);
+  assert.match(globalStyles, /@media \(max-width: 560px\)[\s\S]*?\.admin-work-order-controls \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/);
+  assert.match(adminPage, /<small>\{caseStudy\.project_type\} · \{caseStudy\.status\} · \{caseStudy\.slug\}<\/small>/);
+  assert.match(adminPage, /<WorkOrderControls[\s\S]*?canMoveUp=\{index > 0\}[\s\S]*?canMoveDown=\{index < content\.caseStudies\.length - 1\}/);
 });
 
 test("configured public Work loading is explicit and fails closed", () => {
