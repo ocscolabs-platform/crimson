@@ -30,6 +30,18 @@ The editor displays but does not mutate featured placement, media paths, media a
 - Existing audit triggers record every successful update.
 - The media trigger and featured-project unique index remain active.
 
+## Draft and Review base-state alignment
+
+Case Study revision writes use the Case Study-specific
+`cms_save_case_study_revision(uuid, text, jsonb)` boundary. For a never-published
+record, the base `case_studies.status` follows its private Draft or Review
+revision so the existing publication trigger can prove the record legitimately
+entered Review. For an already Published record, the base row remains Published
+while a new private Draft/Review revision is prepared, preserving the current
+public version until the Owner publishes the replacement. The helper delegates
+payload merging and revision history to `cms_save_revision`; it does not weaken
+the Owner-only publisher, grant direct table writes, or set `published_at`.
+
 ## Save feedback behavior
 
 - All admin write actions use the shared submission feedback pattern; the save action disables immediately while the request is in flight.
