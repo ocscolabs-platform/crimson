@@ -7,6 +7,8 @@ on:
       - "supabase/**"
       - ".github/workflows/supabase-release.yml"
       - "scripts/validate-migrations.mjs"
+      - "scripts/verify-supabase-catalog-contract.mjs"
+      - "scripts/test-supabase-catalog-contract.mjs"
       - "scripts/test-staging-supabase-migration-auto-apply.mjs"
       - "scripts/test-production-supabase-release-safety.mjs"
       - "package.json"
@@ -52,6 +54,9 @@ jobs:
 
       - name: Validate migration history
         run: npm run validate:migrations
+
+      - name: Test shared Supabase catalog contract
+        run: npm run test:supabase-catalog
 
       - name: Production build
         run: npm run build
@@ -239,6 +244,10 @@ jobs:
           fi
           echo "Staging migration parity verified: ${remote_count}/${local_count}; latest=${latest_version}; duplicates=0; pending=0."
 
+      - name: Verify staging catalog contract
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging' && inputs.target == 'staging' && inputs.apply == true) }}
+        run: SUPABASE_DB_URL="$STAGING_POOLER_DB_URL" SUPABASE_ENVIRONMENT=staging node scripts/verify-supabase-catalog-contract.mjs
+
   production:
     needs: validate
     if: >-
@@ -403,7 +412,20 @@ jobs:
 
           comm -13 "$production_versions_file" "$local_versions_file" > "$pending_versions_file"
           pending_count="$(wc -l < "$pending_versions_file" | tr -d '[:space:]')"
+          printf 'PRODUCTION_PENDING_COUNT=%s\n' "$pending_count" >> "$GITHUB_ENV"
           echo "Production ledger preflight passed: canonical=${local_count}; applied=${production_count}; pending=${pending_count}; duplicates=0; unexpected=0."
+
+      - name: Verify current Production catalog precondition
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$PRODUCTION_PENDING_COUNT" == "0" ]]; then
+            SUPABASE_DB_URL="$PRODUCTION_POOLER_DB_URL" \
+              SUPABASE_ENVIRONMENT=production-precondition \
+              node scripts/verify-supabase-catalog-contract.mjs
+          else
+            echo "Full-current catalog precondition deferred until the pending canonical migrations are applied."
+          fi
 
       - name: Show Production migration status
         run: supabase migration list --db-url "$PRODUCTION_POOLER_DB_URL"
@@ -449,3 +471,7 @@ jobs:
           local_count="$(wc -l < "$local_versions_file" | tr -d '[:space:]')"
           production_count="$(wc -l < "$production_versions_file" | tr -d '[:space:]')"
           echo "Production migration parity verified: ${production_count}/${local_count}; duplicates=0; pending=0."
+
+      - name: Verify Production catalog contract after apply
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.target == 'production' && inputs.apply == true }}
+        run: SUPABASE_DB_URL="$PRODUCTION_POOLER_DB_URL" SUPABASE_ENVIRONMENT=production-post-apply node scripts/verify-supabase-catalog-contract.mjs

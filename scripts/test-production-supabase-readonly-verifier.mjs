@@ -10,12 +10,17 @@ const releaseWorkflow = (await readFile(
   new URL("../.github/workflows/supabase-release.yml", import.meta.url),
   "utf8",
 )).replaceAll("\r\n", "\n");
+const catalogVerifier = (await readFile(
+  new URL("./verify-supabase-catalog-contract.mjs", import.meta.url),
+  "utf8",
+)).replaceAll("\r\n", "\n");
 
 test("Production verifier is manual, environment-scoped, and least-privileged", () => {
   assert.match(verifier, /on:\n  workflow_dispatch:/);
   assert.doesNotMatch(verifier, /\n  push:/);
   assert.match(verifier, /permissions:\n  contents: read/);
   assert.match(verifier, /environment: production-supabase/);
+  assert.match(verifier, /ref: staging/);
   assert.match(verifier, /SUPABASE_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/);
   assert.match(verifier, /SUPABASE_DB_PASSWORD: \$\{\{ secrets\.SUPABASE_DB_PASSWORD \}\}/);
   assert.match(verifier, /SUPABASE_PROJECT_REF: \$\{\{ vars\.SUPABASE_PROJECT_REF \}\}/);
@@ -31,31 +36,32 @@ test("Production verifier proves token auth and exact project identity read-only
   assert.doesNotMatch(verifier, /supabase projects create|POST|PATCH|PUT|DELETE/);
 });
 
-test("Production verifier masks its connection and uses only read-only SQL", () => {
+test("Production verifier derives ledger parity from the checked-out repository", () => {
+  assert.match(verifier, /find supabase\/migrations/);
+  assert.match(verifier, /supabase_migrations\.schema_migrations/);
+  assert.match(verifier, /diff -u "\$canonical_versions_file" "\$production_versions_file"/);
+  assert.doesNotMatch(verifier, /EXPECTED_(?:MAIN|STAGING)_MIGRATION_COUNT/);
+  assert.doesNotMatch(verifier, /20261007000000|20261007010000|20261007020000/);
+  assert.doesNotMatch(verifier, /expected staging delta|pre-promotion state/i);
+});
+
+test("Production verifier masks transport and invokes the shared read-only catalog contract", () => {
   assert.match(verifier, /::add-mask::\$SUPABASE_DB_PASSWORD/);
   assert.match(verifier, /::add-mask::\$encoded_db_password/);
   assert.match(verifier, /::add-mask::\$pooler_db_url/);
-  assert.match(verifier, /postgresql:\/\/postgres\.\$\{SUPABASE_PROJECT_REF\}:\$encoded_db_password@\$PGHOST:\$PGPORT\/\$PGDATABASE\?sslmode=\$PGSSLMODE/);
-  assert.ok((verifier.match(/set transaction read only;/g) ?? []).length >= 4);
+  assert.ok((verifier.match(/set transaction read only;/g) ?? []).length >= 2);
+  assert.match(verifier, /node scripts\/verify-supabase-catalog-contract\.mjs/);
+  assert.match(catalogVerifier, /set transaction read only;/);
   assert.doesNotMatch(verifier, /supabase\s+(?:migration repair|db push|migration up)/i);
   assert.doesNotMatch(verifier, /^\s*(?:insert|update|delete|alter|create|drop|truncate)\b/im);
 });
 
-test("Production verifier requires exact ledger and catalog baselines", () => {
-  assert.match(verifier, /EXPECTED_MAIN_MIGRATION_COUNT: "48"/);
-  assert.match(verifier, /EXPECTED_STAGING_MIGRATION_COUNT: "51"/);
-  assert.match(verifier, /20261007000000/);
-  assert.match(verifier, /20261007010000/);
-  assert.match(verifier, /20261007020000/);
-  assert.match(verifier, /diff -u "\$main_versions_file" "\$production_versions_file"/);
-  assert.match(verifier, /cms_unpublish_upcoming_case_study\(uuid\)/);
-  assert.match(verifier, /cms_save_case_study_revision\(uuid,text,jsonb\)/);
-  assert.match(verifier, /cms_reorder_case_studies\(uuid\[\]\)/);
-  assert.match(verifier, /mutation=NONE/);
-});
-
-test("Production verifier remains separate from the forward-only release path", () => {
-  assert.doesNotMatch(releaseWorkflow, /Adopt the absent Production migration ledger/);
+test("release workflow keeps ledger and shared catalog checks separate", () => {
+  assert.match(releaseWorkflow, /name: Verify staging migration parity/);
+  assert.match(releaseWorkflow, /name: Verify staging catalog contract/);
+  assert.match(releaseWorkflow, /name: Verify Production ledger is a canonical prefix/);
+  assert.match(releaseWorkflow, /name: Verify current Production catalog precondition/);
+  assert.match(releaseWorkflow, /name: Verify Production migration parity/);
+  assert.match(releaseWorkflow, /name: Verify Production catalog contract after apply/);
   assert.doesNotMatch(releaseWorkflow, /supabase migration repair/);
-  assert.doesNotMatch(verifier, /Adopt the absent Production migration ledger/);
 });

@@ -12,6 +12,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "validate:migrations": "node scripts/validate-migrations.mjs",
+    "verify:supabase-catalog": "node scripts/verify-supabase-catalog-contract.mjs",
+    "test:supabase-catalog": "node --test scripts/test-supabase-catalog-contract.mjs",
     "test:phase5b:authority": "node --test scripts/test-phase5b-public-authority.mjs",
     "test:phase5a:application": "node --test scripts/test-phase5a-application-workflow.mjs",
     "test:phase5b:wpa:batch3b:publish": "node --test scripts/test-phase5b-wpa-batch3b-publish.mjs",
