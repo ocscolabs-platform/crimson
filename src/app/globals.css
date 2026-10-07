@@ -777,6 +777,7 @@ a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
   .admin-record-panel { padding: 22px; }
   .admin-record-list li { align-items: start; flex-direction: column; gap: 6px; }
   .admin-work-record { gap: 14px !important; }
+  .admin-work-record-main { flex: none; width: 100%; }
   .admin-work-record form { margin-left: 0; }
   .admin-work-record form, .admin-work-order-controls { width: 100%; }
   .admin-work-order-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }

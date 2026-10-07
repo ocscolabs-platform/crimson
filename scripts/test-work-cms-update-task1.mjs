@@ -84,6 +84,7 @@ test("Work Library rows separate readable metadata from compact responsive order
   assert.match(globalStyles, /\.admin-work-record form \{[^}]*flex: 0 0 82px;[^}]*margin-left: auto;/);
   assert.match(globalStyles, /\.admin-work-order-controls \{[^}]*grid-template-columns: 1fr;[^}]*gap: 6px;[^}]*width: 100%;/);
   assert.match(globalStyles, /\.admin-work-order-controls \.admin-order-button \{[^}]*min-height: 32px;[^}]*padding: 6px 9px;[^}]*font-size: \.66rem;/);
+  assert.match(globalStyles, /@media \(max-width: 560px\)[\s\S]*?\.admin-work-record-main \{ flex: none; width: 100%; \}/);
   assert.match(globalStyles, /@media \(max-width: 560px\)[\s\S]*?\.admin-work-order-controls \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/);
   assert.match(adminPage, /<small>\{caseStudy\.project_type\} · \{caseStudy\.status\} · \{caseStudy\.slug\}<\/small>/);
   assert.match(adminPage, /<WorkOrderControls[\s\S]*?canMoveUp=\{index > 0\}[\s\S]*?canMoveDown=\{index < content\.caseStudies\.length - 1\}/);
