@@ -28,13 +28,13 @@ test("Work detail retains related-Service loading", async () => {
   assert.match(loader, /from\("services"\)/);
 });
 
-test("approved media uses one safe batch signing path", async () => {
+test("approved media uses the established anonymous Work media proxy", async () => {
   const loader = await source("src/lib/cms-content.ts");
 
-  assert.match(loader, /createSignedUrls\(uniquePaths, 3600\)/);
-  assert.doesNotMatch(loader, /createSignedUrl\(/);
-  assert.match(loader, /item\.path && item\.signedUrl && !item\.error/);
-  assert.match(loader, /const mediaUrls = await createPublicMediaUrls\(client, mediaPaths\)/);
+  assert.match(loader, /function createPublicMediaUrls\(paths: string\[\]\)/);
+  assert.match(loader, /`\/api\/work-media\/\$\{path\.split\("\/"\)\.map\(encodeURIComponent\)\.join\("\/"\)\}`/);
+  assert.doesNotMatch(loader, /createSignedUrls?\(/);
+  assert.match(loader, /const mediaUrls = createPublicMediaUrls\(mediaPaths\)/);
   assert.match(loader, /mediaItems\.flatMap/);
 });
 

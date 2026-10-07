@@ -120,7 +120,7 @@ export default async function AdminDashboardPage() {
                     <h2>Case studies</h2>
                   </div>
                   <div className="admin-panel-heading-actions admin-work-panel-heading-actions">
-                    <span>{content.caseStudies.length} published</span>
+                    <span>{content.caseStudies.length} records</span>
                     <div className="admin-panel-utility-actions">
                       {membership.role === "owner" || membership.role === "editor" ? <Link className="admin-panel-link" href="/crimson-admin-control/case-studies/new">+ New</Link> : null}
                       {content.caseStudies[0] ? <Link className="admin-panel-link" href={`/crimson-admin-control/case-studies/${content.caseStudies[0].slug}`}>Open review panel ↗</Link> : null}
@@ -129,7 +129,7 @@ export default async function AdminDashboardPage() {
                 </div>
                 <ul className="admin-record-list">
                   {content.caseStudies.map((caseStudy) => (
-                    <li key={caseStudy.slug}><Link href={`/crimson-admin-control/case-studies/${caseStudy.slug}`}>{caseStudy.project_name}</Link><small>{caseStudy.status} · {caseStudy.slug}</small></li>
+                    <li key={caseStudy.slug}><Link href={`/crimson-admin-control/case-studies/${caseStudy.slug}`}>{caseStudy.project_name}</Link><small>{caseStudy.project_type} · {caseStudy.status} · {caseStudy.slug}</small></li>
                   ))}
                 </ul>
               </div>

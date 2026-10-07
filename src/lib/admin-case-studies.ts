@@ -42,6 +42,9 @@ export type AdminCaseStudyReview = {
   media_reviewed_at: string | null;
   featured_image_url: string | null;
   status: "draft" | "review" | "published" | "archived";
+  publication_status: "draft" | "review" | "published" | "archived";
+  publication_project_type: "case-study" | "prototype" | "upcoming";
+  publication_published_at: string | null;
   revision_id?: string | null;
   revision_status?: "draft" | "review" | null;
   published_at: string | null;
@@ -181,6 +184,9 @@ export async function getAdminCaseStudyReview(slug: string, auditPage = 1, audit
 
   return {
     ...data,
+    publication_status: baseData.status,
+    publication_project_type: baseData.project_type,
+    publication_published_at: baseData.published_at,
     revision_id: activeRevision?.id ?? null,
     revision_status: activeRevision?.status ?? null,
     featured_image_url: featuredImage.data?.signedUrl || null,

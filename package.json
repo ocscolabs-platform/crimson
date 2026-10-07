@@ -44,6 +44,7 @@
     "test:batch3a:case-study-create": "node --test scripts/test-batch-3a-case-study-create-rpc.mjs",
     "test:batch3b:case-study-create": "node --test scripts/test-batch-3b-case-study-create-ui.mjs",
     "test:batch3c1:case-study-preview": "node --test scripts/test-batch-3c1-case-study-preview.mjs",
+    "test:work-cms-update:task1": "node --test scripts/test-work-cms-update-task1.mjs",
     "test:batch4a1:design-settings": "node --experimental-strip-types --test scripts/test-batch-4a1-design-settings.mjs",
     "test:batch4a2:design-settings-runtime": "node --experimental-strip-types --test scripts/test-batch-4a2-design-settings-runtime.mjs",
     "test:batch4a4:admin-isolation": "node --experimental-strip-types --test scripts/test-batch-4a4-admin-isolation.mjs",
