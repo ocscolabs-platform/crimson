@@ -65,6 +65,7 @@ test("featured status and actions are type-aware without weakening privacy gatin
   assert.match(featuredCard, /featuredProject\.status === "Upcoming" \? \([\s\S]*?<strong>In preparation<\/strong>/);
   assert.match(featuredCard, /featuredProject\.status !== "Upcoming" && featuredProject\.href/);
   assert.match(featuredCard, /featuredProject\.clientVisibility === "hidden"/);
+  assert.match(featuredCard, /href=\{`\/work\/\$\{featuredProject\.slug\}`\}>View project/);
   assert.match(featuredCard, /href=\{featuredProject\.href\} target="_blank" rel="noreferrer"/);
   assert.match(workPage, /project\.href && project\.status !== "Upcoming"/);
 });

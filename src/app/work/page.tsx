@@ -88,15 +88,18 @@ export default async function WorkPage() {
                     <strong>In preparation</strong>
                   </div>
                 ) : null}
-                {featuredProject.status !== "Upcoming" && featuredProject.href ? (
-                  <a className="work-card-link" href={featuredProject.href} target="_blank" rel="noreferrer">
-                    {featuredProject.status === "Case study" ? "Visit Website" : "Open Prototype"} <span aria-hidden="true">↗</span>
-                  </a>
-                ) : featuredProject.clientVisibility === "hidden" ? (
-                  <span className="work-card-link work-card-link-muted">Project preview pending approval</span>
-                ) : (
-                  <Link className="work-card-link" href={`/work/${featuredProject.slug}`}>View project preview <span aria-hidden="true">↗</span></Link>
-                )}
+                <div className="work-card-actions">
+                  {featuredProject.clientVisibility === "hidden" ? (
+                    <span className="work-card-link work-card-link-muted">Project preview pending approval</span>
+                  ) : (
+                    <Link className="work-card-link" href={`/work/${featuredProject.slug}`}>View project <span aria-hidden="true">↗</span></Link>
+                  )}
+                  {featuredProject.status !== "Upcoming" && featuredProject.href ? (
+                    <a className="work-card-link work-card-link-secondary" href={featuredProject.href} target="_blank" rel="noreferrer">
+                      {featuredProject.status === "Case study" ? "Visit Website" : "Open Prototype"} <span aria-hidden="true">↗</span>
+                    </a>
+                  ) : null}
+                </div>
               </div>
             </div>
           </article> : null}
