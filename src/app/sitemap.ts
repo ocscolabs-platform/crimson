@@ -3,6 +3,8 @@ import { getPublishedInsightsArticles } from "@/lib/insights-data";
 import { getPublishedServices, getPublishedWorkProjects } from "@/lib/cms-content";
 import { getSiteOrigin } from "@/lib/site-origin";
 
+export const dynamic = "force-dynamic";
+
 const PLACEHOLDER_SERVICE_SLUGS = new Set([
   "branding",
   "website-design-development",
