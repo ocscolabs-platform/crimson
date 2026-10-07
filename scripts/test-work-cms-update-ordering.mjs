@@ -131,7 +131,7 @@ test("admin and public reads share deterministic manual ordering", () => {
 });
 
 test("existing CTA behavior and empty Work rendering remain intact", () => {
-  assert.match(workPage, /project\.status === "Case study" \? "Visit Website" : "Open prototype"/);
+  assert.match(workPage, /project\.status === "Case study" \? "Visit Website" : "Open Prototype"/);
   assert.match(workPage, /href=\{project\.href\} target="_blank" rel="noreferrer"/);
   assert.match(workPage, /\{featuredProject \? <article className="work-featured">/);
   assert.doesNotMatch(workPage, /No work|Coming soon|placeholder project/i);

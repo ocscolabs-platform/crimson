@@ -19,6 +19,7 @@ const [
   publisherMigration,
   sitemap,
   mediaRoute,
+  globalStyles,
 ] = await Promise.all([
   source("src/app/work/page.tsx"),
   source("src/lib/cms-content.ts"),
@@ -33,10 +34,13 @@ const [
   source("supabase/migrations/20260831110000_add_design_settings_storage_contract.sql"),
   source("src/app/sitemap.ts"),
   source("src/app/api/work-media/[...path]/route.ts"),
+  source("src/app/globals.css"),
 ]);
 
 test("Case Study external CTAs use the approved destination and exact Visit Website label", () => {
-  assert.match(workPage, /project\.status === "Case study" \? "Visit Website" : "Open prototype"/);
+  assert.match(workPage, /featuredProject\.status === "Case study" \? "Visit Website" : "Open Prototype"/);
+  assert.match(workPage, /href=\{featuredProject\.href\} target="_blank" rel="noreferrer"/);
+  assert.match(workPage, /project\.status === "Case study" \? "Visit Website" : "Open Prototype"/);
   assert.match(workPage, /href=\{project\.href\} target="_blank" rel="noreferrer"/);
   assert.match(publicLoader, /href: isApproved \? caseStudy\.external_url \|\| undefined : undefined/);
 
@@ -44,13 +48,31 @@ test("Case Study external CTAs use the approved destination and exact Visit Webs
   const featuredEnd = workPage.indexOf('<div className="work-library-heading">');
   const featuredCard = workPage.slice(featuredStart, featuredEnd);
   assert.ok(featuredStart >= 0 && featuredEnd > featuredStart);
-  assert.doesNotMatch(featuredCard, /project\.href|Visit Website|Open prototype/);
+  assert.match(featuredCard, /featuredProject\.status !== "Upcoming" && featuredProject\.href/);
 });
 
-test("Prototype external CTA copy and existing external-link behavior are preserved", () => {
-  assert.match(workPage, /"Open prototype"/);
-  assert.doesNotMatch(workPage, /Open Prototype/);
+test("Prototype external CTA copy and existing external-link behavior use the latest canonical label", () => {
+  assert.match(workPage, /"Open Prototype"/);
+  assert.doesNotMatch(workPage, /Open prototype/);
   assert.match(workPage, /href=\{project\.href\} target="_blank" rel="noreferrer"/);
+});
+
+test("featured status and actions are type-aware without weakening privacy gating", () => {
+  const featuredStart = workPage.indexOf('<article className="work-featured">');
+  const featuredEnd = workPage.indexOf('<div className="work-library-heading">');
+  const featuredCard = workPage.slice(featuredStart, featuredEnd);
+
+  assert.match(featuredCard, /featuredProject\.status === "Upcoming" \? \([\s\S]*?<strong>In preparation<\/strong>/);
+  assert.match(featuredCard, /featuredProject\.status !== "Upcoming" && featuredProject\.href/);
+  assert.match(featuredCard, /featuredProject\.clientVisibility === "hidden"/);
+  assert.match(featuredCard, /href=\{featuredProject\.href\} target="_blank" rel="noreferrer"/);
+  assert.match(workPage, /project\.href && project\.status !== "Upcoming"/);
+});
+
+test("featured real media reuses the established twelve-pixel Work radius and clips cleanly", () => {
+  assert.match(globalStyles, /\.work-featured > \.work-card-media-preview \{ border-radius: 12px; \}/);
+  assert.match(globalStyles, /\.work-card-media-preview \{[^}]*overflow: hidden;/);
+  assert.match(globalStyles, /\.media-placeholder \{[^}]*border-radius: 12px;[^}]*overflow: hidden;/);
 });
 
 test("configured public Work loading is explicit and fails closed", () => {
