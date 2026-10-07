@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { hasDuplicateWorkSortOrder, orderWorkRowsForCompatibility } from "@/lib/work-order-compatibility";
 
 export type AdminCollection = {
   label: string;
@@ -32,7 +33,7 @@ export async function getAdminContent(): Promise<AdminContent> {
       .order("created_at", { ascending: true }),
     supabase
       .from("case_studies")
-      .select("id, project_name, slug, project_type, status, sort_order, created_at")
+      .select("id, project_name, slug, project_type, status, sort_order, is_featured, published_at, created_at")
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true })
       .order("slug", { ascending: true }),
@@ -45,6 +46,18 @@ export async function getAdminContent(): Promise<AdminContent> {
   if (firstError) {
     throw new Error(firstError.message);
   }
+
+  const rawCaseStudies = caseStudies.data ?? [];
+  const now = new Date().toISOString();
+  const publishedCaseStudies = rawCaseStudies.filter((caseStudy) => (
+    caseStudy.status === "published"
+      && typeof caseStudy.published_at === "string"
+      && caseStudy.published_at <= now
+  ));
+  const orderedCaseStudies = orderWorkRowsForCompatibility(
+    rawCaseStudies,
+    hasDuplicateWorkSortOrder(publishedCaseStudies),
+  );
 
   return {
     collections: [
@@ -75,6 +88,6 @@ export async function getAdminContent(): Promise<AdminContent> {
       },
     ],
     services: (services.data ?? []) as AdminContent["services"],
-    caseStudies: (caseStudies.data ?? []) as AdminContent["caseStudies"],
+    caseStudies: orderedCaseStudies as AdminContent["caseStudies"],
   };
 }
