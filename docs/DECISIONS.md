@@ -675,3 +675,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Route Case Study revision writes through `cms_save_case_study_revision(uuid, text, jsonb)`. The helper reuses `cms_save_revision` for payload merge and revision history, then aligns only a non-public Draft/Review base row with the requested private state. A Published base row remains Published while a private replacement revision is prepared. Keep `cms_prepare_case_study_publication` and `cms_publish_revision` unchanged and authoritative.
 - **Reason:** A newly created Case Study could hold a legitimate Review revision while its base row remained Draft, causing the existing trigger to reject Owner publication. The mismatch is Case Study-specific; weakening Draft-to-Published protection or changing the shared revision semantics would broaden the repair unnecessarily.
 - **Consequence:** Newly created Case Studies and Upcoming Work genuinely reach Review before Owner publication, while arbitrary Draft-to-Published writes remain rejected. Editors retain Draft/Review preparation only, public RLS remains Published-only, direct authenticated writes remain revoked, audit/revision history remains active, and Published-to-private-revision republishing plus Task 1 Unpublish remain compatible.
+
+## ADR-092 - Render the public sitemap from the current publication boundary
+
+- **Date:** 2026-10-07
+- **Status:** Proposed for Task 1 staging acceptance repair
+- **Decision:** Render `/sitemap.xml` dynamically from the existing Published-only public loaders. Keep publish and unpublish path invalidation calls as explicit editorial intent, but do not rely on static metadata-route regeneration for Work publication privacy.
+- **Reason:** Staging proved that `/work` and Work detail routes reflected an Upcoming unpublish while the statically prerendered sitemap continued exposing its route. A live Published-only read is the narrowest reliable way to keep sitemap visibility synchronized with the same database authority.
+- **Consequence:** Sitemap requests perform the existing anonymous Published-only reads and immediately follow Publish/Unpublish state. No RLS, CMS workflow, public content, route shape, Production configuration, or Task 2 behavior changes.

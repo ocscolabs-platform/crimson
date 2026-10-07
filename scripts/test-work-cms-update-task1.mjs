@@ -103,6 +103,7 @@ test("RLS and revoked direct writes remain the public and authenticated boundari
   assert.match(directWriteLock, /revoke insert, update, delete on public\.case_studies from authenticated/);
   assert.doesNotMatch(migration, /grant (?:update|insert|delete|all) on public\.case_studies/);
   assert.match(sitemap, /getPublishedWorkProjects\(\{ includeRelatedCapabilities: false \}\)/);
+  assert.match(sitemap, /export const dynamic = "force-dynamic"/);
   assert.match(mediaRoute, /client\.storage\.from\(CASE_STUDY_MEDIA_BUCKET\)\.download\(objectPath\)/);
 });
 
