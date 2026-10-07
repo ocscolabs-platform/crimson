@@ -15,7 +15,7 @@ The current portfolio model supports one featured project plus a supporting grid
 | Identity | `project_name`, `slug`, `project_type`, `project_category` | Names and client identity need explicit approval. |
 | Narrative | `summary`, `challenge`, `approach`, `deliverables`, `outcomes` | Claims must be factual, evidence-based, and owner-reviewed. |
 | Public visibility | `client_visibility`, `status`, `published_at`, `last_reviewed_at` | These must work together; `published` alone must not imply client permission. |
-| Presentation | `is_featured`, `sort_order`, `external_url` | Featured ordering and outbound links need owner control. |
+| Presentation | `sort_order`, `is_featured`, `external_url` | `sort_order` is the Owner-controlled manual Work order. `is_featured` is retained for compatibility but is not a public placement authority. |
 | Media | `featured_image_path`, `featured_image_alt`, `supporting_media`, `media_status`, `media_reviewed_at` | Contract is defined; storage and upload workflow remain deferred. |
 | Relationships | `case_study_services` | Related services must be valid and publicly published. |
 

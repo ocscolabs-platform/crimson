@@ -68,7 +68,7 @@ test("configured public Work loading is explicit and fails closed", () => {
 });
 
 test("an empty public Work collection renders without fabricated cards or a crash", () => {
-  assert.match(workPage, /const supportingProjects = featuredProject\s*\?/);
+  assert.match(workPage, /const supportingProjects = workProjects\.slice\(1\)/);
   assert.match(workPage, /\{featuredProject \? <article className="work-featured">/);
   assert.doesNotMatch(workPage, /No work|Coming soon|placeholder project/i);
 });

@@ -10,10 +10,12 @@ export type AdminContent = {
   collections: AdminCollection[];
   services: Array<{ name: string; slug: string; status: string }>;
   caseStudies: Array<{
+    id: string;
     project_name: string;
     slug: string;
     project_type: "case-study" | "prototype" | "upcoming";
     status: string;
+    sort_order: number;
   }>;
 };
 
@@ -30,8 +32,10 @@ export async function getAdminContent(): Promise<AdminContent> {
       .order("created_at", { ascending: true }),
     supabase
       .from("case_studies")
-      .select("project_name, slug, project_type, status")
-      .order("sort_order", { ascending: true }),
+      .select("id, project_name, slug, project_type, status, sort_order, created_at")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true })
+      .order("slug", { ascending: true }),
   ]);
 
   const firstError = [settings, navigation, pages, services, caseStudies].find(

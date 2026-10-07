@@ -413,9 +413,9 @@ export async function getPublishedWorkProjects(options: { includeRelatedCapabili
     .eq("status", "published")
     .not("published_at", "is", null)
     .lte("published_at", new Date().toISOString())
-    .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .order("slug", { ascending: true });
 
   if (error) {
     console.error("[cms-content] Published Work query failed closed:", error.message);

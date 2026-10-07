@@ -683,3 +683,11 @@ Dates use the repository work date where a decision was made during Phase 0.
 - **Decision:** Render `/sitemap.xml` dynamically from the existing Published-only public loaders. Keep publish and unpublish path invalidation calls as explicit editorial intent, but do not rely on static metadata-route regeneration for Work publication privacy.
 - **Reason:** Staging proved that `/work` and Work detail routes reflected an Upcoming unpublish while the statically prerendered sitemap continued exposing its route. A live Published-only read is the narrowest reliable way to keep sitemap visibility synchronized with the same database authority.
 - **Consequence:** Sitemap requests perform the existing anonymous Published-only reads and immediately follow Publish/Unpublish state. No RLS, CMS workflow, public content, route shape, Production configuration, or Task 2 behavior changes.
+
+## ADR-093 - Make the complete Work Library order authoritative
+
+- **Date:** 2026-10-07
+- **Status:** Proposed for Task 2 protected review
+- **Decision:** Use the existing `case_studies.sort_order` as the sole manual Work-order authority. An Owner-only `cms_reorder_case_studies(uuid[])` RPC validates and locks the complete current Work Library, rejects incomplete or malformed lists, writes dense positions atomically, and synchronizes only active Draft/Review revision payloads. A transaction-local trigger context permits only `sort_order` changes on Published rows. Public Work reads order by `sort_order`, then `created_at`, then `slug`; the first visible Published record receives the existing featured-card layout.
+- **Reason:** Reordering must work across Draft, Review, Published, and Archived records without letting client input write arbitrary positions, weakening published-content protection, or allowing a private revision to restore stale placement on a later publish.
+- **Consequence:** Owners get adjacent Move up/Move down controls with safe boundaries and shared pending-state locking; Editors and Reviewers cannot reorder. `is_featured` remains stored for compatibility but no longer controls public placement. Existing publication, CTA, preview, audit, RLS, and direct-write boundaries remain intact; no new table, column, role, or dependency is introduced.

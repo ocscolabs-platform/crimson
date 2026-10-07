@@ -41,10 +41,8 @@ export default async function WorkPage() {
     getPublishedSiteChrome(),
     getPublishedPage("work"),
   ]);
-  const featuredProject = workProjects.find((project) => project.featured) ?? workProjects[0];
-  const supportingProjects = featuredProject
-    ? workProjects.filter((project) => project.slug !== featuredProject.slug)
-    : [];
+  const featuredProject = workProjects[0];
+  const supportingProjects = workProjects.slice(1);
 
   return (
     <RouteShell
