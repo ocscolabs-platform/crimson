@@ -10,6 +10,7 @@ import { workProjects as localWorkProjects, type WorkProject } from "@/lib/work-
 import { DEFAULT_OG_IMAGE_PATH } from "@/lib/og-assets";
 import { DEFAULT_DESIGN_SETTINGS_V1, normalizeDesignSettingsV1, type DesignSettingsV1 } from "@/lib/design-settings";
 import { PUBLIC_HOMEPAGE_CACHE_TAG } from "@/lib/public-homepage-cache";
+import { orderWorkRowsForCompatibility } from "@/lib/work-order-compatibility";
 
 export type SiteSettings = {
   siteName: string;
@@ -60,6 +61,7 @@ type PublishedCaseStudy = {
   featured_image_alt: string | null;
   supporting_media: unknown;
   media_status: "pending" | "approved" | "rejected";
+  created_at: string;
   updated_at: string;
 };
 
@@ -409,7 +411,7 @@ export async function getPublishedWorkProjects(options: { includeRelatedCapabili
 
   const { data, error } = await client
     .from("case_studies")
-    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status, updated_at")
+    .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status, created_at, updated_at")
     .eq("status", "published")
     .not("published_at", "is", null)
     .lte("published_at", new Date().toISOString())
@@ -426,7 +428,7 @@ export async function getPublishedWorkProjects(options: { includeRelatedCapabili
     return [];
   }
 
-  const caseStudies = data as PublishedCaseStudy[];
+  const caseStudies = orderWorkRowsForCompatibility(data as PublishedCaseStudy[]);
   const relatedCapabilitiesByCaseStudy = new Map<string, Array<{ slug: string; name: string; cardName: string }>>();
   if (includeRelatedCapabilities) {
     const { data: links } = await client

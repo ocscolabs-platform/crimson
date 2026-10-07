@@ -47,6 +47,7 @@
     "test:work-cms-update:task1": "node --test scripts/test-work-cms-update-task1.mjs",
     "test:work-cms-update:publish-state": "node --test scripts/test-case-study-review-publish-state.mjs",
     "test:work-cms-update:ordering": "node --test scripts/test-work-cms-update-ordering.mjs",
+    "test:work-order:production-compatibility": "node --experimental-strip-types --test scripts/test-work-order-production-compatibility.mjs",
     "test:batch4a1:design-settings": "node --experimental-strip-types --test scripts/test-batch-4a1-design-settings.mjs",
     "test:batch4a2:design-settings-runtime": "node --experimental-strip-types --test scripts/test-batch-4a2-design-settings-runtime.mjs",
     "test:batch4a4:admin-isolation": "node --experimental-strip-types --test scripts/test-batch-4a4-admin-isolation.mjs",
