@@ -9,7 +9,12 @@ export type AdminCollection = {
 export type AdminContent = {
   collections: AdminCollection[];
   services: Array<{ name: string; slug: string; status: string }>;
-  caseStudies: Array<{ project_name: string; slug: string; status: string }>;
+  caseStudies: Array<{
+    project_name: string;
+    slug: string;
+    project_type: "case-study" | "prototype" | "upcoming";
+    status: string;
+  }>;
 };
 
 export async function getAdminContent(): Promise<AdminContent> {
@@ -25,7 +30,7 @@ export async function getAdminContent(): Promise<AdminContent> {
       .order("created_at", { ascending: true }),
     supabase
       .from("case_studies")
-      .select("project_name, slug, status")
+      .select("project_name, slug, project_type, status")
       .order("sort_order", { ascending: true }),
   ]);
 
@@ -62,7 +67,7 @@ export async function getAdminContent(): Promise<AdminContent> {
       {
         label: "Case studies",
         count: caseStudies.data?.length ?? 0,
-        description: "Published work records with approved visibility.",
+        description: "Work records visible to this CMS role across Draft, Review, and Published states.",
       },
     ],
     services: (services.data ?? []) as AdminContent["services"],

@@ -410,12 +410,20 @@ export async function getPublishedWorkProjects(options: { includeRelatedCapabili
   const { data, error } = await client
     .from("case_studies")
     .select("id, project_name, slug, client_visibility, project_type, project_category, external_url, is_featured, sort_order, summary, challenge, approach, deliverables, outcomes, featured_image_path, featured_image_alt, supporting_media, media_status, updated_at")
+    .eq("status", "published")
+    .not("published_at", "is", null)
+    .lte("published_at", new Date().toISOString())
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
 
-  if (error || !data?.length) {
-    return localWorkProjects;
+  if (error) {
+    console.error("[cms-content] Published Work query failed closed:", error.message);
+    return [];
+  }
+
+  if (!data?.length) {
+    return [];
   }
 
   const caseStudies = data as PublishedCaseStudy[];
