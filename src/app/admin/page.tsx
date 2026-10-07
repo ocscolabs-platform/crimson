@@ -5,10 +5,18 @@ import { getCmsMembership, getCmsRoleLabel } from "@/lib/cms-auth";
 import { createClient } from "@/lib/supabase/server";
 import AdminAccountActions from "@/app/admin/AdminAccountActions";
 import AdminPendingLink from "@/app/admin/AdminPendingLink";
+import AdminToast from "@/app/admin/AdminToast";
+import WorkOrderControls from "@/app/admin/WorkOrderControls";
+import { reorderWork } from "@/app/admin/work-actions";
+
+type AdminDashboardPageProps = {
+  searchParams: Promise<{ error?: string; ordered?: string }>;
+};
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({ searchParams }: AdminDashboardPageProps) {
+  const query = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -60,6 +68,9 @@ export default async function AdminDashboardPage() {
             A controlled view of the content currently exposed by the public website. Approved members can edit content according to role; publishing and broader controls remain restricted.
           </p>
         </section>
+
+        {query.ordered === "1" ? <AdminToast tone="success" message="Work order updated." /> : null}
+        {query.error ? <AdminToast tone="error" message={query.error} /> : null}
 
         {loadError ? (
           <section className="admin-alert" role="alert">
@@ -128,8 +139,22 @@ export default async function AdminDashboardPage() {
                   </div>
                 </div>
                 <ul className="admin-record-list">
-                  {content.caseStudies.map((caseStudy) => (
-                    <li key={caseStudy.slug}><Link href={`/crimson-admin-control/case-studies/${caseStudy.slug}`}>{caseStudy.project_name}</Link><small>{caseStudy.project_type} · {caseStudy.status} · {caseStudy.slug}</small></li>
+                  {content.caseStudies.map((caseStudy, index) => (
+                    <li className="admin-work-record" key={caseStudy.id}>
+                      <div className="admin-work-record-main">
+                        <Link href={`/crimson-admin-control/case-studies/${caseStudy.slug}`}>{caseStudy.project_name}</Link>
+                        <small>{caseStudy.project_type} · {caseStudy.status} · {caseStudy.slug}</small>
+                      </div>
+                      {membership.role === "owner" ? (
+                        <form action={reorderWork}>
+                          <input type="hidden" name="target_id" value={caseStudy.id} />
+                          <WorkOrderControls
+                            canMoveUp={index > 0}
+                            canMoveDown={index < content.caseStudies.length - 1}
+                          />
+                        </form>
+                      ) : null}
+                    </li>
                   ))}
                 </ul>
               </div>

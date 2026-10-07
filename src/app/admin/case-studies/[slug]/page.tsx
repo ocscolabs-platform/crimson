@@ -894,7 +894,7 @@ export default async function AdminCaseStudyPage({ params, searchParams }: Admin
               <div><dt>Public status</dt><dd>{review.publication_status}</dd></div>
               <div><dt>Category</dt><dd>{review.project_category || "Not configured"}</dd></div>
               <div><dt>Slug</dt><dd>{review.slug}</dd></div>
-              <div><dt>Featured order</dt><dd>{review.is_featured ? `Featured · ${review.sort_order}` : `Supporting · ${review.sort_order}`}</dd></div>
+              <div><dt>Manual order</dt><dd>Position {review.sort_order + 1}</dd></div>
               <div><dt>Published</dt><dd>{formatDate(review.publication_published_at)}</dd></div>
               <div><dt>Updated</dt><dd>{formatDate(review.updated_at)}</dd></div>
             </dl>
