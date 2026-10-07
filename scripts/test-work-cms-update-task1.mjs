@@ -119,4 +119,17 @@ test("Work Library exposes type and status while publication actions stay Owner-
   assert.match(adminEditor, /formatDate\(review\.publication_published_at\)/);
 });
 
+test("publish and unpublish both invalidate public Work and sitemap routes", () => {
+  const publishStart = adminEditor.indexOf("async function publishCaseStudy");
+  const unpublishStart = adminEditor.indexOf("async function unpublishUpcoming", publishStart);
+  const publishAction = adminEditor.slice(publishStart, unpublishStart);
+  const unpublishAction = adminEditor.slice(unpublishStart);
+
+  for (const action of [publishAction, unpublishAction]) {
+    assert.match(action, /revalidatePath\("\/work"\)/);
+    assert.match(action, /revalidatePath\(`\/work\/\$\{slug\}`\)/);
+    assert.match(action, /revalidatePath\("\/sitemap\.xml"\)/);
+  }
+});
+
 console.log("Work CMS Update v1 Task 1: focused contract assertions passed");

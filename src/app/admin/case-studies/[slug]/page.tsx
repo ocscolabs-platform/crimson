@@ -469,6 +469,7 @@ async function publishCaseStudy(slug: string) {
   revalidatePath(`/admin/case-studies/${slug}`);
   revalidatePath("/work");
   revalidatePath(`/work/${slug}`);
+  revalidatePath("/sitemap.xml");
   redirect(`/crimson-admin-control/case-studies/${slug}?saved=published`);
 }
 
