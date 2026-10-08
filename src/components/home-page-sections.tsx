@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { Blocks, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
+import Image from "next/image";
+import { Blocks, ImageOff, Layers3, PanelsTopLeft, PenTool, Workflow } from "lucide-react";
 import type { SafeCta } from "@/lib/page-document";
 import type { HomePageBodySection } from "@/lib/home-page";
+import type { WorkProject } from "@/lib/work-content";
+import styles from "./home-work-preview.module.css";
 
 type HomePageSectionsProps = {
   sections: HomePageBodySection[];
+  workProjects?: WorkProject[];
 };
 
 const serviceIcons = {
@@ -24,18 +28,52 @@ export function HomeCta({ cta, className }: { cta: SafeCta; className: string })
   );
 }
 
-export function HomePageSections({ sections }: HomePageSectionsProps) {
+function HomeWorkPreview({ projects }: { projects: WorkProject[] }) {
+  if (!projects.length) return null;
+
+  return (
+    <div className={`home-work-preview ${styles.preview}`}>
+      <div className={`home-work-preview-rail ${styles.rail}`} aria-label="Published Work preview">
+        {projects.map((project) => {
+          const media = project.featuredImageUrl
+            ? { url: project.featuredImageUrl, alt: project.featuredImageAlt || `${project.name} project preview` }
+            : project.supportingMedia?.[0];
+          return (
+            <Link className={`home-work-preview-card ${styles.card}`} href="/work" key={project.slug} aria-label={`View all work, including ${project.name}`}>
+              {media ? (
+                <Image src={media.url} alt={media.alt} width={800} height={450} sizes="(max-width: 840px) 86vw, 33vw" />
+              ) : (
+                <span className={`home-work-preview-placeholder ${styles.placeholder}`} role="img" aria-label={`${project.name} project visual placeholder`}>
+                  <ImageOff aria-hidden="true" size={24} strokeWidth={1.4} />
+                </span>
+              )}
+              <strong>{project.name}</strong>
+            </Link>
+          );
+        })}
+      </div>
+      <Link className={`home-work-preview-all ${styles.all}`} href="/work">View all work <span aria-hidden="true">→</span></Link>
+    </div>
+  );
+}
+
+export function HomePageSections({ sections, workProjects = [] }: HomePageSectionsProps) {
+  const workPreview = workProjects.slice(0, 3);
+
   return sections.map((section) => {
     switch (section.key) {
       case "home_intro":
         return (
           <section className="intro-section section-light" aria-labelledby="intro-title" key={section.key}>
-            <div className="shell split-intro">
-              <p className="overline">{section.content.eyebrow}</p>
-              <div>
-                <h2 id="intro-title">{section.content.heading}</h2>
-                <p className="lead-copy">{section.content.body}</p>
+            <div className="shell">
+              <div className="split-intro">
+                <p className="overline">{section.content.eyebrow}</p>
+                <div>
+                  <h2 id="intro-title">{section.content.heading}</h2>
+                  <p className="lead-copy">{section.content.body}</p>
+                </div>
               </div>
+              <HomeWorkPreview projects={workPreview} />
             </div>
           </section>
         );
