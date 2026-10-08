@@ -5,6 +5,7 @@ import {
   CATALOG_QUERY,
   createPassingCatalogFixture,
   evaluateCatalogContract,
+  formatCaseStudyMediaPolicyDiagnostics,
 } from "./verify-supabase-catalog-contract.mjs";
 
 function cloneFixture() {
@@ -52,6 +53,15 @@ test("detects a missing required policy", () => {
     section === "policies" && object.endsWith("cms members can read revisions") && issue === "missing object"));
 });
 
+test("reports case-study media policy definitions without inspecting rows", () => {
+  const fixture = cloneFixture();
+  const policy = fixture.policies.find(({ name }) => name === "cms members can view case study media");
+  policy.usingExpression = "((bucket_id = 'case-study-media'::text) AND cms_has_role(ARRAY['owner'::text, 'editor'::text, 'reviewer'::text]))";
+  const lines = formatCaseStudyMediaPolicyDiagnostics("test", fixture);
+  assert.ok(lines.some((line) => /cms members can view case study media/.test(line)));
+  assert.ok(lines.every((line) => /case.study.media/i.test(line)));
+});
+
 test("detects an unexpected direct authenticated write grant", () => {
   const fixture = cloneFixture();
   fixture.tableGrants.push({ table: "case_studies", grantee: "authenticated", privilege: "UPDATE" });
@@ -65,6 +75,7 @@ test("catalog SQL is explicitly read-only and catalog-scoped", () => {
   assert.match(CATALOG_QUERY, /set transaction read only;/i);
   assert.match(CATALOG_QUERY, /pg_catalog\.pg_trigger/);
   assert.match(CATALOG_QUERY, /pg_catalog\.pg_policies/);
+  assert.match(CATALOG_QUERY, /schemaname = 'storage' and tablename = 'objects'/);
   assert.doesNotMatch(CATALOG_QUERY, /^\s*(?:insert|update|delete|alter|create|drop|truncate)\b/im);
   assert.doesNotMatch(CATALOG_QUERY, /public\.case_studies\s+(?:where|join)/i);
 });

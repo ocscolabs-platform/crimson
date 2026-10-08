@@ -422,7 +422,7 @@ jobs:
           if [[ "$PRODUCTION_PENDING_COUNT" == "0" ]]; then
             SUPABASE_DB_URL="$PRODUCTION_POOLER_DB_URL" \
               SUPABASE_ENVIRONMENT=production-precondition \
-              node scripts/verify-supabase-catalog-contract.mjs
+              node scripts/verify-supabase-catalog-contract.mjs --report-case-study-media-policies
           else
             echo "Full-current catalog precondition deferred until the pending canonical migrations are applied."
           fi
@@ -474,4 +474,4 @@ jobs:
 
       - name: Verify Production catalog contract after apply
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.target == 'production' && inputs.apply == true }}
-        run: SUPABASE_DB_URL="$PRODUCTION_POOLER_DB_URL" SUPABASE_ENVIRONMENT=production-post-apply node scripts/verify-supabase-catalog-contract.mjs
+        run: SUPABASE_DB_URL="$PRODUCTION_POOLER_DB_URL" SUPABASE_ENVIRONMENT=production-post-apply node scripts/verify-supabase-catalog-contract.mjs --report-case-study-media-policies
