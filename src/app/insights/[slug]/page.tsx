@@ -77,7 +77,7 @@ export default async function InsightsArticlePage({ params }: InsightsArticlePag
     <main className="public-insights-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeStructuredData(structuredData) }} />
       <SiteHeader navigation={chrome.primaryNavigation} ctaHref={chrome.settings.primaryContactPath} />
-      <article className="public-insights-article-shell shell">
+      <article className="public-insights-article-shell shell main-content-target" id="main-content" tabIndex={-1}>
         <Link className="public-insights-back" href="/insights"><span aria-hidden="true">←</span> Back to Insights</Link>
         <header className="public-insights-article-header">
           <p className="overline overline-dark">{article.categoryName}</p>

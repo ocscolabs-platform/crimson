@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getPublishedPage, getPublishedSiteChrome, type SiteSettings } from "@/lib/cms-content";
@@ -16,11 +17,12 @@ type RouteShellProps = {
   page?: PublicPage;
   chrome?: RouteChrome;
   preview?: { pageLabel: string; status: "draft" | "review"; revisionId: string; returnHref: string };
+  backLink?: { href: string; label: string };
   titleContext: RouteTitleContext;
   children: ReactNode;
 };
 
-export async function RouteShell({ eyebrow, title, intro, pageSlug, page: suppliedPage, chrome: suppliedChrome, preview, titleContext, children }: RouteShellProps) {
+export async function RouteShell({ eyebrow, title, intro, pageSlug, page: suppliedPage, chrome: suppliedChrome, preview, backLink, titleContext, children }: RouteShellProps) {
   const [chrome, page] = suppliedChrome && suppliedPage !== undefined
     ? [suppliedChrome, suppliedPage]
     : suppliedChrome
@@ -34,12 +36,13 @@ export async function RouteShell({ eyebrow, title, intro, pageSlug, page: suppli
     <main className="route-page">
       <SiteHeader navigation={chrome.primaryNavigation} ctaHref={chrome.settings.primaryContactPath} />
       {preview ? <div className="shell" style={{ paddingTop: "1rem" }}><div className="admin-role-alert"><strong>Preview — unpublished content</strong><span>{preview.pageLabel} · {preview.status === "draft" ? "Draft" : "Review"} · revision {preview.revisionId}</span><span>This private preview does not change the public site. <a href={preview.returnHref}>Return to CMS</a></span></div></div> : null}
-      <section className="route-hero">
+      <section className="route-hero main-content-target" id="main-content" tabIndex={-1}>
         <div className="route-hero-visual" aria-hidden="true">
           <span className="route-hero-glass route-hero-glass-one" />
           <span className="route-hero-glass route-hero-glass-two" />
         </div>
         <div className="shell route-hero-content">
+          {backLink ? <Link className="route-hero-back" href={backLink.href}><span aria-hidden="true">←</span> {backLink.label}</Link> : null}
           <p className="overline overline-green">{resolvedEyebrow}</p>
           <h1 className={`route-hero-title route-hero-title-${titleContext}`}>{resolvedTitle}</h1>
           <p className="route-hero-intro">{resolvedIntro}</p>

@@ -14,7 +14,7 @@ export default function NotFound() {
   return (
     <main className="route-page">
       <SiteHeader />
-      <section className="route-hero" aria-labelledby="not-found-title">
+      <section className="route-hero main-content-target" id="main-content" tabIndex={-1} aria-labelledby="not-found-title">
         <div className="shell route-hero-content">
           <p className="overline overline-green">404 / Page not found</p>
           <h1 id="not-found-title">This page has moved, or it was never here.</h1>
