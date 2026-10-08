@@ -4,6 +4,7 @@ import { Blocks, ImageOff, Layers3, PanelsTopLeft, PenTool, Workflow } from "luc
 import type { SafeCta } from "@/lib/page-document";
 import type { HomePageBodySection } from "@/lib/home-page";
 import type { WorkProject } from "@/lib/work-content";
+import styles from "./home-work-preview.module.css";
 
 type HomePageSectionsProps = {
   sections: HomePageBodySection[];
@@ -31,18 +32,18 @@ function HomeWorkPreview({ projects }: { projects: WorkProject[] }) {
   if (!projects.length) return null;
 
   return (
-    <div className="home-work-preview">
-      <div className="home-work-preview-rail" aria-label="Published Work preview">
+    <div className={`home-work-preview ${styles.preview}`}>
+      <div className={`home-work-preview-rail ${styles.rail}`} aria-label="Published Work preview">
         {projects.map((project) => {
           const media = project.featuredImageUrl
             ? { url: project.featuredImageUrl, alt: project.featuredImageAlt || `${project.name} project preview` }
             : project.supportingMedia?.[0];
           return (
-            <Link className="home-work-preview-card" href="/work" key={project.slug} aria-label={`View all work, including ${project.name}`}>
+            <Link className={`home-work-preview-card ${styles.card}`} href="/work" key={project.slug} aria-label={`View all work, including ${project.name}`}>
               {media ? (
                 <Image src={media.url} alt={media.alt} width={800} height={450} sizes="(max-width: 840px) 86vw, 33vw" />
               ) : (
-                <span className="home-work-preview-placeholder" role="img" aria-label={`${project.name} project visual placeholder`}>
+                <span className={`home-work-preview-placeholder ${styles.placeholder}`} role="img" aria-label={`${project.name} project visual placeholder`}>
                   <ImageOff aria-hidden="true" size={24} strokeWidth={1.4} />
                 </span>
               )}
@@ -51,7 +52,7 @@ function HomeWorkPreview({ projects }: { projects: WorkProject[] }) {
           );
         })}
       </div>
-      <Link className="home-work-preview-all" href="/work">View all work <span aria-hidden="true">→</span></Link>
+      <Link className={`home-work-preview-all ${styles.all}`} href="/work">View all work <span aria-hidden="true">→</span></Link>
     </div>
   );
 }
