@@ -30,6 +30,12 @@ The Supabase projects remain separate. A Git merge moves application code and mi
 6. After a staging apply, compare the ordered canonical timestamp set with `supabase_migrations.schema_migrations`; parity, zero duplicates, and zero pending versions are required for success.
 7. After ledger parity passes, run the shared read-only catalog contract against the same approved database transport. Ledger parity and physical catalog parity are separate gates.
 
+### Schema release rule
+
+Every new migration must include exactly one `-- release-compatibility: backward-compatible` declaration. This asserts that the old application works with the new schema and the new application works before and after the migration during the Production deployment interval. If that is not true, declare `-- release-compatibility: requires-two-phase-release`; the protected compatibility check then stops promotion with `SCHEMA-SENSITIVE RELEASE REQUIRES SPLIT PROMOTION` so the work can be split into a compatible expand release, dependent application release, and later contract cleanup where needed. Untouched historical migrations require no retroactive metadata, and existing canonical migrations remain immutable.
+
+The protected application CI compares only the release delta. A migration-free change reports `NO DATABASE MIGRATION — NOT APPLICABLE` and performs no Production database verification. The rule does not compare staging and Production content. Existing read-only Production identity, ledger, catalog, and dry-run checks remain in place for schema releases, while Production apply remains explicit, manual, and protected by the required Environment reviewer.
+
 ## Staging
 
 On a push to `staging` that changes the migration surface, the workflow:
