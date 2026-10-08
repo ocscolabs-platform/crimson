@@ -92,6 +92,8 @@ Configure these values only in GitHub Environments, never in Git:
 - secret `SUPABASE_DB_PASSWORD`;
 - at least one required owner reviewer.
 
+Run `npm run verify:production-supabase-environment` with an administrator-authenticated GitHub CLI session during release-governance audits. The read-only check fails if the Environment loses required-reviewer protection, the repository owner is no longer an eligible reviewer, self-review would block the sole owner approval path, or an unexpected wait timer is introduced. It reports only non-secret governance metadata.
+
 The owner must verify the project refs without sharing values in chat. Vercel runtime variables and Supabase Auth/SMTP settings remain separately configured per environment.
 
 ## Temporary CMS promotion bridge
