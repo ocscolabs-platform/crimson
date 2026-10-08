@@ -267,10 +267,14 @@ select json_build_object(
       'table', tablename,
       'name', policyname,
       'command', cmd,
-      'roles', roles::text[]
+      'roles', roles::text[],
+      'permissive', permissive,
+      'usingExpression', qual,
+      'checkExpression', with_check
     ) order by schemaname, tablename, policyname)
     from pg_catalog.pg_policies
     where policyname in (${policyNames})
+       or (schemaname = 'storage' and tablename = 'objects')
   ), '[]'::json),
   'buckets', coalesce((
     select json_agg(json_build_object(
@@ -523,6 +527,25 @@ export function formatCatalogResult(environment, result) {
   ];
 }
 
+export function formatCaseStudyMediaPolicyDiagnostics(environment, snapshot) {
+  const policies = (snapshot.policies ?? []).filter((policy) => {
+    if (policy.schema !== "storage" || policy.table !== "objects") return false;
+    const searchable = [policy.name, policy.usingExpression, policy.checkExpression]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return searchable.includes("case-study-media") || searchable.includes("case study media");
+  });
+
+  if (policies.length === 0) {
+    return [`DIAGNOSTIC environment=${environment} case-study-media-policies=[]`];
+  }
+
+  return policies.map((policy) =>
+    `DIAGNOSTIC environment=${environment} case-study-media-policy=${JSON.stringify(policy)}`,
+  );
+}
+
 async function main() {
   const environment = readArgument("--environment") ?? process.env.SUPABASE_ENVIRONMENT;
   const databaseUrl = readArgument("--database-url") ?? process.env.SUPABASE_DB_URL;
@@ -536,6 +559,9 @@ async function main() {
 
   try {
     const snapshot = readCatalogSnapshot(databaseUrl);
+    if (process.argv.includes("--report-case-study-media-policies")) {
+      for (const line of formatCaseStudyMediaPolicyDiagnostics(environment, snapshot)) console.log(line);
+    }
     const result = evaluateCatalogContract(snapshot);
     for (const line of formatCatalogResult(environment, result)) console.log(line);
     if (!result.pass) process.exitCode = 1;
