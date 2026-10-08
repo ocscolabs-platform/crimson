@@ -75,6 +75,7 @@ test("Home Work preview reuses published ordering in a three-card CSS-only rail"
   assert.match(homeSections, /className=\{`home-work-preview-all \$\{styles\.all\}`\} href="\/work">View all work/);
   assert.doesNotMatch(homeSections, /useState|onTouch|onMouse|setInterval/);
   assert.match(homeStyles, /\.rail \{[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(homeStyles, /@media \(max-width: 840px\)[\s\S]*?\.rail \{[\s\S]*?overflow-x: auto;[\s\S]*?scroll-snap-type: x mandatory;/);
+  assert.match(homeStyles, /@media \(max-width: 840px\)[\s\S]*?\.rail \{[\s\S]*?overflow-x: auto;[\s\S]*?overflow-y: hidden;[\s\S]*?scrollbar-width: none;[\s\S]*?scroll-snap-type: x proximity;/);
+  assert.match(homeStyles, /\.rail::\-webkit-scrollbar \{\s*display: none;/);
   assert.match(homeStyles, /\.card \{\s*flex: 0 0 86%;\s*scroll-snap-align: start;/);
 });
