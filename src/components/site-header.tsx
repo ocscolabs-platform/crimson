@@ -17,19 +17,22 @@ export function SiteHeader({ logoHref = "/", ctaHref = "/contact", navigation = 
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const isActive = (href: string) => pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+
   function closeMenu() {
     setMenuOpen(false);
   }
 
   return (
     <header className="site-header">
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="shell site-header-inner">
         <Link className="brand" href={logoHref} aria-label="OCSCO home" onClick={closeMenu}>
           <Image src="/brand/ocsco-logo-white.svg" alt="OCSCO" width={118} height={24} priority />
         </Link>
         <nav className="primary-nav" aria-label="Primary navigation">
           {navigation.map((item) => (
-            <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined}>
+            <Link key={item.href} href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
               {item.label}
             </Link>
           ))}
@@ -51,7 +54,7 @@ export function SiteHeader({ logoHref = "/", ctaHref = "/contact", navigation = 
         </div>
         <nav className={`mobile-menu${menuOpen ? " is-open" : ""}`} id="mobile-navigation" aria-label="Mobile navigation">
           {navigation.map((item) => (
-            <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} onClick={closeMenu}>
+            <Link key={item.href} href={item.href} aria-current={isActive(item.href) ? "page" : undefined} onClick={closeMenu}>
               {item.label}
             </Link>
           ))}

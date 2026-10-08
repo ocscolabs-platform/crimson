@@ -47,7 +47,7 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
   }
 
   return (
-    <RouteShell eyebrow={project.status} title={project.name} intro={project.description} titleContext="work-detail">
+    <RouteShell eyebrow={project.status} title={project.name} intro={project.description} backLink={{ href: "/work", label: "All work" }} titleContext="work-detail">
       <WorkDetailView project={project} />
     </RouteShell>
   );

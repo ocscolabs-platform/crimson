@@ -61,10 +61,14 @@ export default async function WorkPage() {
             <section className="section-light route-section">
               <div className="shell work-library">
           {featuredProject ? <article className="work-featured">
+            {featuredProject.clientVisibility !== "hidden" ? (
+              <Link className="work-card-primary-target" href={`/work/${featuredProject.slug}`} aria-label={`View ${featuredProject.name} project`}>
+                <span className="sr-only">View {featuredProject.name} project</span>
+              </Link>
+            ) : null}
             {featuredProject.featuredImageUrl ? (
               <WorkCardMediaPreview
-                name={featuredProject.name}
-                images={[{ url: featuredProject.featuredImageUrl, alt: featuredProject.featuredImageAlt || `${featuredProject.name} project visual` }, ...(featuredProject.supportingMedia || [])]}
+                image={{ url: featuredProject.featuredImageUrl, alt: featuredProject.featuredImageAlt || `${featuredProject.name} project visual` }}
               />
             ) : (
             <div className="media-placeholder work-featured-media" role="img" aria-label={`${featuredProject.name} project visual placeholder`}>
@@ -115,10 +119,14 @@ export default async function WorkPage() {
           <div className="work-grid">
             {supportingProjects.map((project) => (
               <article className="work-card" key={project.slug}>
+                {project.clientVisibility !== "hidden" ? (
+                  <Link className="work-card-primary-target" href={`/work/${project.slug}`} aria-label={`View ${project.name} project`}>
+                    <span className="sr-only">View {project.name} project</span>
+                  </Link>
+                ) : null}
                 {project.featuredImageUrl ? (
                   <WorkCardMediaPreview
-                    name={project.name}
-                    images={[{ url: project.featuredImageUrl, alt: project.featuredImageAlt || `${project.name} project visual` }, ...(project.supportingMedia || [])]}
+                    image={{ url: project.featuredImageUrl, alt: project.featuredImageAlt || `${project.name} project visual` }}
                   />
                 ) : (
                 <div className="media-placeholder work-card-media" role="img" aria-label={`${project.name} project visual placeholder`}>

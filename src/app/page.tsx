@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { HomeCta, HomePageSections } from "@/components/home-page-sections";
 import { createHomePageRenderData } from "@/lib/home-page";
-import { getPublishedSiteChrome } from "@/lib/cms-content";
+import { getPublishedSiteChrome, getPublishedWorkProjects } from "@/lib/cms-content";
 import { getPublishedPageDocument, resolvePublishedPageServices } from "@/lib/page-document-loader";
 import { getPublishedPageMetadata } from "@/lib/page-metadata";
 
@@ -20,9 +20,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const [chrome, result] = await Promise.all([
+  const [chrome, result, workProjects] = await Promise.all([
     getPublishedSiteChrome(),
     getPublishedPageDocument("home"),
+    getPublishedWorkProjects({ includeRelatedCapabilities: false }),
   ]);
 
   if (result.kind !== "document") {
@@ -45,7 +46,7 @@ export default async function Home() {
   return (
     <main>
       <SiteHeader logoHref="#top" ctaHref="#contact" navigation={chrome.primaryNavigation} />
-      <section className="hero" aria-labelledby="hero-title">
+      <section className="hero main-content-target" id="main-content" tabIndex={-1} aria-labelledby="hero-title">
         <div className="hero-content shell" id="top">
           <p className="overline overline-green">{hero.eyebrow}</p>
           <h1 id="hero-title">{hero.title}</h1>
@@ -70,7 +71,7 @@ export default async function Home() {
         <div className="hero-noise" aria-hidden="true" />
       </section>
 
-      <HomePageSections sections={body} />
+      <HomePageSections sections={body} workProjects={workProjects} />
       <SiteFooter positioningStatement={chrome.settings.positioningStatement} ctaHref={chrome.settings.primaryContactPath} />
     </main>
   );
