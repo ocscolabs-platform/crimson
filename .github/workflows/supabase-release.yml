@@ -246,7 +246,7 @@ jobs:
 
       - name: Verify staging catalog contract
         if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging' && inputs.target == 'staging' && inputs.apply == true) }}
-        run: SUPABASE_DB_URL="$STAGING_POOLER_DB_URL" SUPABASE_ENVIRONMENT=staging node scripts/verify-supabase-catalog-contract.mjs
+        run: SUPABASE_DB_URL="$STAGING_POOLER_DB_URL" SUPABASE_ENVIRONMENT=staging node scripts/verify-supabase-catalog-contract.mjs --report-case-study-media-policies
 
   production:
     needs: validate
