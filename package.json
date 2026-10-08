@@ -69,6 +69,7 @@
     "test:staging:migration-pipeline": "node --test scripts/test-staging-supabase-migration-auto-apply.mjs",
     "test:production:migration-safety": "node --test scripts/test-production-supabase-release-safety.mjs",
     "test:production-supabase-readonly": "node --test scripts/test-production-supabase-readonly-verifier.mjs",
+    "verify:production-supabase-environment": "node scripts/verify-production-supabase-environment.mjs",
     "test:phase6:migration33": "node --test scripts/test-phase6-migration33.mjs",
     "cms:promote": "node scripts/cms-promote.mjs"
   },

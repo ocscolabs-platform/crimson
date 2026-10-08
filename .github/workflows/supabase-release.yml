@@ -11,6 +11,7 @@ on:
       - "scripts/test-supabase-catalog-contract.mjs"
       - "scripts/test-staging-supabase-migration-auto-apply.mjs"
       - "scripts/test-production-supabase-release-safety.mjs"
+      - "scripts/verify-production-supabase-environment.mjs"
       - "package.json"
       - "package-lock.json"
   workflow_dispatch:
