@@ -733,7 +733,8 @@ a { color: inherit; text-decoration: none; }
   .route-grid { grid-template-columns: repeat(2, 1fr); gap: var(--grid-gap); }
   .work-featured { grid-template-columns: 1fr; gap: 32px; padding-bottom: 64px; }
   .work-featured-copy { gap: 48px; padding: 0; }
-  .home-work-preview-rail { display: flex; gap: 16px; overflow-x: auto; overscroll-behavior-inline: contain; padding: 4px 4px 16px; scroll-padding-inline: 4px; scroll-snap-type: x mandatory; }
+  .home-work-preview-rail { display: flex; gap: 16px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-inline: contain; padding: 4px 4px 16px; scroll-padding-inline: 4px; scrollbar-width: none; scroll-snap-type: x proximity; }
+  .home-work-preview-rail::-webkit-scrollbar { display: none; }
   .home-work-preview-card { flex: 0 0 86%; scroll-snap-align: start; }
   .home-work-preview-all { justify-self: start; }
   .work-library-heading { grid-template-columns: 1fr; gap: 32px; }
