@@ -33,6 +33,7 @@
     "test:phase6b1:authoring": "node --experimental-strip-types --test scripts/test-phase6b1-draft-authoring.mjs",
     "test:phase6b2:workflow": "node --test scripts/test-phase6b2-workflow.mjs",
     "test:phase6b3:media": "node --test scripts/test-phase6b3-insights-media.mjs",
+    "test:sharp-media": "node --test scripts/test-sharp-media-processing.mjs",
     "test:phase6b3:cover-alt": "node --test scripts/test-phase6b3-cover-alt-hotfix.mjs",
     "test:phase6c1:public": "node --test scripts/test-phase6c1-public-insights.mjs",
     "test:phase6b3:restore-media": "node --test scripts/test-phase6b3-restore-media-hotfix.mjs",
@@ -82,7 +83,7 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "lucide-react": "^1.32.0",
-    "sharp": "0.35.3",
+    "sharp": "0.35.5",
     "next": "16.3.6",
     "react": "19.2.0",
     "react-dom": "19.2.0"

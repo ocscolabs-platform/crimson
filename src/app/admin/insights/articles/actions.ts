@@ -431,8 +431,7 @@ export async function uploadInsightsMedia(_previousState: InsightsMediaActionSta
   try {
     const image = sharp(source, { failOn: "error" });
     metadata = await image.metadata();
-    const actualFormat = String(metadata.format ?? "");
-    const actualType = actualFormat === "jpeg" ? "image/jpeg" : actualFormat === "png" ? "image/png" : actualFormat === "webp" ? "image/webp" : actualFormat === "avif" ? "image/avif" : "";
+    const actualType = String(metadata.mediaType ?? "");
     if (actualType !== file.type || !metadata.width || !metadata.height || metadata.width < 1 || metadata.height < 1) return mediaError("The image could not be verified. Choose a valid JPEG, PNG, WebP, or AVIF file.");
     normalized = await image.rotate().resize({ width: MEDIA_MAX_EDGE, height: MEDIA_MAX_EDGE, fit: "inside", withoutEnlargement: true }).webp({ quality: 82, effort: 4 }).toBuffer();
   } catch {
