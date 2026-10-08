@@ -5,7 +5,7 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const source = (path) => readFile(new URL(path, root), "utf8");
 
-const [workPage, mediaPreview, siteHeader, routeShell, workDetailPage, homePage, homeSections, styles] = await Promise.all([
+const [workPage, mediaPreview, siteHeader, routeShell, workDetailPage, homePage, homeSections, styles, homeStyles] = await Promise.all([
   source("src/app/work/page.tsx"),
   source("src/app/work/WorkCardMediaPreview.tsx"),
   source("src/components/site-header.tsx"),
@@ -14,6 +14,7 @@ const [workPage, mediaPreview, siteHeader, routeShell, workDetailPage, homePage,
   source("src/app/page.tsx"),
   source("src/components/home-page-sections.tsx"),
   source("src/app/globals.css"),
+  source("src/components/home-work-preview.module.css"),
 ]);
 
 test("Work cards expose a stretched internal target while external actions remain independent", () => {
@@ -70,10 +71,10 @@ test("Home Work preview reuses published ordering in a three-card CSS-only rail"
   assert.match(homeSections, /const workPreview = workProjects\.slice\(0, 3\)/);
   assert.match(introSection, /<HomeWorkPreview projects=\{workPreview\} \/>/);
   assert.doesNotMatch(proofSection, /HomeWorkPreview/);
-  assert.match(homeSections, /className="home-work-preview-card" href="\/work"/);
-  assert.match(homeSections, /className="home-work-preview-all" href="\/work">View all work/);
+  assert.match(homeSections, /className=\{`home-work-preview-card \$\{styles\.card\}`\} href="\/work"/);
+  assert.match(homeSections, /className=\{`home-work-preview-all \$\{styles\.all\}`\} href="\/work">View all work/);
   assert.doesNotMatch(homeSections, /useState|onTouch|onMouse|setInterval/);
-  assert.match(styles, /\.home-work-preview-rail \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(styles, /@media \(max-width: 840px\)[\s\S]*?\.home-work-preview-rail \{[^}]*overflow-x: auto;[^}]*scroll-snap-type: x mandatory;/);
-  assert.match(styles, /\.home-work-preview-card \{ flex: 0 0 86%; scroll-snap-align: start; \}/);
+  assert.match(homeStyles, /\.rail \{[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(homeStyles, /@media \(max-width: 840px\)[\s\S]*?\.rail \{[\s\S]*?overflow-x: auto;[\s\S]*?scroll-snap-type: x mandatory;/);
+  assert.match(homeStyles, /\.card \{\s*flex: 0 0 86%;\s*scroll-snap-align: start;/);
 });
