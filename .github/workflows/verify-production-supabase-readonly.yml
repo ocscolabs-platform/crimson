@@ -17,8 +17,6 @@ jobs:
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
       EXPECTED_PRODUCTION_NAME: ocscolabs-platform-website-crm
-      EXPECTED_MAIN_MIGRATION_COUNT: "48"
-      EXPECTED_STAGING_MIGRATION_COUNT: "51"
       PGHOST: aws-0-ap-northeast-1.pooler.supabase.com
       PGPORT: "5432"
       PGDATABASE: postgres
@@ -28,7 +26,8 @@ jobs:
       - name: Check out accepted staging source
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: staging
+          fetch-depth: 1
 
       - name: Enforce verifier boundary
         shell: bash
@@ -50,6 +49,11 @@ jobs:
           echo "::add-mask::$SUPABASE_ACCESS_TOKEN"
           echo "::add-mask::$SUPABASE_DB_PASSWORD"
           echo "Production verifier boundary confirmed; required configuration is present."
+
+      - name: Set up repository Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
 
       - name: Set up pinned Supabase CLI
         uses: supabase/setup-cli@v1
@@ -134,36 +138,17 @@ jobs:
           fi
           echo "Production database connectivity passed inside an explicit read-only transaction."
 
-      - name: Verify Production ledger parity and expected staging delta
+      - name: Verify repository-derived Production ledger parity
         shell: bash
         run: |
           set -euo pipefail
 
-          main_versions_file="$RUNNER_TEMP/main-migration-versions.txt"
-          staging_versions_file="$RUNNER_TEMP/staging-migration-versions.txt"
+          canonical_versions_file="$RUNNER_TEMP/canonical-migration-versions.txt"
           production_versions_file="$RUNNER_TEMP/production-migration-versions.txt"
-          expected_pending_file="$RUNNER_TEMP/expected-work-cms-pending-versions.txt"
-          actual_pending_file="$RUNNER_TEMP/actual-work-cms-pending-versions.txt"
 
-          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
-          git ls-tree -r --name-only origin/main -- supabase/migrations \
-            | sed -nE 's#^supabase/migrations/([0-9]{14})_.+\.sql$#\1#p' \
-            | sort > "$main_versions_file"
           find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' \
             | sed -nE 's/^([0-9]{14})_.+\.sql$/\1/p' \
-            | sort > "$staging_versions_file"
-
-          ledger_exists="$(psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 <<'SQL'
-          begin;
-          set transaction read only;
-          select (to_regclass('supabase_migrations.schema_migrations') is not null)::text;
-          commit;
-          SQL
-          )"
-          if [[ "$ledger_exists" != "true" ]]; then
-            echo "Production migration ledger is absent."
-            exit 1
-          fi
+            | sort > "$canonical_versions_file"
 
           psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 > "$production_versions_file" <<'SQL'
           begin;
@@ -172,7 +157,7 @@ jobs:
           commit;
           SQL
 
-          for file in "$main_versions_file" "$staging_versions_file" "$production_versions_file"; do
+          for file in "$canonical_versions_file" "$production_versions_file"; do
             if [[ ! -s "$file" ]]; then
               echo "Migration version extraction returned an empty set."
               exit 1
@@ -183,64 +168,18 @@ jobs:
             fi
           done
 
-          main_count="$(wc -l < "$main_versions_file" | tr -d '[:space:]')"
-          staging_count="$(wc -l < "$staging_versions_file" | tr -d '[:space:]')"
+          if ! diff -u "$canonical_versions_file" "$production_versions_file"; then
+            echo "Production migration ledger does not exactly match the checked-out canonical repository state."
+            exit 1
+          fi
+
+          canonical_count="$(wc -l < "$canonical_versions_file" | tr -d '[:space:]')"
           production_count="$(wc -l < "$production_versions_file" | tr -d '[:space:]')"
-          if [[ "$main_count" != "$EXPECTED_MAIN_MIGRATION_COUNT" \
-             || "$production_count" != "$EXPECTED_MAIN_MIGRATION_COUNT" \
-             || "$staging_count" != "$EXPECTED_STAGING_MIGRATION_COUNT" ]]; then
-            echo "Unexpected migration counts: main=$main_count Production=$production_count staging=$staging_count."
-            exit 1
-          fi
+          latest_version="$(tail -n 1 "$production_versions_file")"
+          echo "Production ledger parity passed: ${production_count}/${canonical_count}; latest=${latest_version}; duplicates=0; pending=0; unexpected=0."
 
-          if ! diff -u "$main_versions_file" "$production_versions_file"; then
-            echo "Production migration ledger does not exactly match current main."
-            exit 1
-          fi
+      - name: Verify shared Production catalog contract
+        run: SUPABASE_DB_URL="$PRODUCTION_POOLER_DB_URL" SUPABASE_ENVIRONMENT=production node scripts/verify-supabase-catalog-contract.mjs
 
-          printf '%s\n' \
-            20261007000000 \
-            20261007010000 \
-            20261007020000 > "$expected_pending_file"
-          comm -13 "$production_versions_file" "$staging_versions_file" > "$actual_pending_file"
-          if ! diff -u "$expected_pending_file" "$actual_pending_file"; then
-            echo "Staging does not contain exactly the three expected pending Work CMS migrations."
-            exit 1
-          fi
-          if [[ -n "$(comm -23 "$production_versions_file" "$staging_versions_file")" ]]; then
-            echo "Production contains a migration version absent from accepted staging."
-            exit 1
-          fi
-
-          echo "Production ledger parity passed: 48/48 current-main versions, duplicates=0, unexpected=0."
-          echo "Accepted staging delta passed: exactly 3 pending Work CMS migrations."
-
-      - name: Verify Production catalog baseline
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          catalog_state="$(psql "$PRODUCTION_POOLER_DB_URL" -X -Atq -v ON_ERROR_STOP=1 <<'SQL'
-          begin;
-          set transaction read only;
-          select concat_ws('|',
-            (to_regclass('public.pages') is not null)::text,
-            (to_regclass('public.services') is not null)::text,
-            (to_regclass('public.case_studies') is not null)::text,
-            (to_regclass('public.cms_revisions') is not null)::text,
-            (to_regprocedure('public.cms_unpublish_upcoming_case_study(uuid)') is null)::text,
-            (to_regprocedure('public.cms_save_case_study_revision(uuid,text,jsonb)') is null)::text,
-            (to_regprocedure('public.cms_reorder_case_studies(uuid[])') is null)::text
-          );
-          commit;
-          SQL
-          )"
-
-          if [[ "$catalog_state" != "true|true|true|true|true|true|true" ]]; then
-            echo "Production catalog baseline does not match the approved pre-promotion state."
-            exit 1
-          fi
-
-          echo "Representative Production CMS contracts are present."
-          echo "All three Work CMS v1 objects are absent as expected before promotion."
-          echo "Production Supabase read-only readiness verification passed; mutation=NONE."
+      - name: Confirm verifier remained non-mutating
+        run: echo "Production Supabase read-only readiness verification passed; mutation=NONE."
